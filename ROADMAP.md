@@ -45,7 +45,7 @@ Her madde tamamlanınca **commit** edilip bu dosyada `[x]` ile işaretlenecek.
 
 ---
 
-## [ ] 3. Offline assets (Chart.js + lucide self-host)
+## [x] 3. Offline assets (Chart.js + lucide self-host)
 
 **Amaç:** İnternet olmadan da çalışsın.
 
