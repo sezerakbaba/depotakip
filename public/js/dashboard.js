@@ -1,10 +1,11 @@
-import { S, DEPO_META } from './state.js';
+import { S, DEPO_META, API_URL } from './state.js';
+import { apiFetch } from './api.js';
 import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, escQ, fmt, timeAgo } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════════════
-export function renderDashboard() {
+export async function renderDashboard() {
   const tümü = getAllItems();
   let kritikC = 0, normalC = 0;
   const _now2 = new Date(); _now2.setHours(0,0,0,0);
@@ -15,53 +16,16 @@ export function renderDashboard() {
     if (durum(s.mevcut, s.min, s.max) === 'Kritik' || isSktKritik) kritikC++;
     else normalC++;
   });
-  const bugun = S.hareketler.filter(h => new Date(h.tarih).toDateString() === new Date().toDateString()).length;
 
   document.getElementById('s-toplam').textContent  = tümü.length;
   document.getElementById('s-normal').textContent  = normalC;
   document.getElementById('s-kritik').textContent  = kritikC;
-  document.getElementById('s-hareket').textContent = bugun;
 
-  // Trend göstergeleri
-  const dun = S.hareketler.filter(h=>{
-    const d=new Date(h.tarih); const dn=new Date();
-    dn.setDate(dn.getDate()-1);
-    return d.toDateString()===dn.toDateString();
-  }).length;
-
-  function trendHTML(val, ref, suffix) {
-    if(ref===0&&val===0) return '<span class="stat-trend trend-neu">— değişim yok</span>';
-    if(val>ref) return '<span class="stat-trend trend-up">↑ '+val+' '+suffix+'</span>';
-    if(val<ref) return '<span class="stat-trend trend-down">↓ '+val+' '+suffix+'</span>';
-    return '<span class="stat-trend trend-neu">= '+val+' '+suffix+'</span>';
-  }
-
+  // Stok trend göstergeleri (sync)
   const nt=document.getElementById('s-normal-trend');
   const kt=document.getElementById('s-kritik-trend');
-  const ht=document.getElementById('s-hareket-trend');
   if(nt) nt.innerHTML = tümü.length>0 ? '<span class="stat-trend trend-up" style="font-size:10px">%'+Math.round(normalC/tümü.length*100)+' yeterli</span>' : '';
   if(kt) kt.innerHTML = kritikC>0 ? '<span class="stat-trend trend-down" style="font-size:10px">⚠ '+kritikC+' kritik</span>' : '<span class="stat-trend trend-up" style="font-size:10px">✓ Kritik yok</span>';
-  if(ht) ht.innerHTML = trendHTML(bugun, dun, 'işlem');
-
-  // 7-günlük sparkline
-  const sparkEl = document.getElementById('dash-sparkline');
-  if (sparkEl) {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const ds = d.toDateString();
-      days.push(S.hareketler.filter(h => new Date(h.tarih).toDateString() === ds).length);
-    }
-    const maxV = Math.max(...days, 1);
-    const W = 72, H = 22, pad = 3;
-    const pts = days.map((v, i) => `${pad + i * (W - pad*2) / 6},${H - pad - (v / maxV) * (H - pad*2)}`).join(' ');
-    const cx  = pad + 6 * (W - pad*2) / 6;
-    const cy  = H - pad - (days[6] / maxV) * (H - pad*2);
-    sparkEl.innerHTML = `<svg style="width:100%;max-width:${W}px;display:block" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      <polyline points="${pts}" style="fill:none;stroke:var(--red);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;opacity:.45"/>
-      <circle cx="${cx}" cy="${cy}" r="2.5" style="fill:var(--red)"/>
-    </svg>`;
-  }
 
   // Depo kartları — Düzen C kompakt
   const dc = document.getElementById('depo-cards');
@@ -92,7 +56,6 @@ export function renderDashboard() {
   // Kritik liste — dashboard
   const dkList = document.getElementById('dash-kritik-list');
   if (dkList) {
-    // Stok kritik + SKT yaklaşan malzemeleri birleştir
     const today = new Date(); today.setHours(0,0,0,0);
     const sktUyari = getAllItems().filter(i => {
       const mm = S.malzemeMeta[i.depo+'||'+i.ad]||{};
@@ -104,7 +67,6 @@ export function renderDashboard() {
       const s = getStok(i.depo, i.ad);
       return durum(s.mevcut, s.min, s.max) === 'Kritik';
     });
-    // Birleştir ve tekrarları kaldır
     const seen = new Set();
     const kritikItems = [...stokKritik, ...sktUyari].filter(i => {
       const k = i.depo+'||'+i.ad;
@@ -138,22 +100,74 @@ export function renderDashboard() {
     }
   }
 
-  // Son hareketler
-  const sh = document.getElementById('son-hareketler');
-  sh.innerHTML = S.hareketler.length === 0
-    ? '<p style="color:var(--muted);font-size:13px;">Henüz hareket kaydı yok.</p>'
-    : S.hareketler.slice(-S.ayarlar.sonHareketLimit).reverse().map(h => `
-      <div class="hareket-item">
-        <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}">${h.tur==='Giriş'?'⬆':'⬇'}</div>
-        <div class="hareket-info">
-          <div class="hareket-mal">${esc(h.malzeme)}</div>
-          <div class="hareket-meta">${depoBadge(h.depo)} · <span title="${esc(fmt(new Date(h.tarih)))}">${timeAgo(new Date(h.tarih))}</span>${h.personel?' · '+esc(h.personel):''}</div>
-        </div>
-        <div class="hareket-miktar ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.miktar}</div>
-      </div>`).join('');
-
   renderChartDepo();
   renderChartDurum('chartDurum');
+
+  // ── Hareket istatistikleri sunucudan (async) ──────────────────────
+  if (!S.API_MOD) {
+    document.getElementById('s-hareket').textContent = '—';
+    const ht = document.getElementById('s-hareket-trend');
+    if (ht) ht.innerHTML = '';
+    const sh = document.getElementById('son-hareketler');
+    if (sh) sh.innerHTML = '<p style="color:var(--muted);font-size:13px;">Sunucu bağlantısı yok.</p>';
+    const sparkEl = document.getElementById('dash-sparkline');
+    if (sparkEl) sparkEl.innerHTML = '';
+    return;
+  }
+
+  try {
+    const r = await apiFetch(API_URL + '?action=istatistik');
+    if (!r.ok) return;
+    const json = await r.json();
+    if (!json.ok) return;
+
+    const { ozet, sparkline, sonHareketler } = json;
+    const bugun = (ozet.bugunGiris || 0) + (ozet.bugunCikis || 0);
+    const dun   = ozet.dunHareket || 0;
+
+    document.getElementById('s-hareket').textContent = bugun;
+
+    const ht = document.getElementById('s-hareket-trend');
+    if (ht) {
+      if (dun===0 && bugun===0) ht.innerHTML = '<span class="stat-trend trend-neu">— değişim yok</span>';
+      else if (bugun>dun) ht.innerHTML = '<span class="stat-trend trend-up">↑ '+bugun+' işlem</span>';
+      else if (bugun<dun) ht.innerHTML = '<span class="stat-trend trend-down">↓ '+bugun+' işlem</span>';
+      else ht.innerHTML = '<span class="stat-trend trend-neu">= '+bugun+' işlem</span>';
+    }
+
+    // 7-günlük sparkline
+    const sparkEl = document.getElementById('dash-sparkline');
+    if (sparkEl && sparkline?.length === 7) {
+      const days = sparkline;
+      const maxV = Math.max(...days, 1);
+      const W = 72, H = 22, pad = 3;
+      const pts = days.map((v, i) => `${pad + i * (W - pad*2) / 6},${H - pad - (v / maxV) * (H - pad*2)}`).join(' ');
+      const cx  = pad + 6 * (W - pad*2) / 6;
+      const cy  = H - pad - (days[6] / maxV) * (H - pad*2);
+      sparkEl.innerHTML = `<svg style="width:100%;max-width:${W}px;display:block" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <polyline points="${pts}" style="fill:none;stroke:var(--red);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;opacity:.45"/>
+        <circle cx="${cx}" cy="${cy}" r="2.5" style="fill:var(--red)"/>
+      </svg>`;
+    }
+
+    // Son hareketler
+    const sh = document.getElementById('son-hareketler');
+    if (sh) {
+      sh.innerHTML = !sonHareketler?.length
+        ? '<p style="color:var(--muted);font-size:13px;">Henüz hareket kaydı yok.</p>'
+        : sonHareketler.slice(0, S.ayarlar.sonHareketLimit).map(h => `
+          <div class="hareket-item">
+            <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}">${h.tur==='Giriş'?'⬆':'⬇'}</div>
+            <div class="hareket-info">
+              <div class="hareket-mal">${esc(h.malzeme)}</div>
+              <div class="hareket-meta">${depoBadge(h.depo)} · <span title="${esc(fmt(new Date(h.tarih)))}">${timeAgo(new Date(h.tarih))}</span>${h.personel?' · '+esc(h.personel):''}</div>
+            </div>
+            <div class="hareket-miktar ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.miktar}</div>
+          </div>`).join('');
+    }
+  } catch(e) {
+    console.warn('Dashboard hareket istatistik hatası:', e);
+  }
 }
 
 export function renderChartDepo() {

@@ -85,7 +85,6 @@ export const S = {
   _serverVersion: 0,
   ayarlar: { ...AYARLAR_DEFAULT },
   stok: {},
-  hareketler: [],
   ozelMalzeme: {},
   silinmis: {},
   malzemeMeta: {},

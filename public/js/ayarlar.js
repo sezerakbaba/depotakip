@@ -1,5 +1,6 @@
-import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS } from './state.js';
+import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
 import { esc, escQ } from './ui-common.js';
+import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // AYARLAR
@@ -321,7 +322,10 @@ export function depoYeniAdKaydet(eskiAd) {
     const prefix = eskiAd+'||'; const yeniPrefix = yeniAd+'||';
     const renameObj = obj => { Object.keys(obj).filter(k=>k.startsWith(prefix)).forEach(k=>{ obj[yeniPrefix+k.slice(prefix.length)]=obj[k]; delete obj[k]; }); };
     renameObj(S.stok); renameObj(S.ozelMalzeme); renameObj(S.silinmis); renameObj(S.malzemeMeta);
-    S.hareketler.forEach(h=>{ if(h.depo===eskiAd) h.depo=yeniAd; });
+    apiFetch(API_URL + '?action=hareket_depo_guncelle', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ eskiDepo: eskiAd, yeniDepo: yeniAd }),
+    }).catch(e => console.warn('Hareket depo güncelleme:', e));
     const ekD = (S.ayarlar.ekDepo||[]).find(d=>d.ad===eskiAd); if(ekD) ekD.ad=yeniAd;
     if(!S.ayarlar.depoYeniadlar) S.ayarlar.depoYeniadlar={};
     const origKey = Object.entries(S.ayarlar.depoYeniadlar||{}).find(([,v])=>v===eskiAd)?.[0] || eskiAd;
@@ -374,7 +378,7 @@ export function katYeniAdKaydet(eskiAd) {
 
 export function veriSifirla() {
   if (!confirm('Tüm stok, hareket ve özel malzeme verileri silinecek.\nDevam etmek istediğinizden emin misiniz?')) return;
-  S.stok={}; S.hareketler=[]; S.ozelMalzeme={}; S.silinmis={}; S.malzemeMeta={};
+  S.stok={}; S.ozelMalzeme={}; S.silinmis={}; S.malzemeMeta={};
   window.apiReset();
   window.refreshAll();
   window.refreshVeriYonet();

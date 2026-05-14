@@ -1,5 +1,6 @@
-import { S, STOK_SUTUNLAR, KAT_COLORS, KAYNAK } from './state.js';
+import { S, STOK_SUTUNLAR, KAT_COLORS, KAYNAK, API_URL } from './state.js';
 import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, escKey, escQ, getKey } from './ui-common.js';
+import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // STOK LİSTESİ
@@ -210,7 +211,6 @@ export function renderStok(){
     const katCell=item.kategori?katBadgeHTML(item.kategori):'<span style="font-size:11px;color:var(--muted)">—</span>';
     const birCell=item.birim?esc(item.birim):'<span style="color:var(--muted)">—</span>';
     const rowCls = d==='Kritik' ? 'row-kritik' : d==='Fazla' ? 'row-fazla' : '';
-    const _mh2=S.hareketler.filter(h=>h.depo===item.depo&&h.malzeme===item.ad);
 
     let dynamicCells = '';
     gorunenSutunlar.forEach(col => {
@@ -257,9 +257,7 @@ export function renderStok(){
 
     const _depQ = escQ(item.depo);
     const _adQ  = escQ(item.ad);
-    const logBtn = _mh2.length>0
-      ? `<button class="islem-btn islem-btn-log" onclick="openMalHareket('${_depQ}','${_adQ}')" title="Hareket geçmişi (${_mh2.length})"><i data-lucide="history"></i><span class="islem-badge">${_mh2.length}</span></button>`
-      : '';
+    const logBtn = `<button class="islem-btn islem-btn-log" onclick="openMalHareket('${_depQ}','${_adQ}')" title="Hareket geçmişi"><i data-lucide="history"></i></button>`;
     rows+='<tr class="'+rowCls+'">'
       +'<td class="td-mono" data-label="#">'+idx+'</td>'
       +dynamicCells
@@ -463,9 +461,12 @@ export function saveStok() {
     S.ozelMalzeme[yeniKey]={ad:yeniAd, sayim:srcItem?.sayim||'—', depo:dep,
       birim:S.malzemeMeta[yeniKey]?.birim||'', kategori:S.malzemeMeta[yeniKey]?.kategori||''};
   }
-  // Hareket geçmişinde adı güncelle
+  // Hareket geçmişinde adı güncelle (sunucuda)
   if (yeniKey!==eskiKey) {
-    S.hareketler.forEach(h=>{ if(h.depo===dep&&h.malzeme===eskiAd) h.malzeme=yeniAd; });
+    apiFetch(API_URL + '?action=hareket_malzeme_guncelle', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ depo: dep, eskiMalzeme: eskiAd, yeniMalzeme: yeniAd }),
+    }).catch(e => console.warn('Hareket malzeme güncelleme:', e));
   }
   S.editKey.mal = yeniAd;
   closeModal('modal-stok');window.refreshAll();

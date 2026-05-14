@@ -1,6 +1,6 @@
 import { S, API_URL } from './state.js';
 import { getAllItems, getStok, durum, esc, escQ, getKey } from './ui-common.js';
-import { apiFetch, apiBackupList, apiBackupLoad } from './api.js';
+import { apiFetch, apiBackupList, apiBackupLoad, apiHareketList } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // VERİ YÖNETİMİ – DIŞA / İÇE AKTAR
@@ -27,12 +27,24 @@ export async function renderBackupList() {
     </div>`).join('');
 }
 
-export function refreshVeriYonet() {
+export async function refreshVeriYonet() {
   const toplam = getAllItems().length;
   const ozelC  = Object.keys(S.ozelMalzeme).length;
   document.getElementById('export-toplam').textContent  = toplam;
-  document.getElementById('export-hareket').textContent = S.hareketler.length;
   document.getElementById('export-ozel').textContent    = ozelC;
+  // Hareket sayısını sunucudan al
+  const harEl = document.getElementById('export-hareket');
+  if (harEl) harEl.textContent = '…';
+  if (S.API_MOD) {
+    try {
+      const result = await apiHareketList({ limit: 1, offset: 0 });
+      if (harEl) harEl.textContent = result.toplam;
+    } catch(e) {
+      if (harEl) harEl.textContent = '?';
+    }
+  } else {
+    if (harEl) harEl.textContent = '—';
+  }
 }
 
 export async function exportHareketExcel() {
@@ -45,27 +57,33 @@ export async function exportHareketExcel() {
       document.head.appendChild(s);
     }).catch(e => { window.toast('Excel kütüphanesi yüklenemedi: ' + e.message, 'error'); throw e; });
   }
-  const q = (document.getElementById('har-search')?.value || '').toLowerCase();
-  const filtered = S.hareketler.filter(h => {
-    if (S.harFilter !== 'Tümü' && h.tur !== S.harFilter) return false;
-    if (S.harDepoFilter && h.depo !== S.harDepoFilter) return false;
-    if (S.harPersonelFilter && !(h.personel||'').toLowerCase().includes(S.harPersonelFilter.toLowerCase())) return false;
-    if (q && !h.malzeme.toLowerCase().includes(q) && !h.depo.toLowerCase().includes(q) &&
-        !(h.personel||'').toLowerCase().includes(q) && !(h.belge||'').toLowerCase().includes(q)) return false;
-    if (S.harTarihBas) { const hd = new Date(h.tarih); hd.setHours(0,0,0,0); if (hd < new Date(S.harTarihBas + 'T00:00:00')) return false; }
-    if (S.harTarihBit) { const hd = new Date(h.tarih); hd.setHours(0,0,0,0); if (hd > new Date(S.harTarihBit + 'T00:00:00')) return false; }
-    return true;
-  }).slice().reverse();
-  if (filtered.length === 0) { window.toast('Dışa aktarılacak kayıt yok.', 'error'); return; }
-  const rows = [['Tarih', 'Depo', 'Malzeme', 'Tür', 'Miktar', 'Belge No', 'Personel', 'Not']];
-  filtered.forEach(h => rows.push([
-    new Date(h.tarih).toLocaleString('tr-TR'), h.depo, h.malzeme,
-    h.tur, h.miktar, h.belge || '', h.personel || '', h.not || ''
-  ]));
-  const wb = window.XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Hareket Geçmişi');
-  XLSX.writeFile(wb, 'hareket_' + new Date().toLocaleDateString('tr-TR').replace(/\./g, '-') + '.xlsx');
-  window.toast(`${filtered.length} kayıt Excel'e aktarıldı ✓`);
+  if (!S.API_MOD) { window.toast('Sunucu bağlantısı gerekli', 'error'); return; }
+  const q   = (document.getElementById('har-search')?.value || '').trim();
+  const tur = S.harFilter !== 'Tümü' ? S.harFilter : '';
+  window.toast('Hareketler indiriliyor…');
+  try {
+    const result = await apiHareketList({
+      offset: 0, limit: 999999,
+      depo: S.harDepoFilter || '',
+      tur,
+      tarih_min: S.harTarihBas || '',
+      tarih_max: S.harTarihBit || '',
+      q,
+    });
+    const filtered = result.hareketler;
+    if (!filtered.length) { window.toast('Dışa aktarılacak kayıt yok.', 'error'); return; }
+    const rows = [['Tarih', 'Depo', 'Malzeme', 'Tür', 'Miktar', 'Belge No', 'Personel', 'Not']];
+    filtered.forEach(h => rows.push([
+      new Date(h.tarih).toLocaleString('tr-TR'), h.depo, h.malzeme,
+      h.tur, h.miktar, h.belge || '', h.personel || '', h.not || ''
+    ]));
+    const wb = window.XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Hareket Geçmişi');
+    XLSX.writeFile(wb, 'hareket_' + new Date().toLocaleDateString('tr-TR').replace(/\./g, '-') + '.xlsx');
+    window.toast(`${filtered.length} kayıt Excel'e aktarıldı ✓`);
+  } catch(e) {
+    window.toast('Excel dışa aktarma hatası: ' + e.message, 'error');
+  }
 }
 
 export async function veriExcelAktar() {
@@ -90,11 +108,17 @@ export async function veriExcelAktar() {
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stokRows), 'Stok Listesi');
 
+  // Hareketler sunucudan
   const harRows = [['Tarih','Depo','Malzeme','Tür','Miktar','Belge','Personel','Not']];
-  [...S.hareketler].reverse().forEach(h => {
-    harRows.push([new Date(h.tarih).toLocaleString('tr-TR'), h.depo, h.malzeme,
-      h.tur, h.miktar, h.belge||'', h.personel||'', h.not||'']);
-  });
+  if (S.API_MOD) {
+    try {
+      const result = await apiHareketList({ offset: 0, limit: 999999 });
+      result.hareketler.forEach(h => {
+        harRows.push([new Date(h.tarih).toLocaleString('tr-TR'), h.depo, h.malzeme,
+          h.tur, h.miktar, h.belge||'', h.personel||'', h.not||'']);
+      });
+    } catch(e) { console.warn('Excel hareket export:', e); }
+  }
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(harRows), 'Hareket Geçmişi');
 
   const sktRows = [['Malzeme','Mevcut','Son Kullanma Tarihi','Durum']];
@@ -111,11 +135,22 @@ export async function veriExcelAktar() {
   window.toast('Excel raporu indirildi ✓');
 }
 
-export function veriDisaAktar() {
+export async function veriDisaAktar() {
+  let hareketler = [];
+  if (S.API_MOD) {
+    try {
+      const result = await apiHareketList({ offset: 0, limit: 999999 });
+      hareketler = result.hareketler;
+    } catch(e) { console.warn('JSON export hareket:', e); }
+  }
   const payload = {
-    version:'2.1',
-    tarih:new Date().toISOString(),
-    stok:S.stok, hareketler:S.hareketler, ozelMalzeme:S.ozelMalzeme, silinmis:S.silinmis, malzemeMeta:S.malzemeMeta
+    version:'2.2',
+    tarih: new Date().toISOString(),
+    stok: S.stok,
+    hareketler,
+    ozelMalzeme: S.ozelMalzeme,
+    silinmis: S.silinmis,
+    malzemeMeta: S.malzemeMeta,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url  = URL.createObjectURL(blob);
@@ -127,19 +162,37 @@ export function veriDisaAktar() {
   window.toast('JSON dosyası indirildi ✓');
 }
 
-export function veriIceAktar(input) {
+export async function veriIceAktar(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     try {
       const data = JSON.parse(e.target.result);
       if (!data.stok) { window.toast('Geçersiz dosya formatı!','error'); return; }
-      S.stok=data.stok||{}; S.hareketler=data.hareketler||[];
-      S.ozelMalzeme=data.ozelMalzeme||{}; S.silinmis=data.silinmis||{}; S.malzemeMeta=data.malzemeMeta||{};
+      S.stok        = data.stok        || {};
+      S.ozelMalzeme = data.ozelMalzeme || {};
+      S.silinmis    = data.silinmis    || {};
+      S.malzemeMeta = data.malzemeMeta || {};
       window.refreshAll();
-      refreshVeriYonet();
-      window.toast(`Veri yüklendi: ${S.hareketler.length} hareket, ${Object.keys(S.stok).length} stok kaydı ✓`);
+
+      // Hareketleri sunucuya gönder
+      const hareketler = data.hareketler || data._hareketler || [];
+      let harMesaj = '';
+      if (hareketler.length > 0 && S.API_MOD) {
+        try {
+          const r = await apiFetch(API_URL + '?action=hareket_toplu_ekle', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ hareketler }),
+          });
+          const json = await r.json();
+          harMesaj = json.ok ? `, ${hareketler.length} hareket` : '';
+        } catch(ex) { console.warn('Hareket import:', ex); }
+      }
+
+      await refreshVeriYonet();
+      window.toast(`Veri yüklendi: ${Object.keys(data.stok).length} stok kaydı${harMesaj} ✓`);
     } catch(err) {
       window.toast('Dosya okunamadı: ' + err.message, 'error');
     }

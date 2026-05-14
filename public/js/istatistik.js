@@ -24,18 +24,11 @@ export async function renderIstatistik() {
     for (let i=5;i>=0;i--) {
       const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
       const label = d.toLocaleDateString('tr-TR',{month:'short',year:'2-digit'});
-      const mH = S.hareketler.filter(h=>{ const hd=new Date(h.tarih); return hd.getMonth()===d.getMonth()&&hd.getFullYear()===d.getFullYear(); });
-      trend.push({
-        label,
-        giris: mH.filter(h=>h.tur==='Giriş').reduce((a,h)=>a+h.miktar,0),
-        cikis: mH.filter(h=>h.tur==='Çıkış').reduce((a,h)=>a+h.miktar,0),
-      });
+      trend.push({ label, giris: 0, cikis: 0 });
     }
   }
   if (!enAktif) {
-    const sayac={};
-    S.hareketler.forEach(h=>{ sayac[h.malzeme]=(sayac[h.malzeme]||0)+1; });
-    enAktif = Object.entries(sayac).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([ad,cnt])=>({ad,cnt}));
+    enAktif = [];
   }
 
   if (S.chartTrend) S.chartTrend.destroy();

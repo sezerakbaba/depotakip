@@ -89,7 +89,7 @@ Her madde tamamlanınca **commit** edilip bu dosyada `[x]` ile işaretlenecek.
 
 ---
 
-## [ ] 5. Hareketler ayrı SQLite tablosuna
+## [x] 5. Hareketler ayrı SQLite tablosuna
 
 **Amaç:** Hareket sayısı arttıkça her save'de tüm hareketleri POST etmek sürdürülemez. SQL ile tek-kayıt CRUD ve sunucu-taraflı agregasyon.
 
