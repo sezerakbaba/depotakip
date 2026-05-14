@@ -1,0 +1,796 @@
+<!DOCTYPE html><html lang="tr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veteriner Kontrol Enstitüsü – Depo Takip</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<button id="hamburger" onclick="toggleSidebar()" aria-label="Menü"><i data-lucide="menu"></i></button>
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon"><i data-lucide="warehouse"></i></div>
+    <div class="sidebar-logo-text">
+      <div class="logo-badge">DYS · Depo</div>
+      <h1 id="sidebar-kurum-adi">Depo Yönetim Sistemi</h1>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-label">Ana Menü</div>
+    <div class="nav-item active" data-tip="Dashboard" onclick="navigate('dashboard')">
+      <span class="icon"><i data-lucide="layout-dashboard"></i></span> <span class="nav-text">Dashboard</span>
+    </div>
+    <div class="nav-item" data-tip="Stok Listesi" onclick="navigate('stok')">
+      <span class="icon"><i data-lucide="package"></i></span> <span class="nav-text">Stok Listesi</span>
+    </div>
+    <div class="nav-item" data-tip="Giriş / Çıkış" onclick="navigate('hareket')">
+      <span class="icon"><i data-lucide="arrow-left-right"></i></span> <span class="nav-text">Giriş / Çıkış</span>
+    </div>
+    <div class="nav-label">Raporlar</div>
+    <div class="nav-item" data-tip="İstatistikler" onclick="navigate('istatistik')">
+      <span class="icon"><i data-lucide="bar-chart-2"></i></span> <span class="nav-text">İstatistikler</span>
+    </div>
+    <div class="nav-item" data-tip="Kritik Stok" onclick="navigate('kritik')">
+      <span class="icon"><i data-lucide="alert-triangle"></i></span> <span class="nav-text">Kritik Stok</span>
+    </div>
+    <div class="nav-item" data-tip="Talepname" onclick="navigate('talep')">
+      <span class="icon"><i data-lucide="file-text"></i></span> <span class="nav-text">Talepname</span>
+    </div>
+    <div class="nav-item" data-tip="Talep Listesi" onclick="navigate('talep-listesi')">
+      <span class="icon"><i data-lucide="list"></i></span> <span class="nav-text">Talep Listesi</span>
+    </div>
+    <div class="nav-label">Yönetim</div>
+    <div class="nav-item" data-tip="Malzeme Ekle/Sil" onclick="navigate('malzeme-ekle')">
+      <span class="icon"><i data-lucide="plus-square"></i></span> <span class="nav-text">Malzeme Ekle/Sil</span>
+    </div>
+    <div class="nav-item" data-tip="Veri Yönetimi" onclick="navigate('veri-yonet')">
+      <span class="icon"><i data-lucide="database"></i></span> <span class="nav-text">Veri Yönetimi</span>
+    </div>
+    <div class="nav-item" data-tip="Ayarlar" onclick="navigate('ayarlar')">
+      <span class="icon"><i data-lucide="settings"></i></span> <span class="nav-text">Ayarlar</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <strong>v3.1</strong><br>
+    <span id="api-status"></span>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);font-size:10px;color:var(--teal2);font-weight:600;letter-spacing:.4px">sezerakbaba</div>
+  </div>
+</div>
+
+
+<!-- Malzeme Seçici Modal -->
+<div class="modal-overlay" id="modal-mal-sec">
+  <div class="modal" style="max-width:520px;width:95%;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div class="modal-header" style="padding:18px 20px 14px;flex-shrink:0">
+      <div class="modal-title"><i data-lucide="package" class="icon-inline"></i> Malzeme Seç</div>
+      <button class="modal-close" onclick="closeModal('modal-mal-sec')">×</button>
+    </div>
+    <div style="padding:0 20px 12px;flex-shrink:0">
+      <div class="search-wrap" style="width:100%">
+        <span class="search-icon"><i data-lucide="search"></i></span>
+        <input type="text" id="mal-sec-ara" placeholder="Malzeme veya depo ara..." oninput="_talepMalModalRender()" autocomplete="off">
+      </div>
+    </div>
+    <div id="mal-sec-depo-chips" style="display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 12px;flex-shrink:0"></div>
+    <div id="mal-sec-liste" style="flex:1;overflow-y:auto;min-height:0;border-top:1px solid var(--line)"></div>
+  </div>
+</div>
+
+<!-- Malzeme Hareket Geçmişi Modal -->
+<div class="modal-overlay" id="modal-mal-hareket">
+  <div class="modal" style="max-width:560px;width:95%">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-mal-har-title">Hareket Geçmişi</div>
+      <button class="modal-close" onclick="closeModal('modal-mal-hareket')">×</button>
+    </div>
+    <div id="modal-mal-har-ozet" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 0 14px"></div>
+    <div id="modal-mal-har-liste" style="max-height:340px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div id="main">
+  <div id="content">
+    <div id="clock-widget">
+      <span id="topbar-clock"></span>
+      <span class="clock-sep"></span>
+      <span id="topbar-date"></span>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-header-title"><i data-lucide="layout-dashboard" class="icon-inline"></i> Dashboard</div>
+      </div>
+
+      <!-- KPI Satırı -->
+      <div class="c-kpi-row">
+        <div class="c-kpi blue">
+          <div class="c-kpi-icon"><i data-lucide="package"></i></div>
+          <div class="c-kpi-body">
+            <div class="c-kpi-label">Toplam Ürün</div>
+            <div class="c-kpi-val" id="s-toplam">—</div>
+          </div>
+        </div>
+        <div class="c-kpi teal">
+          <div class="c-kpi-icon"><i data-lucide="check-circle"></i></div>
+          <div class="c-kpi-body">
+            <div class="c-kpi-label">Normal Stok</div>
+            <div class="c-kpi-val" id="s-normal">—</div>
+          </div>
+          <div class="c-kpi-sub" id="s-normal-trend"></div>
+        </div>
+        <div class="c-kpi amber">
+          <div class="c-kpi-icon"><i data-lucide="alert-triangle"></i></div>
+          <div class="c-kpi-body">
+            <div class="c-kpi-label">Kritik Stok</div>
+            <div class="c-kpi-val" id="s-kritik">—</div>
+          </div>
+          <div class="c-kpi-sub" id="s-kritik-trend"></div>
+        </div>
+        <div class="c-kpi red">
+          <div class="c-kpi-icon"><i data-lucide="activity"></i></div>
+          <div class="c-kpi-body">
+            <div class="c-kpi-label">Bugün Hareket</div>
+            <div class="c-kpi-val" id="s-hareket">—</div>
+            <div id="dash-sparkline" title="Son 7 gün hareket trendi"></div>
+          </div>
+          <div class="c-kpi-sub" id="s-hareket-trend"></div>
+        </div>
+      </div>
+
+      <!-- Depo Satırı — kompakt -->
+      <div class="c-depo-row" id="depo-cards"></div>
+
+      <!-- Alt 2 kolon -->
+      <div class="c-main-grid">
+        <div class="card">
+          <div class="card-header"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik Stoklar — Hemen Aksiyon Al</div>
+          <div class="card-body" id="dash-kritik-list">
+            <div class="empty-state"><div class="empty-icon"><i data-lucide="check-circle"></i></div><div class="empty-title">Kritik stok yok</div><div class="empty-desc">Tüm malzemeler yeterli seviyede.</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Son Hareketler</div>
+          <div class="card-body" id="son-hareketler">
+            <div class="empty-state"><div class="empty-icon"><i data-lucide="clipboard-list"></i></div><div class="empty-title">Hareket kaydı yok</div><div class="empty-desc">İlk giriş veya çıkışı kaydetmek için Hareket sayfasını kullanın.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grafikler — istatistik sayfasına taşındı, canvas'lar burada gizli kalır -->
+      <div style="display:none">
+        <canvas id="chartDepo"></canvas>
+        <canvas id="chartDurum"></canvas>
+      </div>
+    </div>
+
+    <!-- ── STOK LİSTESİ ── -->
+    <div class="page" id="page-stok">
+      <div class="stok-toolbar-sticky">
+        <div class="toolbar">
+          <span class="stok-page-title"><i data-lucide="package" class="icon-inline"></i> Stok Listesi</span>
+          <div class="search-wrap">
+            <span class="search-icon"><i data-lucide="search"></i></span>
+            <input type="text" placeholder="Malzeme ara..." id="stok-search" oninput="document.getElementById('stok-search-clear').style.display=this.value?'flex':'none';clearTimeout(window._stokST);window._stokST=setTimeout(()=>{stokSayfa=0;renderStok()},220)">
+            <button id="stok-search-clear" class="search-clear" onclick="document.getElementById('stok-search').value='';this.style.display='none';stokSayfa=0;renderStok()" style="display:none" title="Temizle">×</button>
+          </div>
+          <div class="filter-chip" data-durum="Kritik" onclick="setDurumFilter(this,'Kritik')"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik</div>
+        </div>
+        <div class="toolbar toolbar-sub" style="flex-wrap:wrap;gap:8px">
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;align-self:center">Depo</span>
+          <div id="stok-depo-chips" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+          <div style="width:1px;background:var(--line);align-self:stretch;margin:0 4px"></div>
+          <div class="kat-select-wrap">
+            <label for="stok-kat-select">Kategori</label>
+            <select id="stok-kat-select" onchange="setKatFilterSel(this.value)">
+              <option value="Tümü">Tümü</option>
+            </select>
+          </div>
+          <div class="sutun-menu-wrap" style="position:relative;display:inline-block">
+            <button id="stok-sutun-btn" class="btn btn-sm btn-outline" onclick="document.getElementById('stok-sutun-menu').classList.toggle('open')" title="Sütunları Düzenle"><i data-lucide="settings-2" class="icon-inline"></i> Sütunlar</button>
+            <div id="stok-sutun-menu" class="sutun-menu-dropdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="stok-kpi" class="stok-kpi-bar"></div>
+      <div id="stok-aktif-filtreler" class="stok-aktif-filtreler" style="display:none"></div>
+
+      <div class="card">
+        <div class="table-wrapper">
+          <table id="stok-table">
+            <thead><tr></tr></thead>
+            <tbody id="stok-tbody"></tbody>
+          </table>
+        </div>
+        <div id="stok-sayfalama" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;border-top:1px solid var(--line)"></div>
+      </div>
+    </div>
+
+    <!-- ── GİRİŞ / ÇIKIŞ ── -->
+    <div class="page" id="page-hareket">
+      <div class="page-header">
+        <div>
+          <div class="page-header-title"><i data-lucide="arrow-left-right" class="icon-inline"></i> Giriş / Çıkış</div>
+          <div class="page-header-sub">Stok hareketlerini kaydet ve takip et</div>
+        </div>
+      </div>
+      <div class="hareket-layout">
+        <div class="card hareket-form-sticky">
+          <div class="card-header">Yeni Hareket Kaydı</div>
+          <div class="card-body">
+            <div class="flex-col-14">
+
+              <!-- Malzeme arama -->
+              <div class="form-group">
+                <label>Malzeme Ekle</label>
+                <div class="h-mal-wrap">
+                  <input type="text" id="h-mal-search" placeholder="Malzeme ara..." autocomplete="off"
+                    oninput="_harMalAra(this.value)">
+                  <button class="h-mal-clear" id="h-mal-clear" onclick="_harMalTemizle()" style="display:none">×</button>
+                  <div class="h-mal-dropdown" id="h-mal-dropdown"></div>
+                </div>
+                <input type="hidden" id="h-depo" value="">
+                <input type="hidden" id="h-malzeme" value="">
+              </div>
+
+              <!-- Seçim sonrası: stok bilgi + tür + miktar + ekle -->
+              <div id="h-ekle-satir" style="display:none">
+                <div id="h-stok-bilgi" style="display:none;align-items:center;gap:10px;background:var(--bg);border-radius:8px;padding:10px 14px;flex-wrap:wrap;margin-bottom:8px"></div>
+                <div class="h-ekle-row">
+                  <select id="h-tur" class="h-ekle-tur">
+                    <option value="Giriş">↑ Giriş</option>
+                    <option value="Çıkış">↓ Çıkış</option>
+                  </select>
+                  <input type="number" id="h-miktar" class="h-ekle-mik" min="1" placeholder="Miktar">
+                  <button class="btn btn-primary h-ekle-btn" onclick="_harEkle()"><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
+                </div>
+              </div>
+
+              <!-- Eklenmiş malzemeler listesi -->
+              <div id="h-eklenenler-wrap" style="display:none">
+                <div class="h-eklenenler-header">Eklenecek Hareketler <span id="h-eklenen-sayi" class="h-eklenen-badge"></span></div>
+                <div id="h-eklenenler-list"></div>
+              </div>
+
+              <!-- Ortak alanlar -->
+              <div class="form-group">
+                <label>Belge / Zimmet No</label>
+                <input type="text" id="h-belge" placeholder="Opsiyonel">
+              </div>
+              <div class="form-group">
+                <label>Personel</label>
+                <input type="text" id="h-personel" placeholder="Ad Soyad">
+              </div>
+              <div class="form-group">
+                <label id="h-not-label">Not (opsiyonel)</label>
+                <textarea id="h-not" placeholder="Açıklama..."></textarea>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-primary" style="flex:1" onclick="kaydetHareket()"><i data-lucide="save" class="icon-inline"></i> Kaydet</button>
+                <button class="btn btn-outline" onclick="clearHareketForm()"><i data-lucide="rotate-ccw" class="icon-inline"></i> Temizle</button>
+                <button id="not-zorunlu-btn" class="btn btn-outline" onclick="toggleNotZorunlu()" style="font-size:11px" title="Not zorunlu yap"><i data-lucide="file-pen" class="icon-inline"></i></button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Hareket Geçmişi</div>
+          <div class="card-body">
+            <!-- Özet kartlar -->
+            <div id="har-ozet" class="har-ozet-row" style="margin-bottom:14px"></div>
+            <!-- Toolbar -->
+            <div class="toolbar toolbar-search">
+              <div class="search-wrap" style="max-width:220px">
+                <span class="search-icon"><i data-lucide="search"></i></span>
+                <input type="text" placeholder="Malzeme, depo ara..." id="har-search" oninput="clearTimeout(window._harST);window._harST=setTimeout(()=>{harSayfa=0;renderHareketList()},220)">
+              </div>
+              <select id="har-depo-filter" class="har-filter-sel" onchange="harDepoFilter=this.value;harSayfa=0;renderHareketList()">
+                <option value="">Tüm Depolar</option>
+              </select>
+              <input type="text" id="har-personel-filter" class="har-filter-date" placeholder="Personel..." oninput="harPersonelFilter=this.value;harSayfa=0;renderHareketList()" title="Personele göre filtrele" style="width:120px">
+              <input type="date" id="har-tarih-bas" class="har-filter-date" onchange="harTarihBas=this.value;document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()" title="Başlangıç tarihi">
+              <input type="date" id="har-tarih-bit" class="har-filter-date" onchange="harTarihBit=this.value;document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()" title="Bitiş tarihi">
+              <button class="btn btn-sm btn-outline" onclick="exportHareketExcel()" title="Filtrelenmiş listeyi Excel'e aktar" style="margin-left:auto"><i data-lucide="download" class="icon-inline"></i> Excel</button>
+            </div>
+            <div class="toolbar toolbar-chips">
+              <div class="filter-chip active" data-htur="Tümü" onclick="setHarFilter(this,'Tümü')">Tümü</div>
+              <div class="filter-chip" data-htur="Giriş" onclick="setHarFilter(this,'Giriş')"><i data-lucide="arrow-up" class="icon-inline"></i> Giriş</div>
+              <div class="filter-chip" data-htur="Çıkış" onclick="setHarFilter(this,'Çıkış')"><i data-lucide="arrow-down" class="icon-inline"></i> Çıkış</div>
+              <div class="har-tarih-chip" data-mod="bugun" onclick="setHarTarihShortcut('bugun')">Bugün</div>
+              <div class="har-tarih-chip" data-mod="hafta" onclick="setHarTarihShortcut('hafta')">Bu Hafta</div>
+              <div class="har-tarih-chip" data-mod="ay" onclick="setHarTarihShortcut('ay')">Bu Ay</div>
+              <button class="har-temizle-btn" onclick="harTarihBas='';harTarihBit='';harDepoFilter='';harPersonelFilter='';document.getElementById('har-tarih-bas').value='';document.getElementById('har-tarih-bit').value='';document.getElementById('har-depo-filter').value='';document.getElementById('har-personel-filter').value='';document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()"><i data-lucide="x" class="icon-inline"></i> Temizle</button>
+            </div>
+            <div id="hareket-list">
+              <div class="empty-state">
+                <div class="empty-icon"><i data-lucide="clipboard-list"></i></div>
+                <div class="empty-title">Hareket kaydı yok</div>
+                <div class="empty-desc">İlk giriş veya çıkışı kaydetmek için soldaki formu kullanın.</div>
+              </div>
+            </div>
+            <div id="har-sayfalama" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 0;border-top:1px solid var(--line);margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── İSTATİSTİKLER ── -->
+    <div class="page" id="page-istatistik">
+      <div class="page-header">
+        <div>
+          <div class="page-header-title"><i data-lucide="bar-chart-2" class="icon-inline"></i> İstatistikler</div>
+          <div class="page-header-sub">Depo bazlı grafikler ve analizler</div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header">Aylık Giriş / Çıkış Trendi</div>
+          <div class="card-body"><div class="chart-container" style="height:260px"><canvas id="chartTrend"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">Depo Bazlı Kritik Stok</div>
+          <div class="card-body"><div class="chart-container" style="height:260px"><canvas id="chartKritikDepo"></canvas></div></div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header">Stok Durum Özeti</div>
+          <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="chartDurum2"></canvas></div></div>
+        </div>
+        <div class="card" style="grid-column:2/4">
+          <div class="card-header">En Aktif Malzemeler (Hareket Sayısı)</div>
+          <div class="card-body" id="aktif-malzeme-list">
+            <p style="color:var(--muted);font-size:13px;">Hareket kaydı oluştukça burada görünecek.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KRİTİK STOK ── -->
+    <div class="page" id="page-kritik">
+      <div class="page-header">
+        <div>
+          <div class="page-header-title"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik Stok</div>
+          <div class="page-header-sub">Minimum stok seviyesine düşen malzemeler</div>
+        </div>
+      </div>
+      <!-- SKT Özet Paneli (Kimyasal Deposu) -->
+      <div id="skt-ozet-wrap" class="card" style="margin-bottom:16px">
+        <div class="card-header"><i data-lucide="skull" class="icon-inline"></i> Kimyasal Deposu — Son Kullanma Tarihleri</div>
+        <div class="card-body">
+          <div class="skt-ozet-grid">
+            <div class="skt-ozet-kart">
+              <div class="skt-ozet-sayi" id="skt-gecmis-sayi" style="color:var(--red)">—</div>
+              <div class="skt-ozet-lbl">Tarihi Geçmiş</div>
+            </div>
+            <div class="skt-ozet-kart">
+              <div class="skt-ozet-sayi" id="skt-90g-sayi" style="color:var(--amber)">—</div>
+              <div class="skt-ozet-lbl">90 Gün İçinde</div>
+            </div>
+            <div class="skt-ozet-kart">
+              <div class="skt-ozet-sayi" id="skt-ok-sayi" style="color:var(--green)">—</div>
+              <div class="skt-ozet-lbl">Sorunsuz</div>
+            </div>
+          </div>
+          <div id="skt-ozet-liste" style="max-height:180px;overflow-y:auto"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" style="padding-bottom:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0">
+            <span><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik Stok Listesi</span>
+            <button class="btn btn-sm btn-outline" onclick="navigate('hareket')">+ Hareket Ekle</button>
+            <button id="kritik-talep-btn" class="btn btn-sm btn-primary" onclick="kritikTalepAktar()" style="display:none"><i data-lucide="clipboard-list" class="icon-inline"></i> Talepnameye Aktar</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Malzeme</th><th>Depo</th>
+                  <th>Durum</th><th>Mevcut</th><th>Min</th><th>Fark</th>
+                </tr>
+              </thead>
+              <tbody id="kritik-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TALEPNAME ── -->
+    <div class="page" id="page-talep">
+      <div class="ts-studio">
+
+        <!-- ── SOL: Kontrol Paneli (baskıda gizli) ── -->
+        <aside class="ts-panel no-print">
+          <div class="ts-panel-brand">
+            <div class="ts-panel-icon"><i data-lucide="file-text"></i></div>
+            <div>
+              <div class="ts-panel-title">Talepname</div>
+              <div class="ts-panel-sub">Satın Alma Talebi</div>
+            </div>
+          </div>
+
+          <div class="ts-panel-block">
+            <div class="ts-block-label">Durum</div>
+            <span id="talep-durum-badge"></span>
+          </div>
+
+          <div class="ts-panel-block">
+            <div class="ts-block-label">Talep No</div>
+            <div class="ts-ref-no" id="talep-no-display">—</div>
+            <div class="ts-ref-date" id="talep-tarih-display"></div>
+          </div>
+
+          <div class="ts-panel-actions">
+            <button class="ts-btn ts-btn-primary" onclick="talepOnayaGonder()">
+              <i data-lucide="send" class="icon-inline"></i> Onaya Gönder
+            </button>
+            <button class="ts-btn ts-btn-teal" onclick="talepKaydet('Taslak')">
+              <i data-lucide="save" class="icon-inline"></i> Taslak Kaydet
+            </button>
+            <div class="ts-panel-sep"></div>
+            <button class="ts-btn ts-btn-ghost" onclick="window.print()">
+              <i data-lucide="printer" class="icon-inline"></i> Yazdır
+            </button>
+            <button class="ts-btn ts-btn-ghost" onclick="talepSifirla()">
+              <i data-lucide="file-plus" class="icon-inline"></i> Yeni Talep
+            </button>
+            <button class="ts-btn ts-btn-ghost" onclick="talepAyarlaraKaydet()" title="İsimleri ayarlara kaydet">
+              <i data-lucide="bookmark" class="icon-inline"></i> Ayarlara Kaydet
+            </button>
+          </div>
+
+          <div class="ts-panel-hint">
+            <i data-lucide="lightbulb" class="icon-inline"></i>
+            Malzeme eklemek için tablodaki <strong>Malzeme Seç</strong> butonunu kullanın.
+          </div>
+
+          <div class="ts-panel-footer">
+            <i data-lucide="shield-check" class="icon-inline"></i>
+            Depo Yönetim Sistemi
+          </div>
+        </aside>
+
+        <!-- ── SAĞ: Belge Kağıdı ── -->
+        <div class="ts-canvas">
+          <div class="ts-paper" id="talep-card">
+
+            <!-- Renkli üst bant -->
+            <div class="ts-paper-stripe"></div>
+
+            <!-- Antet -->
+            <header class="ts-paper-header">
+              <div class="ts-header-left">
+                <div class="talep-kurum" id="talep-form-kurum"></div>
+                <div class="talep-baslik">MALZEME TALEP FORMU</div>
+              </div>
+              <div class="ts-header-right">
+                <div class="ts-stamp" id="ts-stamp">
+                  <svg class="ts-stamp-ring" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="34" fill="none" stroke-width="2.5" stroke-dasharray="4 3"/>
+                    <circle cx="40" cy="40" r="26" fill="none" stroke-width="1.5"/>
+                  </svg>
+                  <div class="ts-stamp-text" id="ts-stamp-text">TASLAK</div>
+                </div>
+                <div class="ts-no-block">
+                  <div class="ts-no-label">No</div>
+                  <div class="ts-no-val" id="talep-no-display-doc">—</div>
+                  <div class="ts-no-date" id="talep-tarih-display-doc"></div>
+                </div>
+              </div>
+            </header>
+
+            <!-- Talep Bilgileri -->
+            <section class="ts-section">
+              <div class="ts-section-eyebrow">Talep Bilgileri</div>
+              <div class="ts-field-grid">
+                <div class="ts-field">
+                  <label class="ts-field-lbl">Talep Eden Birim</label>
+                  <input type="text" id="t-birim" class="ts-field-inp" placeholder="Birim adı">
+                </div>
+                <div class="ts-field">
+                  <label class="ts-field-lbl">Sorumlu Personel</label>
+                  <input type="text" id="t-personel" class="ts-field-inp" placeholder="Ad Soyad">
+                </div>
+                <div class="ts-field">
+                  <label class="ts-field-lbl">Aciliyet</label>
+                  <select id="t-aciliyet" class="ts-field-inp" onchange="talepAciliyetGuncelle(this)">
+                    <option>Normal</option>
+                    <option>Acil</option>
+                    <option>Çok Acil</option>
+                  </select>
+                </div>
+                <div class="ts-field ts-field-full">
+                  <label class="ts-field-lbl">Gerekçe</label>
+                  <input type="text" id="t-gerekce" class="ts-field-inp" placeholder="Talep gerekçesi...">
+                </div>
+              </div>
+            </section>
+
+            <div class="ts-rule"></div>
+
+            <!-- Malzeme Listesi -->
+            <section class="ts-section ts-table-section">
+              <div class="ts-table-head no-print">
+                <div class="ts-section-eyebrow" style="margin-bottom:0">
+                  <i data-lucide="package" class="icon-inline"></i> Malzeme Listesi
+                </div>
+                <button class="ts-add-btn" onclick="talepSatirEkle()">
+                  <i data-lucide="plus" class="icon-inline"></i> Satır Ekle
+                </button>
+              </div>
+              <div class="ts-table-scroll">
+                <table class="talep-table" id="talep-satirlar">
+                  <thead>
+                    <tr>
+                      <th style="width:32px">#</th>
+                      <th>Malzeme</th>
+                      <th style="width:110px">Depo</th>
+                      <th style="width:65px">Birim</th>
+                      <th style="width:75px;text-align:center">Mevcut</th>
+                      <th style="width:100px">Talep Miktarı</th>
+                      <th style="width:38px" class="no-print"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="talep-tbody"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <div class="ts-rule"></div>
+
+            <!-- İmza Bölümü -->
+            <section class="ts-section ts-sig-section">
+              <div class="imza-row">
+                <div class="imza-box ts-sig-box">
+                  <div class="ts-sig-space"></div>
+                  <div class="imza-label">Talebi Hazırlayan</div>
+                  <input type="text" id="imza1" class="ts-sig-inp" placeholder="Ad Soyad">
+                </div>
+                <div class="imza-box ts-sig-box">
+                  <div class="ts-sig-space"></div>
+                  <div class="imza-label">Depo Sorumlusu</div>
+                  <input type="text" id="imza2" class="ts-sig-inp" placeholder="Ad Soyad">
+                </div>
+                <div class="imza-box ts-sig-box">
+                  <div class="ts-sig-space"></div>
+                  <div class="imza-label">Onaylayan Amir</div>
+                  <input type="text" id="imza3" class="ts-sig-inp" placeholder="Ad Soyad">
+                </div>
+              </div>
+            </section>
+
+            <!-- Belge Altbilgisi -->
+            <footer class="ts-paper-foot">
+              <span>Veteriner Kontrol Enstitüsü · Depo Yönetim Sistemi · v3.1</span>
+            </footer>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── TALEP LİSTESİ ── -->
+    <div class="page" id="page-talep-listesi">
+      <div class="page-header">
+        <div>
+          <div class="page-header-title"><i data-lucide="list" class="icon-inline"></i> Talep Listesi</div>
+          <div class="page-header-sub">Kaydedilmiş tüm talepler</div>
+        </div>
+        <button class="btn btn-primary no-print" onclick="navigate('talep')"><i data-lucide="plus" class="icon-inline"></i> Yeni Talep</button>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-body" style="padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="tl-durum-filter" onchange="renderTalepListesi()" style="padding:7px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--white);color:var(--ink2)">
+            <option value="">Tüm Durumlar</option>
+            <option value="Taslak">Taslak</option>
+            <option value="Onay Bekliyor">Onay Bekliyor</option>
+            <option value="Onaylı">Onaylı</option>
+            <option value="Reddedildi">Reddedildi</option>
+          </select>
+          <button class="btn btn-sm btn-outline" onclick="renderTalepListesi()"><i data-lucide="refresh-cw" class="icon-inline"></i> Yenile</button>
+        </div>
+      </div>
+      <div id="talep-listesi-icerik">
+        <p style="color:var(--muted);font-size:13px">Yükleniyor...</p>
+      </div>
+    </div>
+
+    <!-- ── DEPO DETAY (dinamik) ── -->
+    <div class="page" id="page-depo-detay">
+      <div class="back-btn" onclick="navigate('dashboard')">← Dashboard'a Dön</div>
+      <div id="detay-content"></div>
+    </div>
+
+
+    <!-- ── MALZEME EKLE/SİL ── -->
+    <div class="page" id="page-malzeme-ekle">
+      <div class="page-header">
+        <div>
+          <div class="page-header-title"><i data-lucide="plus-square" class="icon-inline"></i> Malzeme Yönetimi</div>
+          <div class="page-header-sub">Yeni malzeme ekle, düzenle veya sil</div>
+        </div>
+      </div>
+      <div class="grid-form">
+        <div class="card">
+          <div class="card-header">Yeni Malzeme Ekle</div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-group"><label>Depo</label>
+              <select id="yeni-depo" onchange="toggleYeniSKT(this.value)"><option value="">-- Seçin --</option>
+              </select></div>
+            <div class="form-group"><label>Malzeme Adı</label>
+              <input type="text" id="yeni-ad" placeholder="Tam malzeme adı">
+              <input type="text" id="yeni-marka" placeholder="Marka (opsiyonel)" style="margin-top:5px;font-size:11px;color:var(--muted);border-color:var(--line)"></div>
+            <div class="form-group"><label>Birim</label>
+              <select id="yeni-birim" onchange="handleDiger(this,'yeni-birim-diger')"><option value="">— Seçin —</option>
+              </select>
+              <div id="yeni-birim-diger-wrap" style="display:none;margin-top:5px">
+                <input type="text" id="yeni-birim-diger" placeholder="Birim girin..." style="font-size:12px">
+              </div></div>
+            <div class="form-group"><label>Kategori</label>
+              <select id="yeni-kategori" onchange="handleDiger(this,'yeni-kategori-diger')"><option value="">— Seçin —</option>
+              </select>
+              <div id="yeni-kategori-diger-wrap" style="display:none;margin-top:5px">
+                <input type="text" id="yeni-kategori-diger" placeholder="Kategori girin..." style="font-size:12px">
+              </div></div>
+            <div class="form-group"><label>Başlangıç Stok</label>
+              <input type="number" id="yeni-mevcut" min="0" value="0"></div>
+            <div class="grid-2">
+              <div class="form-group"><label>Min</label>
+                <input type="number" id="yeni-min" min="0" value="1"></div>
+              <div class="form-group"><label>Max</label>
+                <input type="number" id="yeni-max" min="0" value="10"></div>
+            </div>
+            <div id="yeni-skt-wrap" style="display:none">
+              <div class="form-group"><label><i data-lucide="skull" class="icon-inline"></i> Son Kullanma Tarihi</label>
+                <input type="date" id="yeni-skt" style="font-family:'IBM Plex Mono',monospace">
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="malzemeEkle()"><i data-lucide="plus-circle" class="icon-inline"></i> Ekle</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header card-header-row">
+            <span>Mevcut Malzemeler</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="search-wrap" style="max-width:200px">
+                <span class="search-icon"><i data-lucide="search"></i></span>
+                <input type="text" placeholder="Ara..." id="ekle-search" oninput="renderMalzemeEkleList()">
+              </div>
+              <select id="ekle-depo-filter" onchange="renderMalzemeEkleList()" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px">
+                <option value="">Tüm Depolar</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper" style="max-height:500px;overflow-y:auto">
+              <table><thead><tr><th>Malzeme</th><th>Depo</th><th>Birim</th><th>Kategori</th><th>Stok</th><th>Durum</th><th>İşlem</th></tr></thead>
+              <tbody id="malzeme-ekle-tbody"></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VERİ YÖNETİMİ ── -->
+    <div class="page" id="page-veri-yonet">
+      <div class="page-header">
+        <div>
+          <div class="page-header-title"><i data-lucide="database" class="icon-inline"></i> Veri Yönetimi</div>
+          <div class="page-header-sub">Yedekle, içe aktar veya sıfırla</div>
+        </div>
+      </div>
+      <!-- Sunucu Bağlantı Durumu -->
+      <div id="api-durum-kart" class="card" style="margin-bottom:16px;display:none"> 
+        <div class="card-body" style="display:flex;align-items:center;gap:16px;padding:14px 20px">
+          <div id="api-durum-icon" style="font-size:24px"><i data-lucide="plug"></i></div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600" id="api-durum-text">Sunucu kontrol ediliyor...</div>
+            <div style="font-size:11px;color:var(--muted)" id="api-durum-sub"></div>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="apiBackupOlustur()"><i data-lucide="save" class="icon-inline"></i> Yedek Al</button>
+          <button class="btn btn-sm btn-outline" onclick="renderBackupList()"><i data-lucide="refresh-cw" class="icon-inline"></i> Yenile</button>
+        </div>
+      </div>
+
+      <!-- Sunucu Yedekleri -->
+      <div id="api-yedek-kart" class="card" style="margin-bottom:16px;display:none">
+        <div class="card-header"><i data-lucide="server" class="icon-inline"></i> Sunucu Yedekleri (Otomatik)</div>
+        <div class="card-body" id="api-yedek-liste">
+          <p style="font-size:13px;color:var(--muted)">Yedekler yükleniyor...</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><i data-lucide="upload" class="icon-inline"></i> Dışa Aktar (JSON)</div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <p class="hint-text">Tüm stok verileri, hareket geçmişi ve özel malzeme listesi JSON olarak indirilir.</p>
+            <div style="background:var(--bg);border-radius:8px;padding:14px;font-size:12px;color:var(--ink2)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Toplam malzeme</span><strong id="export-toplam">—</strong></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Hareket kaydı</span><strong id="export-hareket">—</strong></div>
+              <div style="display:flex;justify-content:space-between"><span>Özel eklemeler</span><strong id="export-ozel">—</strong></div>
+            </div>
+            <button class="btn btn-primary" onclick="veriDisaAktar()"><i data-lucide="download" class="icon-inline"></i> JSON İndir</button>
+            <button class="btn btn-outline" onclick="veriExcelAktar()"><i data-lucide="table-2" class="icon-inline"></i> Excel Raporu</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><i data-lucide="download" class="icon-inline"></i> İçe Aktar (JSON)</div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <p class="hint-text">Daha önce dışa aktarılan dosyayı yükleyin. <strong style="color:var(--red)">Mevcut veriler silinir.</strong></p>
+            <div style="border:2px dashed var(--line);border-radius:8px;padding:28px;text-align:center;cursor:pointer" onclick="document.getElementById('json-file-input').click()">
+              <div style="font-size:28px;margin-bottom:8px"><i data-lucide="folder-open"></i></div>
+              <div style="font-size:13px;color:var(--muted)">Dosya seçmek için tıklayın (.json)</div>
+            </div>
+            <input type="file" id="json-file-input" accept=".json" style="display:none" onchange="veriIceAktar(this)">
+            <button class="btn btn-danger" onclick="veriSifirla()"><i data-lucide="trash-2" class="icon-inline"></i> Tüm Verileri Sıfırla</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AYARLAR ── -->
+    <div class="page" id="page-ayarlar">
+      <div class="page-header">
+        <div>
+          <div class="page-header-title"><i data-lucide="settings" class="icon-inline"></i> Ayarlar</div>
+          <div class="page-header-sub">Uygulama yapılandırması ve yönetimi</div>
+        </div>
+      </div>
+      <div class="ayarlar-grid" id="ayarlar-icerik"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── Stok Güncelle Modal ── -->
+<div class="modal-overlay" id="modal-stok">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Stok Güncelle</div>
+      <button class="modal-close" onclick="closeModal('modal-stok')">×</button>
+    </div>
+    <div id="modal-stok-icerik"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveStok()">Kaydet</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-stok')">İptal</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+
+
+
+
+  <script src="js/app.js?v=1.1"></script>
+  <script>
+    // Lucide ikonlarını başlat
+    lucide.createIcons();
+    // navigate() çağrılarından sonra ikonları yenile
+    const _origNavigate = window.navigate;
+    if (typeof _origNavigate === 'function') {
+      window.navigate = function(...args) {
+        _origNavigate(...args);
+        setTimeout(() => lucide.createIcons(), 50);
+      };
+    }
+  </script>
+</body></html>

@@ -1,0 +1,3 @@
+This is a Turkish-language inventory/stock management web app. When I reference Turkish terms like 'Stok Listesi', 'Depo', 'Malzeme' etc., understand these as features/pages in the app and check the codebase for related files rather than asking for clarification.
+When I give a short task name (e.g., 'Stok Listesi', 'pagination'), check the codebase for related files and known issues before asking clarifying questions. Prefer action over clarification.
+This project uses HTML, vanilla JavaScript, and CSS. No frameworks. When making UI changes, check for consistency with existing patterns across files.
