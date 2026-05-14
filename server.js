@@ -72,6 +72,8 @@ db.serialize(() => {
   db.get('SELECT id FROM AppState WHERE id = 1', (_err, row) => {
     if (!row) db.run(`INSERT INTO AppState (id, data) VALUES (1, '{}')`);
   });
+  // Migration: version kolonu (mevcut DB'de yoksa ekle, varsa hata sessizce yutulur)
+  db.run(`ALTER TABLE AppState ADD COLUMN version INTEGER DEFAULT 0`);
 
   // Talepler tablosu
   db.run(`CREATE TABLE IF NOT EXISTS Talepler (
@@ -99,11 +101,11 @@ app.get('/api/api.php', (req, res) => {
   const action = req.query.action;
 
   if (action === 'load') {
-    db.get('SELECT data FROM AppState WHERE id = 1', (err, row) => {
+    db.get('SELECT data, version FROM AppState WHERE id = 1', (err, row) => {
       if (err) return res.json({ ok: false, error: err.message });
       try {
         const data = JSON.parse(row.data);
-        res.json({ ok: true, data, yeni: Object.keys(data).length === 0 });
+        res.json({ ok: true, data, version: row.version || 0, yeni: Object.keys(data).length === 0 });
       } catch (e) {
         res.json({ ok: false, error: 'JSON parse error' });
       }
@@ -197,13 +199,46 @@ app.post('/api/api.php', (req, res) => {
   const action = req.query.action;
 
   if (action === 'save') {
-    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    const b = req.body;
+    if (!b || typeof b !== 'object' || Array.isArray(b)) {
       return res.status(400).json({ ok: false, error: 'Geçersiz gövde' });
     }
-    const payload = JSON.stringify(req.body);
-    db.run('UPDATE AppState SET data = ? WHERE id = 1', [payload], err => {
-      if (err) return res.json({ ok: false, error: err.message });
-      res.json({ ok: true });
+    if (b.stok == null || typeof b.stok !== 'object' || Array.isArray(b.stok)) {
+      return res.status(400).json({ ok: false, error: 'stok nesne olmalı' });
+    }
+    if (b.hareketler == null || !Array.isArray(b.hareketler)) {
+      return res.status(400).json({ ok: false, error: 'hareketler dizi olmalı' });
+    }
+    if (b.hareketler.length >= 100000) {
+      return res.status(400).json({ ok: false, error: 'hareketler çok büyük (max 100000)' });
+    }
+    for (const f of ['ozelMalzeme', 'silinmis', 'malzemeMeta']) {
+      if (b[f] != null && (typeof b[f] !== 'object' || Array.isArray(b[f]))) {
+        return res.status(400).json({ ok: false, error: f + ' nesne olmalı' });
+      }
+    }
+    const clientVersion = (typeof b._version === 'number') ? b._version : null;
+    const { _version, ...saveData } = b;
+    const payload = JSON.stringify(saveData);
+
+    db.serialize(() => {
+      db.run('BEGIN IMMEDIATE TRANSACTION');
+      db.get('SELECT version FROM AppState WHERE id = 1', (err, row) => {
+        if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
+        const serverVersion = row.version || 0;
+        if (clientVersion !== null && clientVersion !== serverVersion) {
+          db.run('ROLLBACK');
+          return res.status(409).json({ ok: false, error: 'Çakışma: veriler başka yerden değişti', version: serverVersion });
+        }
+        const newVersion = serverVersion + 1;
+        db.run('UPDATE AppState SET data = ?, version = ? WHERE id = 1', [payload, newVersion], err2 => {
+          if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
+          db.run('COMMIT', err3 => {
+            if (err3) return res.json({ ok: false, error: err3.message });
+            res.json({ ok: true, version: newVersion });
+          });
+        });
+      });
     });
 
   } else if (action === 'reset') {

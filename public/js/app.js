@@ -5,6 +5,7 @@
 const API_URL = './api/api.php';  // aynı dizindeyse bu yeterli
 let   API_MOD = false;            // PHP API aktif mi?
 let   _saveTimer = null;          // debounce zamanlayıcı
+let   _serverVersion = 0;         // optimistik çakışma kontrolü için sunucu versiyon sayacı
 
 function getToken() {
   let t = localStorage.getItem('depoToken');
@@ -135,6 +136,7 @@ async function apiLoad() {
     ozelMalzeme = d.ozelMalzeme || {};
     silinmis    = d.silinmis    || {};
     malzemeMeta = d.malzemeMeta || {};
+    _serverVersion = json.version || 0;
     if (json.yeni) toast('İlk çalıştırma — boş veri oluşturuldu.', 'info');
     else toast('Veriler sunucudan yüklendi ✓');
     return true;
@@ -150,14 +152,20 @@ function apiSave() {
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(async () => {
     try {
-      const payload = { stok, hareketler, ozelMalzeme, silinmis, malzemeMeta };
+      const payload = { stok, hareketler, ozelMalzeme, silinmis, malzemeMeta, _version: _serverVersion };
       const r    = await apiFetch(API_URL + '?action=save', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
+      if (r.status === 409) {
+        toast('Veriler başka yerden değişti, yeniden yükleniyor…', 'error');
+        setTimeout(() => location.reload(), 1500);
+        return;
+      }
       const json = await r.json();
       if (!json.ok) { toast('Kayıt hatası: ' + json.error, 'error'); return; }
+      if (json.version != null) _serverVersion = json.version;
       // Sessiz kayıt — başarılı bildirimi gösterme
       const _as = document.getElementById('api-status'); if(_as) _as.textContent = '💾 ' + new Date().toLocaleTimeString('tr-TR');
     } catch(e) {

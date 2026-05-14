@@ -26,7 +26,7 @@ Her madde tamamlanınca **commit** edilip bu dosyada `[x]` ile işaretlenecek.
 
 ---
 
-## [ ] 2. Save endpoint validasyonu + transaction
+## [x] 2. Save endpoint validasyonu + transaction
 
 **Amaç:** Çakışan yazımlarda veri kaybını ve bozuk payload kabul edilmesini önle.
 
