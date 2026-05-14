@@ -780,17 +780,5 @@
 
 
 
-  <script src="js/app.js?v=1.1"></script>
-  <script>
-    // Lucide ikonlarını başlat
-    lucide.createIcons();
-    // navigate() çağrılarından sonra ikonları yenile
-    const _origNavigate = window.navigate;
-    if (typeof _origNavigate === 'function') {
-      window.navigate = function(...args) {
-        _origNavigate(...args);
-        setTimeout(() => lucide.createIcons(), 50);
-      };
-    }
-  </script>
+  <script type="module" src="js/main.js"></script>
 </body></html>

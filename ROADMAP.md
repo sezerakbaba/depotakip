@@ -61,7 +61,7 @@ Her madde tamamlanınca **commit** edilip bu dosyada `[x]` ile işaretlenecek.
 
 ---
 
-## [ ] 4. app.js modülarize
+## [x] 4. app.js modülarize
 
 **Amaç:** 3181 satırlık tek dosyayı bakımı kolay parçalara böl.
 
