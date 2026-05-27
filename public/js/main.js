@@ -1,5 +1,5 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, PAGE_TITLES, STOK_INIT, SKT_INIT, API_URL } from './state.js';
-import { esc, escQ, getKey, updateClock, checkKritikNotification } from './ui-common.js';
+import { esc, escQ, getKey, updateClock, checkKritikNotification, dClick } from './ui-common.js';
 import { apiPing, apiLoad, apiSave, apiSaveFlush, apiBackupOlustur, apiReset } from './api.js';
 import { renderDashboard } from './dashboard.js';
 import { renderStok, katBadgeHTML } from './stok.js';
@@ -150,12 +150,12 @@ export function initDepoSelects() {
   if (wrap) {
     const aktifDepo = S.stokDepoFilter || 'Tümü';
     wrap.innerHTML =
-      `<div class="filter-chip${aktifDepo==='Tümü'?' active':''}" data-depo="Tümü" onclick="setDepoFilter(this,'Tümü')">Tümü</div>` +
+      `<div class="filter-chip${aktifDepo==='Tümü'?' active':''}" data-depo="Tümü" ${dClick('setDepoFilter','Tümü')}>Tümü</div>` +
       depos.map(d => {
         const color = DEPO_META[d]?.color || 'var(--teal)';
         const aktif = aktifDepo === d;
         const style = aktif ? `--chip-color:${color};border-color:${color};background:${color};color:#fff` : '';
-        return `<div class="filter-chip${aktif?' active':''}" data-depo="${esc(d)}" data-color="${color}" onclick="setDepoFilter(this,'${escQ(d)}','${color}')" style="${style}">${esc(d)}</div>`;
+        return `<div class="filter-chip${aktif?' active':''}" data-depo="${esc(d)}" data-color="${color}" ${dClick('setDepoFilter',d,color)} style="${style}">${esc(d)}</div>`;
       }).join('');
   }
 }
@@ -222,6 +222,147 @@ function _toggleStokSutunMenu() {
   document.getElementById('stok-sutun-menu')?.classList.toggle('open');
 }
 function _clickFileInput(_el, id) { document.getElementById(id)?.click(); }
+function _removeById(_el, id) { document.getElementById(id)?.remove(); }
+function _stopProp(_el, ...rest) {
+  // event her zaman son arg. Kullanılmıyor; rest spread sadece imza için.
+  // Tek başına eklenmesi gerekmiyor — özel handler'lar event.stopPropagation çağırır.
+}
+
+// ── Sayfalama: stok ────────────────────────────────────────────────
+function _stokSayfaPrev() { if (S.stokSayfa > 0) { S.stokSayfa--; window.renderStok?.(); } }
+function _stokSayfaNext() { S.stokSayfa++; window.renderStok?.(); }
+function _stokSayfaGit(_el, p) { S.stokSayfa = +p; window.renderStok?.(); }
+function _harSayfaPrev() { if (S.harSayfa > 0) { S.harSayfa--; window.renderHareketList?.(); } }
+function _harSayfaNext() { S.harSayfa++; window.renderHareketList?.(); }
+function _harSayfaGit(_el, p) { S.harSayfa = +p; window.renderHareketList?.(); }
+
+// ── Stok KPI / filtre chip handler'ları ───────────────────────────
+function _stokDurumKpi(_el, target) {
+  S.stokDurumFilter = target ? (S.stokDurumFilter === target ? '' : target) : '';
+  S.stokSayfa = 0;
+  window.renderStok?.();
+}
+function _stokDepoChipTemizle() {
+  S.stokDepoFilter = 'Tümü';
+  document.querySelectorAll('.filter-chip[data-depo]').forEach(c => {
+    c.classList.remove('active'); c.style.cssText = '';
+  });
+  document.querySelector(`.filter-chip[data-depo="Tümü"]`)?.classList.add('active');
+  S.stokSayfa = 0;
+  window.renderStok?.();
+}
+function _stokKatChipTemizle() {
+  S.stokKatFilter = 'Tümü';
+  const sel = document.getElementById('stok-kat-select');
+  if (sel) sel.value = 'Tümü';
+  S.stokSayfa = 0;
+  window.renderStok?.();
+}
+function _stokDurumChipTemizle() {
+  S.stokDurumFilter = ''; S.stokSayfa = 0; window.renderStok?.();
+}
+function _stokAramaTemizle() {
+  const si = document.getElementById('stok-search');
+  if (si) {
+    si.value = '';
+    const clr = document.getElementById('stok-search-clear');
+    if (clr) clr.style.display = 'none';
+  }
+  S.stokSayfa = 0; window.renderStok?.();
+}
+function _stokTumFiltreleriTemizle() {
+  S.stokDepoFilter = 'Tümü'; S.stokKatFilter = 'Tümü'; S.stokDurumFilter = '';
+  const si = document.getElementById('stok-search');
+  if (si) {
+    si.value = '';
+    const clr = document.getElementById('stok-search-clear');
+    if (clr) clr.style.display = 'none';
+  }
+  document.querySelectorAll('.filter-chip').forEach(c => { c.classList.remove('active'); c.style.cssText = ''; });
+  document.querySelector(`.filter-chip[data-depo="Tümü"]`)?.classList.add('active');
+  const sel = document.getElementById('stok-kat-select');
+  if (sel) sel.value = 'Tümü';
+  S.stokSayfa = 0; window.renderStok?.();
+}
+
+// ── Stok sütun reset (ayarlar) ────────────────────────────────────
+function _stokSutunSifirla() {
+  S.ayarlar.stokSutunSirasi = [...window._AYARLAR_DEFAULT.stokSutunSirasi];
+  S.ayarlar.stokSutunGizli = [];
+  window.ayarlariKaydet?.();
+  window.toast?.('Sütun düzeni sıfırlandı ✓');
+}
+function _tumAyarlariSifirla() {
+  if (!confirm('Tüm ayarlar sıfırlanacak. Emin misiniz?')) return;
+  localStorage.removeItem('depoAyarlar');
+  S.ayarlar = { ...window._AYARLAR_DEFAULT };
+  window.applyTheme?.();
+  window.renderAyarlar?.();
+  window.toast?.('Ayarlar sıfırlandı');
+}
+
+// ── Dashboard "Hızlı Giriş" (event stop) ──────────────────────────
+function _dashHizliGiris(_el, dep, mal, e) {
+  e?.stopPropagation?.();
+  window.hizliHareket?.(dep, mal, 'Giriş');
+}
+
+// ── Yazı tipi boyutu (range input) ────────────────────────────────
+function _yazitipiBoy(el) {
+  const lbl = document.getElementById('yazitipiBoy-lbl');
+  if (lbl) lbl.textContent = 'Şu an: ' + el.value + '%';
+  window.setAyar?.('yazitipiBoy', +el.value);
+  document.documentElement.style.fontSize = el.value + '%';
+}
+
+// ── setAyar wrapper'ları: this.value/this.checked/parse ───────────
+function _setAyarStr(el, key)   { window.setAyar?.(key, el.value); }
+function _setAyarTrim(el, key)  { window.setAyar?.(key, el.value.trim()); }
+function _setAyarNum(el, key)   { window.setAyar?.(key, +el.value); }
+function _setAyarBool(el, key)  { window.setAyar?.(key, el.checked); }
+function _setAyarTalepOnPek(el) {
+  window.setAyar?.('talepOnPek', el.value.trim().toUpperCase() || 'TLN');
+}
+function _toggleStokSutunChg(el, key) {
+  window.toggleStokSutun?.(key, el.checked);
+}
+function _setTemaThen(_el, t) { window.setTema?.(t); }
+function _setTarihFormatThen(_el, fmt) {
+  window.setAyar?.('tarihFormat', fmt);
+  window.renderAyarlar?.();
+}
+
+// ── Ayarlar arama ──────────────────────────────────────────────────
+function _ayarlarAraInput(el) { window.ayarlarAraOlay?.(el.value); }
+
+// ── index.html'den taşınan kompleks inline handler'lar ────────────
+function _stokSearchInput(el) {
+  const clr = document.getElementById('stok-search-clear');
+  if (clr) clr.style.display = el.value ? 'flex' : 'none';
+  clearTimeout(window._stokST);
+  window._stokST = setTimeout(() => { S.stokSayfa = 0; window.renderStok?.(); }, 220);
+}
+function _harSearchInput() {
+  clearTimeout(window._harST);
+  window._harST = setTimeout(() => { S.harSayfa = 0; window.renderHareketList?.(); }, 220);
+}
+function _harDepoFilterChg(el) {
+  S.harDepoFilter = el.value; S.harSayfa = 0; window.renderHareketList?.();
+}
+function _harPersonelFilterInp(el) {
+  S.harPersonelFilter = el.value; S.harSayfa = 0; window.renderHareketList?.();
+}
+function _harTarihBasChg(el) {
+  S.harTarihBas = el.value;
+  document.querySelectorAll('.har-tarih-chip').forEach(c => c.classList.remove('active'));
+  S.harSayfa = 0; window.renderHareketList?.();
+}
+function _harTarihBitChg(el) {
+  S.harTarihBit = el.value;
+  document.querySelectorAll('.har-tarih-chip').forEach(c => c.classList.remove('active'));
+  S.harSayfa = 0; window.renderHareketList?.();
+}
+function _toggleYeniSKTChg(el) { window.toggleYeniSKT?.(el.value); }
 
 const ACTIONS = {
   navigate:             (_el, arg) => navigate(arg),
@@ -232,10 +373,72 @@ const ACTIONS = {
   stokSearchClear:      _stokSearchClear,
   harFiltreTemizle:     _harFiltreTemizle,
   clickFileInput:       _clickFileInput,
+  removeById:           _removeById,
   setDurumFilter:       (el, arg) => window.setDurumFilter?.(el, arg),
   setHarFilter:         (el, arg) => window.setHarFilter?.(el, arg),
   setHarTarihShortcut:  (_el, arg) => window.setHarTarihShortcut?.(arg),
+  setHarMod:            (_el, arg) => window.setHarMod?.(arg),
+  topluHarSatirEkle:    () => window.topluHarSatirEkle?.(),
+  topluHarKaydet:       () => window.topluHarKaydet?.(),
   talepKaydet:          (_el, arg) => window.talepKaydet?.(arg),
+  // Stok
+  stokSort:             (_el, arg) => window.stokSort?.(arg),
+  setKatFilter:         (el, arg) => window.setKatFilter?.(el, arg),
+  setKatFilterSel:      (el) => window.setKatFilterSel?.(el.value),
+  setDepoFilter:        (el, val, color) => window.setDepoFilter?.(el, val, color),
+  openStokModal:        (_el, key, dep, mal) => window.openStokModal?.(key, dep, mal),
+  openMalHareket:       (_el, dep, mal) => window.openMalHareket?.(dep, mal),
+  hizliHareket:         (_el, dep, mal, tur) => window.hizliHareket?.(dep, mal, tur),
+  dashHizliGiris:       _dashHizliGiris,
+  goDetay:              (_el, dep) => window.goDetay?.(dep),
+  // Stok sayfalama / KPI / filtre chips
+  stokSayfaPrev:        _stokSayfaPrev,
+  stokSayfaNext:        _stokSayfaNext,
+  stokSayfaGit:         _stokSayfaGit,
+  stokDurumKpi:         _stokDurumKpi,
+  stokDepoChipTemizle:  _stokDepoChipTemizle,
+  stokKatChipTemizle:   _stokKatChipTemizle,
+  stokDurumChipTemizle: _stokDurumChipTemizle,
+  stokAramaTemizle:     _stokAramaTemizle,
+  stokTumFiltreleriTemizle: _stokTumFiltreleriTemizle,
+  // Hareket
+  harSayfaPrev:         _harSayfaPrev,
+  harSayfaNext:         _harSayfaNext,
+  harSayfaGit:          _harSayfaGit,
+  hareketSil:           (_el, id, mal, dep, tur, mik) =>
+                           window.hareketSil?.(+id, mal, dep, tur, +mik),
+  _harEklenenSil:       (_el, idx) => window._harEklenenSil?.(+idx),
+  _harMalSec:           (_el, dep, mal) => window._harMalSec?.(dep, mal),
+  // Talep
+  talepMalModalAc:      (_el, n) => window.talepMalModalAc?.(+n),
+  talepMalTemizle:      (_el, n) => window.talepMalTemizle?.(+n),
+  _talepMalDepuSec:     (_el, dep) => window._talepMalDepuSec?.(dep),
+  _talepMalModalSec:    (_el, val, ad, dep, birim, mevcut, min) =>
+                           window._talepMalModalSec?.(val, ad, dep, birim, +mevcut, +min),
+  talepSatirSil:        (_el, n) => window.talepSatirSil?.(+n),
+  talepDurumGuncelle:   (_el, id, dur) => window.talepDurumGuncelle?.(+id, dur),
+  talepGoruntule:       (_el, id) => window.talepGoruntule?.(+id),
+  // Ayarlar
+  setTema:              _setTemaThen,
+  setTarihFormat:       _setTarihFormatThen,
+  birimSil:             (_el, b) => window.birimSil?.(b),
+  birimEkle:            () => window.birimEkle?.(),
+  ekDepoEkle:           () => window.ekDepoEkle?.(),
+  ekKatEkle:            () => window.ekKatEkle?.(),
+  depoYeniAdDlg:        (_el, ad) => window.depoYeniAdDlg?.(ad),
+  depoYeniAdKaydet:     (_el, ad) => window.depoYeniAdKaydet?.(ad),
+  katYeniAdDlg:         (_el, ad) => window.katYeniAdDlg?.(ad),
+  katYeniAdKaydet:      (_el, ad) => window.katYeniAdKaydet?.(ad),
+  renderAyarlar:        () => window.renderAyarlar?.(),
+  setAyarlarTab:        (_el, id) => window.setAyarlarTab?.(id),
+  ayarlarAraTemizle:    () => window.ayarlarAraOlay?.(''),
+  bildirimIzniSor:      () => window.bildirimIzniSor?.(),
+  stokSutunSifirla:     _stokSutunSifirla,
+  tumAyarlariSifirla:   _tumAyarlariSifirla,
+  // Malzeme
+  malzemeSil:           (_el, dep, ad) => window.malzemeSil?.(dep, ad),
+  // Veri
+  apiBackupLoad:        (_el, dosya) => window.apiBackupLoad?.(dosya),
   // Parametresiz window-export'lu fonksiyonlar
   apiBackupOlustur: () => window.apiBackupOlustur?.(),
   renderBackupList: () => window.renderBackupList?.(),
@@ -258,13 +461,63 @@ const ACTIONS = {
   saveStok:         () => window.saveStok?.(),
 };
 
+const CHANGES = {
+  setAyarStr:           _setAyarStr,
+  setAyarTrim:          _setAyarTrim,
+  setAyarNum:           _setAyarNum,
+  setAyarBool:          _setAyarBool,
+  setAyarTalepOnPek:    _setAyarTalepOnPek,
+  setKatFilterSel:      (el) => window.setKatFilterSel?.(el.value),
+  toggleStokSutun:      _toggleStokSutunChg,
+  handleDiger:          (el, digerId) => handleDiger(el, digerId),
+  topluHarDepChange:    (el, rowId) => window.topluHarDepChange?.(el, rowId),
+  talepAciliyetGuncelle:(el) => window.talepAciliyetGuncelle?.(el),
+  veriIceAktar:         (el) => window.veriIceAktar?.(el),
+  // index.html
+  harDepoFilter:        _harDepoFilterChg,
+  harTarihBas:          _harTarihBasChg,
+  harTarihBit:          _harTarihBitChg,
+  toggleYeniSKT:        _toggleYeniSKTChg,
+  renderTalepListesi:   () => window.renderTalepListesi?.(),
+  renderMalzemeEkleList:() => window.renderMalzemeEkleList?.(),
+};
+
+const INPUTS = {
+  yazitipiBoy:          _yazitipiBoy,
+  ayarlarAra:           _ayarlarAraInput,
+  _harMalAra:           (el) => window._harMalAra?.(el.value),
+  updateTalepToplam:    () => window.updateTalepToplam?.(),
+  // index.html
+  stokSearch:           _stokSearchInput,
+  harSearch:            _harSearchInput,
+  harPersonelFilter:    _harPersonelFilterInp,
+  _talepMalModalRender: () => window._talepMalModalRender?.(),
+  renderMalzemeEkleList:() => window.renderMalzemeEkleList?.(),
+};
+
+const KEYDOWNS = {
+  birimEkle:            () => window.birimEkle?.(),
+};
+
+function _parseArgs(el) {
+  if (el.dataset.args) {
+    try { return JSON.parse(el.dataset.args); } catch { return []; }
+  }
+  if (el.dataset.arg !== undefined) return [el.dataset.arg];
+  return [];
+}
+
 // ── Global click handler ─────────────────────────────────────────
 document.addEventListener('click', e => {
   // 1) data-action delegation
   const trigger = e.target.closest('[data-action]');
   if (trigger) {
     const fn = ACTIONS[trigger.dataset.action];
-    if (fn) { fn(trigger, trigger.dataset.arg, e); return; }
+    if (fn) {
+      const args = _parseArgs(trigger);
+      fn(trigger, ...args, e);
+      return;
+    }
   }
   // 2) Açık dropdown/menü'leri kapat
   const menu = document.getElementById('stok-sutun-menu');
@@ -277,6 +530,33 @@ document.addEventListener('click', e => {
   if (dd && wrap && !wrap.contains(e.target)) {
     dd.classList.remove('open');
   }
+});
+
+// ── Global change / input / keydown dispatcher'ları ──────────────
+document.addEventListener('change', e => {
+  const trigger = e.target.closest('[data-change]');
+  if (!trigger) return;
+  const fn = CHANGES[trigger.dataset.change];
+  if (!fn) return;
+  fn(trigger, ..._parseArgs(trigger), e);
+});
+
+document.addEventListener('input', e => {
+  const trigger = e.target.closest('[data-input]');
+  if (!trigger) return;
+  const fn = INPUTS[trigger.dataset.input];
+  if (!fn) return;
+  fn(trigger, ..._parseArgs(trigger), e);
+});
+
+document.addEventListener('keydown', e => {
+  const trigger = e.target.closest('[data-keydown]');
+  if (!trigger) return;
+  const filter = trigger.dataset.key;
+  if (filter && e.key !== filter) return;
+  const fn = KEYDOWNS[trigger.dataset.keydown];
+  if (!fn) return;
+  fn(trigger, e, ..._parseArgs(trigger));
 });
 
 // ── Keyboard shortcuts ───────────────────────────────────────────

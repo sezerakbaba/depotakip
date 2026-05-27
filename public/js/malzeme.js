@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, escKey, getKey } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, escKey, getKey, dClick } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // MALZEME EKLE / SİL
@@ -85,8 +85,8 @@ export function renderMalzemeEkleList() {
       <td class="td-mono" style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
       <td>${durumBadge(d)}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-sm btn-outline" onclick="openStokModal('${key}','${escQ(item.depo)}','${escQ(item.ad)}')" style="margin-right:4px">✎</button>
-        <button class="btn btn-sm" onclick="malzemeSil('${escQ(item.depo)}','${escQ(item.ad)}')"
+        <button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,item.depo,item.ad)} style="margin-right:4px">✎</button>
+        <button class="btn btn-sm" ${dClick('malzemeSil',item.depo,item.ad)}
           style="background:var(--red-bg);color:var(--red);border:1px solid rgba(239,83,80,.3);padding:4px 10px;font-size:11px">🗑</button>
       </td>
     </tr>`;

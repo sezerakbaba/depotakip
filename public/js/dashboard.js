@@ -1,6 +1,6 @@
 import { S, DEPO_META, API_URL } from './state.js';
 import { apiFetch } from './api.js';
-import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, escQ, fmt, timeAgo } from './ui-common.js';
+import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, escQ, fmt, timeAgo, dClick } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // DASHBOARD
@@ -40,7 +40,7 @@ export async function renderDashboard() {
     const pctNormal = items.length > 0 ? Math.round((items.length - dk) / items.length * 100) : 100;
     const dotColor  = meta.color || '#aaa';
     dc.innerHTML += `
-      <div class="c-depo-card" onclick="goDetay('${escQ(dep)}')">
+      <div class="c-depo-card" ${dClick('goDetay',dep)}>
         <div class="c-depo-dot" style="background:${dotColor}"></div>
         <div class="c-depo-info">
           <div class="c-depo-name" style="color:${dotColor}">${esc(dep)}</div>
@@ -82,8 +82,6 @@ export async function renderDashboard() {
         const _mm = S.malzemeMeta[i.depo+'||'+i.ad]||{};
         const _sktD = _mm.skt ? window.sktDurum(_mm.skt) : null;
         const _icon = _sktD ? _sktD.icon : '⚠';
-        const _depEsc = escQ(i.depo);
-        const _adEsc  = escQ(i.ad);
         return `<div class="dash-kritik-item">
           <div class="dash-warn">${_icon}</div>
           <div style="flex:1;min-width:0">
@@ -91,7 +89,7 @@ export async function renderDashboard() {
             <div class="dash-kritik-depo">${esc(i.depo)} · Mevcut: ${s.mevcut} / Min: ${s.min}</div>
           </div>
           <div class="dash-kritik-stok">${s.mevcut}/${s.min}</div>
-          <button onclick="event.stopPropagation();hizliHareket('${_depEsc}','${_adEsc}','Giriş')"
+          <button ${dClick('dashHizliGiris',i.depo,i.ad)}
             style="margin-left:8px;font-size:12px;padding:4px 9px;background:rgba(102,187,106,.12);border:1px solid rgba(102,187,106,.35);border-radius:6px;cursor:pointer;color:var(--green);font-weight:700;flex-shrink:0"
             title="Hızlı Giriş Kaydı">+ Giriş</button>
         </div>`;

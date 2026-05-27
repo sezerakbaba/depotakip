@@ -95,7 +95,7 @@
     <div style="padding:0 20px 12px;flex-shrink:0">
       <div class="search-wrap" style="width:100%">
         <span class="search-icon"><i data-lucide="search"></i></span>
-        <input type="text" id="mal-sec-ara" placeholder="Malzeme veya depo ara..." oninput="_talepMalModalRender()" autocomplete="off">
+        <input type="text" id="mal-sec-ara" placeholder="Malzeme veya depo ara..." data-input="_talepMalModalRender" autocomplete="off">
       </div>
     </div>
     <div id="mal-sec-depo-chips" style="display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 12px;flex-shrink:0"></div>
@@ -199,7 +199,7 @@
           <span class="stok-page-title"><i data-lucide="package" class="icon-inline"></i> Stok Listesi</span>
           <div class="search-wrap">
             <span class="search-icon"><i data-lucide="search"></i></span>
-            <input type="text" placeholder="Malzeme ara..." id="stok-search" oninput="document.getElementById('stok-search-clear').style.display=this.value?'flex':'none';clearTimeout(window._stokST);window._stokST=setTimeout(()=>{stokSayfa=0;renderStok()},220)">
+            <input type="text" placeholder="Malzeme ara..." id="stok-search" data-input="stokSearch">
             <button id="stok-search-clear" class="search-clear" data-action="stokSearchClear" style="display:none" title="Temizle">×</button>
           </div>
           <div class="filter-chip" data-durum="Kritik" data-action="setDurumFilter" data-arg="Kritik"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik</div>
@@ -210,7 +210,7 @@
           <div style="width:1px;background:var(--line);align-self:stretch;margin:0 4px"></div>
           <div class="kat-select-wrap">
             <label for="stok-kat-select">Kategori</label>
-            <select id="stok-kat-select" onchange="setKatFilterSel(this.value)">
+            <select id="stok-kat-select" data-change="setKatFilterSel">
               <option value="Tümü">Tümü</option>
             </select>
           </div>
@@ -254,7 +254,7 @@
                 <label>Malzeme Ekle</label>
                 <div class="h-mal-wrap">
                   <input type="text" id="h-mal-search" placeholder="Malzeme ara..." autocomplete="off"
-                    oninput="_harMalAra(this.value)">
+                    data-input="_harMalAra">
                   <button class="h-mal-clear" id="h-mal-clear" data-action="_harMalTemizle" style="display:none">×</button>
                   <div class="h-mal-dropdown" id="h-mal-dropdown"></div>
                 </div>
@@ -313,14 +313,14 @@
             <div class="toolbar toolbar-search">
               <div class="search-wrap" style="max-width:220px">
                 <span class="search-icon"><i data-lucide="search"></i></span>
-                <input type="text" placeholder="Malzeme, depo ara..." id="har-search" oninput="clearTimeout(window._harST);window._harST=setTimeout(()=>{harSayfa=0;renderHareketList()},220)">
+                <input type="text" placeholder="Malzeme, depo ara..." id="har-search" data-input="harSearch">
               </div>
-              <select id="har-depo-filter" class="har-filter-sel" onchange="harDepoFilter=this.value;harSayfa=0;renderHareketList()">
+              <select id="har-depo-filter" class="har-filter-sel" data-change="harDepoFilter">
                 <option value="">Tüm Depolar</option>
               </select>
-              <input type="text" id="har-personel-filter" class="har-filter-date" placeholder="Personel..." oninput="harPersonelFilter=this.value;harSayfa=0;renderHareketList()" title="Personele göre filtrele" style="width:120px">
-              <input type="date" id="har-tarih-bas" class="har-filter-date" onchange="harTarihBas=this.value;document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()" title="Başlangıç tarihi">
-              <input type="date" id="har-tarih-bit" class="har-filter-date" onchange="harTarihBit=this.value;document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()" title="Bitiş tarihi">
+              <input type="text" id="har-personel-filter" class="har-filter-date" placeholder="Personel..." data-input="harPersonelFilter" title="Personele göre filtrele" style="width:120px">
+              <input type="date" id="har-tarih-bas" class="har-filter-date" data-change="harTarihBas" title="Başlangıç tarihi">
+              <input type="date" id="har-tarih-bit" class="har-filter-date" data-change="harTarihBit" title="Bitiş tarihi">
               <button class="btn btn-sm btn-outline" data-action="exportHareketExcel" title="Filtrelenmiş listeyi Excel'e aktar" style="margin-left:auto"><i data-lucide="download" class="icon-inline"></i> Excel</button>
             </div>
             <div class="toolbar toolbar-chips">
@@ -528,7 +528,7 @@
                 </div>
                 <div class="ts-field">
                   <label class="ts-field-lbl">Aciliyet</label>
-                  <select id="t-aciliyet" class="ts-field-inp" onchange="talepAciliyetGuncelle(this)">
+                  <select id="t-aciliyet" class="ts-field-inp" data-change="talepAciliyetGuncelle">
                     <option>Normal</option>
                     <option>Acil</option>
                     <option>Çok Acil</option>
@@ -616,7 +616,7 @@
       </div>
       <div class="card" style="margin-bottom:14px">
         <div class="card-body" style="padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <select id="tl-durum-filter" onchange="renderTalepListesi()" style="padding:7px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--white);color:var(--ink2)">
+          <select id="tl-durum-filter" data-change="renderTalepListesi" style="padding:7px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--white);color:var(--ink2)">
             <option value="">Tüm Durumlar</option>
             <option value="Taslak">Taslak</option>
             <option value="Onay Bekliyor">Onay Bekliyor</option>
@@ -651,19 +651,19 @@
           <div class="card-header">Yeni Malzeme Ekle</div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
             <div class="form-group"><label>Depo</label>
-              <select id="yeni-depo" onchange="toggleYeniSKT(this.value)"><option value="">-- Seçin --</option>
+              <select id="yeni-depo" data-change="toggleYeniSKT"><option value="">-- Seçin --</option>
               </select></div>
             <div class="form-group"><label>Malzeme Adı</label>
               <input type="text" id="yeni-ad" placeholder="Tam malzeme adı">
               <input type="text" id="yeni-marka" placeholder="Marka (opsiyonel)" style="margin-top:5px;font-size:11px;color:var(--muted);border-color:var(--line)"></div>
             <div class="form-group"><label>Birim</label>
-              <select id="yeni-birim" onchange="handleDiger(this,'yeni-birim-diger')"><option value="">— Seçin —</option>
+              <select id="yeni-birim" data-change="handleDiger" data-args='["yeni-birim-diger"]'><option value="">— Seçin —</option>
               </select>
               <div id="yeni-birim-diger-wrap" style="display:none;margin-top:5px">
                 <input type="text" id="yeni-birim-diger" placeholder="Birim girin..." style="font-size:12px">
               </div></div>
             <div class="form-group"><label>Kategori</label>
-              <select id="yeni-kategori" onchange="handleDiger(this,'yeni-kategori-diger')"><option value="">— Seçin —</option>
+              <select id="yeni-kategori" data-change="handleDiger" data-args='["yeni-kategori-diger"]'><option value="">— Seçin —</option>
               </select>
               <div id="yeni-kategori-diger-wrap" style="display:none;margin-top:5px">
                 <input type="text" id="yeni-kategori-diger" placeholder="Kategori girin..." style="font-size:12px">
@@ -690,9 +690,9 @@
             <div style="display:flex;gap:8px;align-items:center">
               <div class="search-wrap" style="max-width:200px">
                 <span class="search-icon"><i data-lucide="search"></i></span>
-                <input type="text" placeholder="Ara..." id="ekle-search" oninput="renderMalzemeEkleList()">
+                <input type="text" placeholder="Ara..." id="ekle-search" data-input="renderMalzemeEkleList">
               </div>
-              <select id="ekle-depo-filter" onchange="renderMalzemeEkleList()" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px">
+              <select id="ekle-depo-filter" data-change="renderMalzemeEkleList" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px">
                 <option value="">Tüm Depolar</option>
               </select>
             </div>
@@ -758,7 +758,7 @@
               <div style="font-size:28px;margin-bottom:8px"><i data-lucide="folder-open"></i></div>
               <div style="font-size:13px;color:var(--muted)">Dosya seçmek için tıklayın (.json)</div>
             </div>
-            <input type="file" id="json-file-input" accept=".json" style="display:none" onchange="veriIceAktar(this)">
+            <input type="file" id="json-file-input" accept=".json" style="display:none" data-change="veriIceAktar">
             <button class="btn btn-danger" data-action="veriSifirla"><i data-lucide="trash-2" class="icon-inline"></i> Tüm Verileri Sıfırla</button>
           </div>
         </div>

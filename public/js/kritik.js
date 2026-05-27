@@ -1,5 +1,5 @@
 import { S, DEPO_META } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, escKey, getKey } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, escKey, getKey, dClick } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // KRİTİK STOK & DEPO DETAY
@@ -100,7 +100,7 @@ export function goDetay(dep) {
       <td class="td-mono">${s.max}</td>
       <td><div class="stok-bar-wrap"><div class="stok-bar"><div class="stok-bar-fill ${fillCls}" style="width:${pct}%"></div></div><span class="stok-num">${pct}%</span></div></td>
       <td>${durumBadge(d)}</td>
-      <td><button class="btn btn-sm btn-outline" onclick="openStokModal('${key}','${escQ(dep)}','${escQ(item.ad)}')">✎</button></td>
+      <td><button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,dep,item.ad)}>✎</button></td>
     </tr>`;
   });
 

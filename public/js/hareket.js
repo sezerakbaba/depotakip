@@ -1,6 +1,6 @@
 import { S, KAYNAK } from './state.js';
 import { apiFetch, apiSave, apiHareketEkle, apiHareketSil, apiHareketList } from './api.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, fmt, getKey, timeAgo } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, fmt, getKey, timeAgo, dClick, dChange } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GİRİŞ / ÇIKIŞ — hareketler artık sunucu tablosunda
@@ -86,7 +86,7 @@ export function _renderHarEklenenler() {
       </div>
       <div class="h-eklenen-sag">
         <span class="h-eklenen-tur ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.mik}</span>
-        <button class="har-sil-btn" onclick="_harEklenenSil(${i})" title="Kaldır">×</button>
+        <button class="har-sil-btn" ${dClick('_harEklenenSil',i)} title="Kaldır">×</button>
       </div>
     </div>`).join('');
 }
@@ -160,7 +160,7 @@ export function _harMalAra(q) {
     const s = getStok(i.depo, i.ad);
     const d = durum(s.mevcut, s.min, s.max);
     const dc = d==='Kritik' ? 'var(--red)' : d==='Fazla' ? 'var(--amber)' : 'var(--green)';
-    return `<div class="h-mal-item" onclick="_harMalSec('${escQ(i.depo)}','${escQ(i.ad)}')">
+    return `<div class="h-mal-item" ${dClick('_harMalSec',i.depo,i.ad)}>
       <div class="h-mal-item-ad">${esc(i.ad)}</div>
       <div class="h-mal-item-meta">${depoBadge(i.depo)}<span class="h-mal-mevcut" style="color:${dc}">${s.mevcut} mevcut</span></div>
     </div>`;
@@ -261,7 +261,7 @@ export async function renderHareketList() {
         </div>
         <div style="display:flex;align-items:center;gap:10px">
           <div class="hareket-miktar ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.miktar}</div>
-          <button class="har-sil-btn" onclick="hareketSil(${h.id},'${escQ(h.malzeme)}','${escQ(h.depo)}','${escQ(h.tur)}',${h.miktar})" title="Sil / Geri Al">🗑</button>
+          <button class="har-sil-btn" ${dClick('hareketSil',h.id,h.malzeme,h.depo,h.tur,h.miktar)} title="Sil / Geri Al">🗑</button>
         </div>
       </div>`).join('');
 
@@ -273,14 +273,14 @@ export async function renderHareketList() {
         return;
       }
       if (S.harSayfa >= toplamSayfa) S.harSayfa = toplamSayfa - 1;
-      let btns = `<button class="sayfa-btn" onclick="S.harSayfa--;renderHareketList()" ${S.harSayfa===0?'disabled':''}>‹</button>`;
+      let btns = `<button class="sayfa-btn" ${dClick('harSayfaPrev')} ${S.harSayfa===0?'disabled':''}>‹</button>`;
       const start = Math.max(0, S.harSayfa-2), end2 = Math.min(toplamSayfa, S.harSayfa+3);
       if (start > 0) btns += `<span class="sayfa-info">…</span>`;
       for (let p=start; p<end2; p++) {
-        btns += `<button class="sayfa-btn ${p===S.harSayfa?'aktif':''}" onclick="S.harSayfa=${p};renderHareketList()">${p+1}</button>`;
+        btns += `<button class="sayfa-btn ${p===S.harSayfa?'aktif':''}" ${dClick('harSayfaGit',p)}>${p+1}</button>`;
       }
       if (end2 < toplamSayfa) btns += `<span class="sayfa-info">…</span>`;
-      btns += `<button class="sayfa-btn" onclick="S.harSayfa++;renderHareketList()" ${S.harSayfa===toplamSayfa-1?'disabled':''}>›</button>`;
+      btns += `<button class="sayfa-btn" ${dClick('harSayfaNext')} ${S.harSayfa===toplamSayfa-1?'disabled':''}>›</button>`;
       btns += `<span class="sayfa-info">${toplam} kayıt · Sayfa ${S.harSayfa+1}/${toplamSayfa}</span>`;
       spEl.innerHTML = btns;
     }
@@ -394,14 +394,14 @@ export function topluHarSatirEkle() {
   const depOpts = Object.keys(KAYNAK).map(d=>`<option>${d}</option>`).join('');
   const malOpts = '<option value="">— Malzeme —</option>';
   div.innerHTML = `
-    <select class="thr-dep" onchange="topluHarDepChange(this,'${id}')" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2)">
+    <select class="thr-dep" ${dChange('topluHarDepChange',id)} style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2)">
       <option value="">— Depo —</option>${depOpts}
     </select>
     <select class="thr-tur" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2)">
       <option>Giriş</option><option>Çıkış</option>
     </select>
     <input type="number" class="thr-mik" min="1" value="1" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink);text-align:center">
-    <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button>
+    <button ${dClick('removeById',id)} style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button>
     <select class="thr-mal" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2);grid-column:1/-2">
       ${malOpts}
     </select>`;

@@ -134,6 +134,32 @@ export function updateClock() {
   if (cl) cl.textContent = now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
+// ── data-* delegation helpers ─────────────────────────────────────
+// Inline onclick/onchange/oninput/onkeydown yerine HTML template'lerde
+// kullanılır. main.js'teki delegation dispatcher'ları bunları okur.
+function _jsonAttr(args) {
+  // JSON'u çift-tırnaklı HTML attribute içine güvenle yerleştir
+  return JSON.stringify(args).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+export function dClick(name, ...args) {
+  if (!args.length) return `data-action="${name}"`;
+  return `data-action="${name}" data-args="${_jsonAttr(args)}"`;
+}
+export function dChange(name, ...args) {
+  if (!args.length) return `data-change="${name}"`;
+  return `data-change="${name}" data-args="${_jsonAttr(args)}"`;
+}
+export function dInput(name, ...args) {
+  if (!args.length) return `data-input="${name}"`;
+  return `data-input="${name}" data-args="${_jsonAttr(args)}"`;
+}
+// key opsiyonel filtre (örn. 'Enter'); null → tüm tuşlar
+export function dKeydown(name, key, ...args) {
+  const keyAttr = key ? ` data-key="${key}"` : '';
+  if (!args.length) return `data-keydown="${name}"${keyAttr}`;
+  return `data-keydown="${name}"${keyAttr} data-args="${_jsonAttr(args)}"`;
+}
+
 // Expose on window for inline handlers
 window.toast = toast;
 window.esc = esc;
