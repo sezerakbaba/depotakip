@@ -2,7 +2,7 @@
 // STATE — tüm mutable globals ve sabitler
 // ═══════════════════════════════════════════════════════════════════
 
-export const API_URL = './api/api.php';  // aynı dizindeyse bu yeterli
+export const API_URL = './api';
 
 export const AYARLAR_DEFAULT = {
   sktUyariGun:      365,
@@ -82,6 +82,7 @@ export const SKT_INIT = {"Detrox (fümigasyon cihazı)": "2026-04-15", "Virkon S
 export const S = {
   API_MOD: false,
   _saveTimer: null,
+  _savePending: false,
   _serverVersion: 0,
   ayarlar: { ...AYARLAR_DEFAULT },
   stok: {},

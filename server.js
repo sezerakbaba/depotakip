@@ -1,4 +1,6 @@
 const express = require('express');
+const helmet  = require('helmet');
+const rateLimit = require('express-rate-limit');
 const crypto  = require('crypto');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -6,26 +8,68 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+// LAN içinde reverse proxy arkasında çalışabilir; rate-limit IP'yi doğru görebilsin diye:
+app.set('trust proxy', 'loopback');
 
 const APP_TOKEN = process.env.APP_TOKEN || (() => {
+  const tokenFile = path.join(__dirname, '.app-token');
+  if (fs.existsSync(tokenFile)) {
+    const saved = fs.readFileSync(tokenFile, 'utf8').trim();
+    if (saved) {
+      console.log('\n🔑 APP_TOKEN .app-token dosyasından yüklendi.\n');
+      return saved;
+    }
+  }
   const t = crypto.randomBytes(24).toString('hex');
-  console.log('\n⚠  APP_TOKEN ayarlanmamış — bu oturum için rastgele token:');
-  console.log('   ' + t);
-  console.log('   Kalıcı yapmak için: APP_TOKEN=' + t + ' node server.js\n');
+  try {
+    fs.writeFileSync(tokenFile, t, { mode: 0o600 });
+    console.log('\n⚠  APP_TOKEN ayarlanmamış — rastgele üretildi ve .app-token dosyasına yazıldı:');
+    console.log('   ' + t);
+    console.log('   Kalıcı/paylaşılabilir yapmak için: APP_TOKEN=<token> node server.js\n');
+  } catch (e) {
+    console.log('\n⚠  APP_TOKEN üretildi (dosyaya yazılamadı: ' + e.message + '):');
+    console.log('   ' + t + '\n');
+  }
   return t;
 })();
 
+const APP_TOKEN_BUF = Buffer.from(APP_TOKEN);
+
 function requireToken(req, res, next) {
   const auth = req.headers.authorization || '';
-  if (!auth.startsWith('Bearer ') || auth.slice(7) !== APP_TOKEN) {
+  if (!auth.startsWith('Bearer ')) {
+    return res.status(401).json({ ok: false, error: 'Yetkisiz erişim' });
+  }
+  const given = Buffer.from(auth.slice(7));
+  if (given.length !== APP_TOKEN_BUF.length || !crypto.timingSafeEqual(given, APP_TOKEN_BUF)) {
     return res.status(401).json({ ok: false, error: 'Yetkisiz erişim' });
   }
   next();
 }
 
+// ── Güvenlik middleware'leri ─────────────────────────────────────────────
+app.use(helmet({
+  // Self-host edilmiş vendor (Chart.js, lucide, fontlar) + inline onclick/style
+  // kullanıyoruz; CSP'yi şimdilik kapalı tutuyoruz, ayrı PR'da inline handler
+  // refactor'ü sonrası açılacak.
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Yanlış token brute-force'una karşı: dakikada 30 başarısız istek/IP.
+// Başarılı isteklerde sayacı sıfırla ki normal kullanım engellenmesin.
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { ok: false, error: 'Çok fazla istek — biraz bekleyin' },
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/api', requireToken);
+app.use('/api', authLimiter, requireToken);
 
 // ── Yardımcılar: giriş doğrulama ─────────────────────────────────────────
 const BACKUP_NAME_RE = /^backup_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.json$/;
@@ -75,6 +119,11 @@ function rotateBackups(backupDir) {
 
 const dbPath = path.join(__dirname, 'database.sqlite');
 const db = new sqlite3.Database(dbPath);
+// WAL: eş zamanlı okuma/yazma, daha hızlı commit.
+// synchronous=NORMAL: WAL ile birlikte güvenli/hızlı denge.
+db.run('PRAGMA journal_mode = WAL');
+db.run('PRAGMA synchronous = NORMAL');
+db.run('PRAGMA foreign_keys = ON');
 
 // ── Promise yardımcıları ───────────────────────────────────────────────────
 const dbGet = (sql, p = []) => new Promise((res, rej) =>
@@ -182,13 +231,14 @@ db.serialize(() => {
   )`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_har_tarih    ON Hareketler(tarih)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_har_depo_mal ON Hareketler(depo, malzeme)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_har_skt      ON Hareketler(skt)`);
 
   // Migration mevcut veriler varsa çalıştır
   setTimeout(migrateHareketler, 500);
 });
 
 // ── ANA VERİ (load / save / reset / backup) ──────────────────────────────────
-app.get('/api/api.php', async (req, res) => {
+app.get('/api', async (req, res) => {
   const action = req.query.action;
 
   if (action === 'load') {
@@ -344,8 +394,9 @@ app.get('/api/api.php', async (req, res) => {
       if (tarihMin) { where.push("substr(tarih,1,10) >= ?"); params.push(tarihMin); }
       if (tarihMax) { where.push("substr(tarih,1,10) <= ?"); params.push(tarihMax); }
       if (q) {
-        const like = '%' + q.replace(/%/g,'').replace(/_/g,'') + '%';
-        where.push('(malzeme LIKE ? OR depo LIKE ? OR personel LIKE ? OR belge LIKE ?)');
+        // LIKE wildcard'larını escape et — kullanıcı literal '%' ya da '_' arayabilsin
+        const like = '%' + q.replace(/[\\%_]/g, ch => '\\' + ch) + '%';
+        where.push("(malzeme LIKE ? ESCAPE '\\' OR depo LIKE ? ESCAPE '\\' OR personel LIKE ? ESCAPE '\\' OR belge LIKE ? ESCAPE '\\')");
         params.push(like, like, like, like);
       }
 
@@ -395,7 +446,7 @@ app.get('/api/api.php', async (req, res) => {
   }
 });
 
-app.post('/api/api.php', async (req, res) => {
+app.post('/api', async (req, res) => {
   const action = req.query.action;
 
   if (action === 'save') {
@@ -437,17 +488,19 @@ app.post('/api/api.php', async (req, res) => {
     });
 
   } else if (action === 'reset') {
-    db.run('BEGIN IMMEDIATE TRANSACTION');
-    db.run('UPDATE AppState SET data = "{}", version = 0 WHERE id = 1', err => {
-      if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
-      db.run('DELETE FROM Hareketler', err2 => {
-        if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
-        db.run('COMMIT', err3 => {
-          if (err3) return res.json({ ok: false, error: err3.message });
-          res.json({ ok: true });
-        });
-      });
-    });
+    try {
+      await dbRun('BEGIN IMMEDIATE TRANSACTION');
+      await dbRun('UPDATE AppState SET data = "{}", version = 0 WHERE id = 1');
+      await dbRun('DELETE FROM Hareketler');
+      await dbRun('DELETE FROM Talepler');
+      // AUTOINCREMENT sayaçlarını da sıfırla — yeni TLN-0001'den başlasın
+      await dbRun("DELETE FROM sqlite_sequence WHERE name IN ('Hareketler','Talepler')");
+      await dbRun('COMMIT');
+      res.json({ ok: true });
+    } catch (e) {
+      try { await dbRun('ROLLBACK'); } catch (_) {}
+      res.json({ ok: false, error: e.message });
+    }
 
   } else if (action === 'hareket_ekle') {
     const b = req.body;
@@ -521,14 +574,19 @@ app.post('/api/api.php', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'çok fazla kayıt (max 100000)' });
     }
     try {
+      let eklenen = 0;
+      const atlanan = [];
       db.serialize(() => {
         db.run('BEGIN TRANSACTION');
         const stmt = db.prepare(`
           INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, skt, belge, personel)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
-        b.hareketler.forEach(h => {
-          if (!h.tarih || !h.malzeme || !h.depo) return;
+        b.hareketler.forEach((h, i) => {
+          if (!h || typeof h !== 'object' || !h.tarih || !h.malzeme || !h.depo) {
+            atlanan.push({ index: i, sebep: 'tarih/depo/malzeme zorunlu' });
+            return;
+          }
           stmt.run([
             h.tarih, h.tur === 'Giriş' || h.tur === 'Çıkış' ? h.tur : 'Giriş',
             h.depo, h.malzeme,
@@ -536,12 +594,13 @@ app.post('/api/api.php', async (req, res) => {
             h.birim || null, h.not || null, h.skt || null,
             h.belge || null, h.personel || null,
           ]);
+          eklenen++;
         });
         stmt.finalize(err => {
           if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
           db.run('COMMIT', err2 => {
             if (err2) return res.json({ ok: false, error: err2.message });
-            res.json({ ok: true, eklenen: b.hareketler.length });
+            res.json({ ok: true, eklenen, atlanan: atlanan.length, detay: atlanan.slice(0, 20) });
           });
         });
       });
@@ -616,7 +675,18 @@ app.post('/api/api.php', async (req, res) => {
         FROM Hareketler ORDER BY id ASC
       `);
 
-      const backupPayload = { ...appData, _hareketler: hareketlerRows };
+      // Tüm talepleri ekle (satirlar JSON string olarak SQLite'ta tutuluyor)
+      const taleplerRows = await dbAll(`
+        SELECT id, no, tarih, birim, personel, depo, aciliyet, gerekce,
+               satirlar, imza1, imza2, imza3, durum, olusturma
+        FROM Talepler ORDER BY id ASC
+      `);
+
+      const backupPayload = {
+        ...appData,
+        _hareketler: hareketlerRows,
+        _talepler:   taleplerRows,
+      };
       const backupDir = path.join(__dirname, 'backups');
       if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir);
       const ts = new Date().toISOString().slice(0,19).replace(/:/g,'-');
@@ -640,27 +710,23 @@ app.post('/api/api.php', async (req, res) => {
       const raw = fs.readFileSync(fpath, 'utf8');
       const parsed = JSON.parse(raw);
 
-      // _hareketler ayrı tabloya, geri kalanı AppState'e
-      const { _hareketler, hareketler: _legacy, ...appData } = parsed;
+      // _hareketler ve _talepler ayrı tablolara, geri kalanı AppState'e
+      const { _hareketler, _talepler, hareketler: _legacy, ...appData } = parsed;
       const hareketlerToRestore = _hareketler || _legacy || [];
+      const taleplerToRestore   = Array.isArray(_talepler) ? _talepler : [];
 
-      db.serialize(() => {
-        db.run('BEGIN IMMEDIATE TRANSACTION');
-        db.run('UPDATE AppState SET data = ?, version = 0 WHERE id = 1', [JSON.stringify(appData)], err => {
-          if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
-          db.run('DELETE FROM Hareketler', err2 => {
-            if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
-            if (!hareketlerToRestore.length) {
-              db.run('COMMIT', err3 => {
-                if (err3) return res.json({ ok: false, error: err3.message });
-                res.json({ ok: true });
-              });
-              return;
-            }
-            const stmt = db.prepare(`
-              INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, skt, belge, personel)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `);
+      try {
+        await dbRun('BEGIN IMMEDIATE TRANSACTION');
+        await dbRun('UPDATE AppState SET data = ?, version = 0 WHERE id = 1', [JSON.stringify(appData)]);
+        await dbRun('DELETE FROM Hareketler');
+        await dbRun('DELETE FROM Talepler');
+
+        if (hareketlerToRestore.length) {
+          const stmt = db.prepare(`
+            INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, skt, belge, personel)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+          await new Promise((resolve, reject) => {
             hareketlerToRestore.forEach(h => {
               stmt.run([
                 h.tarih, h.tur, h.depo, h.malzeme, h.miktar,
@@ -668,16 +734,39 @@ app.post('/api/api.php', async (req, res) => {
                 h.belge || null, h.personel || null,
               ]);
             });
-            stmt.finalize(err3 => {
-              if (err3) { db.run('ROLLBACK'); return res.json({ ok: false, error: err3.message }); }
-              db.run('COMMIT', err4 => {
-                if (err4) return res.json({ ok: false, error: err4.message });
-                res.json({ ok: true });
-              });
-            });
+            stmt.finalize(e => e ? reject(e) : resolve());
           });
-        });
-      });
+        }
+
+        if (taleplerToRestore.length) {
+          const stmt = db.prepare(`
+            INSERT INTO Talepler (no, tarih, birim, personel, depo, aciliyet,
+                                  gerekce, satirlar, imza1, imza2, imza3, durum, olusturma)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+          await new Promise((resolve, reject) => {
+            taleplerToRestore.forEach(t => {
+              // satirlar yedekte string (DB sütun değeri) veya array (eski yedek) olabilir
+              const satirlar = typeof t.satirlar === 'string'
+                ? t.satirlar
+                : JSON.stringify(t.satirlar || []);
+              stmt.run([
+                t.no, t.tarih, t.birim || null, t.personel || null,
+                t.depo || null, t.aciliyet || null, t.gerekce || null,
+                satirlar, t.imza1 || null, t.imza2 || null, t.imza3 || null,
+                t.durum || 'Taslak', t.olusturma || null,
+              ]);
+            });
+            stmt.finalize(e => e ? reject(e) : resolve());
+          });
+        }
+
+        await dbRun('COMMIT');
+        res.json({ ok: true });
+      } catch (e) {
+        try { await dbRun('ROLLBACK'); } catch (_) {}
+        res.json({ ok: false, error: e.message });
+      }
     } catch(e) { res.json({ ok: false, error: e.message }); }
 
   } else {
@@ -685,6 +774,23 @@ app.post('/api/api.php', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Depo Takip sunucusu http://localhost:${PORT} adresinde çalışıyor`);
 });
+
+// ── Graceful shutdown — WAL checkpoint kaçırılmasın ────────────────────
+function shutdown(signal) {
+  console.log(`\n${signal} alındı — kapatılıyor...`);
+  server.close(() => {
+    db.run('PRAGMA wal_checkpoint(TRUNCATE)', () => {
+      db.close(err => {
+        if (err) console.error('DB close hatası:', err.message);
+        else console.log('DB temiz kapatıldı.');
+        process.exit(0);
+      });
+    });
+  });
+  setTimeout(() => { console.error('Zorla kapatma'); process.exit(1); }, 5000).unref();
+}
+process.on('SIGINT',  () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

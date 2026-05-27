@@ -1,6 +1,6 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, PAGE_TITLES, STOK_INIT, SKT_INIT, API_URL } from './state.js';
 import { esc, escQ, getKey, updateClock, checkKritikNotification } from './ui-common.js';
-import { apiPing, apiLoad, apiSave, apiBackupOlustur, apiReset } from './api.js';
+import { apiPing, apiLoad, apiSave, apiSaveFlush, apiBackupOlustur, apiReset } from './api.js';
 import { renderDashboard } from './dashboard.js';
 import { renderStok, katBadgeHTML } from './stok.js';
 import { renderHareketList } from './hareket.js';
@@ -119,7 +119,7 @@ export function navigate(page) {
     } else {
       if(di) di.textContent='🔴';
       if(dt) dt.textContent='Sunucu bağlantısı yok — veriler yalnızca bu oturumda mevcut';
-      if(ds) ds.textContent='api/api.php erişilemiyor';
+      if(ds) ds.textContent='Sunucu erişilemiyor';
     }
     renderBackupList();
   }
@@ -236,6 +236,15 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// ── Unload sırasında pending save'i flush et ─────────────────────
+// 800ms debounce içinde sekme kapanırsa son yazımı kaybetmeyelim.
+// visibilitychange (mobil/sekme gizleme) için de tetikle.
+window.addEventListener('pagehide', apiSaveFlush);
+window.addEventListener('beforeunload', apiSaveFlush);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') apiSaveFlush();
+});
+
 // ── Expose on window ─────────────────────────────────────────────
 window.S = S;
 window.refreshAll = refreshAll;
@@ -261,7 +270,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
   if (alive) {
     await apiLoad();
   } else {
-    console.warn('PHP API bulunamadı — yerel modda çalışıyor (veri kaybolabilir)');
+    console.warn('Sunucu bulunamadı — yerel modda çalışıyor (veri kaybolabilir)');
     window.toast('⚠ Sunucu bağlantısı yok — veriler kaydedilmeyecek', 'error');
   }
   ayarlariYukle();
