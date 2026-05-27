@@ -231,13 +231,14 @@ db.serialize(() => {
   )`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_har_tarih    ON Hareketler(tarih)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_har_depo_mal ON Hareketler(depo, malzeme)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_har_skt      ON Hareketler(skt)`);
 
   // Migration mevcut veriler varsa çalıştır
   setTimeout(migrateHareketler, 500);
 });
 
 // ── ANA VERİ (load / save / reset / backup) ──────────────────────────────────
-app.get('/api/api.php', async (req, res) => {
+app.get('/api', async (req, res) => {
   const action = req.query.action;
 
   if (action === 'load') {
@@ -393,8 +394,9 @@ app.get('/api/api.php', async (req, res) => {
       if (tarihMin) { where.push("substr(tarih,1,10) >= ?"); params.push(tarihMin); }
       if (tarihMax) { where.push("substr(tarih,1,10) <= ?"); params.push(tarihMax); }
       if (q) {
-        const like = '%' + q.replace(/%/g,'').replace(/_/g,'') + '%';
-        where.push('(malzeme LIKE ? OR depo LIKE ? OR personel LIKE ? OR belge LIKE ?)');
+        // LIKE wildcard'larını escape et — kullanıcı literal '%' ya da '_' arayabilsin
+        const like = '%' + q.replace(/[\\%_]/g, ch => '\\' + ch) + '%';
+        where.push("(malzeme LIKE ? ESCAPE '\\' OR depo LIKE ? ESCAPE '\\' OR personel LIKE ? ESCAPE '\\' OR belge LIKE ? ESCAPE '\\')");
         params.push(like, like, like, like);
       }
 
@@ -444,7 +446,7 @@ app.get('/api/api.php', async (req, res) => {
   }
 });
 
-app.post('/api/api.php', async (req, res) => {
+app.post('/api', async (req, res) => {
   const action = req.query.action;
 
   if (action === 'save') {
@@ -486,17 +488,19 @@ app.post('/api/api.php', async (req, res) => {
     });
 
   } else if (action === 'reset') {
-    db.run('BEGIN IMMEDIATE TRANSACTION');
-    db.run('UPDATE AppState SET data = "{}", version = 0 WHERE id = 1', err => {
-      if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
-      db.run('DELETE FROM Hareketler', err2 => {
-        if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
-        db.run('COMMIT', err3 => {
-          if (err3) return res.json({ ok: false, error: err3.message });
-          res.json({ ok: true });
-        });
-      });
-    });
+    try {
+      await dbRun('BEGIN IMMEDIATE TRANSACTION');
+      await dbRun('UPDATE AppState SET data = "{}", version = 0 WHERE id = 1');
+      await dbRun('DELETE FROM Hareketler');
+      await dbRun('DELETE FROM Talepler');
+      // AUTOINCREMENT sayaçlarını da sıfırla — yeni TLN-0001'den başlasın
+      await dbRun("DELETE FROM sqlite_sequence WHERE name IN ('Hareketler','Talepler')");
+      await dbRun('COMMIT');
+      res.json({ ok: true });
+    } catch (e) {
+      try { await dbRun('ROLLBACK'); } catch (_) {}
+      res.json({ ok: false, error: e.message });
+    }
 
   } else if (action === 'hareket_ekle') {
     const b = req.body;
@@ -570,14 +574,19 @@ app.post('/api/api.php', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'çok fazla kayıt (max 100000)' });
     }
     try {
+      let eklenen = 0;
+      const atlanan = [];
       db.serialize(() => {
         db.run('BEGIN TRANSACTION');
         const stmt = db.prepare(`
           INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, skt, belge, personel)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
-        b.hareketler.forEach(h => {
-          if (!h.tarih || !h.malzeme || !h.depo) return;
+        b.hareketler.forEach((h, i) => {
+          if (!h || typeof h !== 'object' || !h.tarih || !h.malzeme || !h.depo) {
+            atlanan.push({ index: i, sebep: 'tarih/depo/malzeme zorunlu' });
+            return;
+          }
           stmt.run([
             h.tarih, h.tur === 'Giriş' || h.tur === 'Çıkış' ? h.tur : 'Giriş',
             h.depo, h.malzeme,
@@ -585,12 +594,13 @@ app.post('/api/api.php', async (req, res) => {
             h.birim || null, h.not || null, h.skt || null,
             h.belge || null, h.personel || null,
           ]);
+          eklenen++;
         });
         stmt.finalize(err => {
           if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
           db.run('COMMIT', err2 => {
             if (err2) return res.json({ ok: false, error: err2.message });
-            res.json({ ok: true, eklenen: b.hareketler.length });
+            res.json({ ok: true, eklenen, atlanan: atlanan.length, detay: atlanan.slice(0, 20) });
           });
         });
       });
@@ -665,7 +675,18 @@ app.post('/api/api.php', async (req, res) => {
         FROM Hareketler ORDER BY id ASC
       `);
 
-      const backupPayload = { ...appData, _hareketler: hareketlerRows };
+      // Tüm talepleri ekle (satirlar JSON string olarak SQLite'ta tutuluyor)
+      const taleplerRows = await dbAll(`
+        SELECT id, no, tarih, birim, personel, depo, aciliyet, gerekce,
+               satirlar, imza1, imza2, imza3, durum, olusturma
+        FROM Talepler ORDER BY id ASC
+      `);
+
+      const backupPayload = {
+        ...appData,
+        _hareketler: hareketlerRows,
+        _talepler:   taleplerRows,
+      };
       const backupDir = path.join(__dirname, 'backups');
       if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir);
       const ts = new Date().toISOString().slice(0,19).replace(/:/g,'-');
@@ -689,27 +710,23 @@ app.post('/api/api.php', async (req, res) => {
       const raw = fs.readFileSync(fpath, 'utf8');
       const parsed = JSON.parse(raw);
 
-      // _hareketler ayrı tabloya, geri kalanı AppState'e
-      const { _hareketler, hareketler: _legacy, ...appData } = parsed;
+      // _hareketler ve _talepler ayrı tablolara, geri kalanı AppState'e
+      const { _hareketler, _talepler, hareketler: _legacy, ...appData } = parsed;
       const hareketlerToRestore = _hareketler || _legacy || [];
+      const taleplerToRestore   = Array.isArray(_talepler) ? _talepler : [];
 
-      db.serialize(() => {
-        db.run('BEGIN IMMEDIATE TRANSACTION');
-        db.run('UPDATE AppState SET data = ?, version = 0 WHERE id = 1', [JSON.stringify(appData)], err => {
-          if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
-          db.run('DELETE FROM Hareketler', err2 => {
-            if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
-            if (!hareketlerToRestore.length) {
-              db.run('COMMIT', err3 => {
-                if (err3) return res.json({ ok: false, error: err3.message });
-                res.json({ ok: true });
-              });
-              return;
-            }
-            const stmt = db.prepare(`
-              INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, skt, belge, personel)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `);
+      try {
+        await dbRun('BEGIN IMMEDIATE TRANSACTION');
+        await dbRun('UPDATE AppState SET data = ?, version = 0 WHERE id = 1', [JSON.stringify(appData)]);
+        await dbRun('DELETE FROM Hareketler');
+        await dbRun('DELETE FROM Talepler');
+
+        if (hareketlerToRestore.length) {
+          const stmt = db.prepare(`
+            INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, skt, belge, personel)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+          await new Promise((resolve, reject) => {
             hareketlerToRestore.forEach(h => {
               stmt.run([
                 h.tarih, h.tur, h.depo, h.malzeme, h.miktar,
@@ -717,16 +734,39 @@ app.post('/api/api.php', async (req, res) => {
                 h.belge || null, h.personel || null,
               ]);
             });
-            stmt.finalize(err3 => {
-              if (err3) { db.run('ROLLBACK'); return res.json({ ok: false, error: err3.message }); }
-              db.run('COMMIT', err4 => {
-                if (err4) return res.json({ ok: false, error: err4.message });
-                res.json({ ok: true });
-              });
-            });
+            stmt.finalize(e => e ? reject(e) : resolve());
           });
-        });
-      });
+        }
+
+        if (taleplerToRestore.length) {
+          const stmt = db.prepare(`
+            INSERT INTO Talepler (no, tarih, birim, personel, depo, aciliyet,
+                                  gerekce, satirlar, imza1, imza2, imza3, durum, olusturma)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+          await new Promise((resolve, reject) => {
+            taleplerToRestore.forEach(t => {
+              // satirlar yedekte string (DB sütun değeri) veya array (eski yedek) olabilir
+              const satirlar = typeof t.satirlar === 'string'
+                ? t.satirlar
+                : JSON.stringify(t.satirlar || []);
+              stmt.run([
+                t.no, t.tarih, t.birim || null, t.personel || null,
+                t.depo || null, t.aciliyet || null, t.gerekce || null,
+                satirlar, t.imza1 || null, t.imza2 || null, t.imza3 || null,
+                t.durum || 'Taslak', t.olusturma || null,
+              ]);
+            });
+            stmt.finalize(e => e ? reject(e) : resolve());
+          });
+        }
+
+        await dbRun('COMMIT');
+        res.json({ ok: true });
+      } catch (e) {
+        try { await dbRun('ROLLBACK'); } catch (_) {}
+        res.json({ ok: false, error: e.message });
+      }
     } catch(e) { res.json({ ok: false, error: e.message }); }
 
   } else {

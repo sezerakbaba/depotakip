@@ -56,37 +56,65 @@ export async function apiLoad() {
   }
 }
 
+// Payload üreten yardımcı — debounce'lu ve sync flush ortak kullansın
+function buildSavePayload() {
+  return {
+    stok: S.stok,
+    ozelMalzeme: S.ozelMalzeme,
+    silinmis: S.silinmis,
+    malzemeMeta: S.malzemeMeta,
+    _version: S._serverVersion,
+  };
+}
+
+// Asıl POST — debounce'tan ve flush'tan çağrılır
+async function _doSave() {
+  S._savePending = false;
+  try {
+    const r = await apiFetch(API_URL + '?action=save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(buildSavePayload())
+    });
+    if (r.status === 409) {
+      window.toast('Veriler başka yerden değişti, yeniden yükleniyor…', 'error');
+      setTimeout(() => location.reload(), 1500);
+      return;
+    }
+    const json = await r.json();
+    if (!json.ok) { window.toast('Kayıt hatası: ' + json.error, 'error'); return; }
+    if (json.version != null) S._serverVersion = json.version;
+    const _as = document.getElementById('api-status'); if(_as) _as.textContent = '💾 ' + new Date().toLocaleTimeString('tr-TR');
+  } catch(e) {
+    window.toast('Sunucu bağlantı hatası: ' + e.message, 'error');
+  }
+}
+
 // Sunucuya veri kaydet (debounce: 800ms) — hareketler artık ayrı tabloda
 export function apiSave() {
   if (!S.API_MOD) return;
+  S._savePending = true;
   clearTimeout(S._saveTimer);
-  S._saveTimer = setTimeout(async () => {
-    try {
-      const payload = {
-        stok: S.stok,
-        ozelMalzeme: S.ozelMalzeme,
-        silinmis: S.silinmis,
-        malzemeMeta: S.malzemeMeta,
-        _version: S._serverVersion,
-      };
-      const r = await apiFetch(API_URL + '?action=save', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      if (r.status === 409) {
-        window.toast('Veriler başka yerden değişti, yeniden yükleniyor…', 'error');
-        setTimeout(() => location.reload(), 1500);
-        return;
-      }
-      const json = await r.json();
-      if (!json.ok) { window.toast('Kayıt hatası: ' + json.error, 'error'); return; }
-      if (json.version != null) S._serverVersion = json.version;
-      const _as = document.getElementById('api-status'); if(_as) _as.textContent = '💾 ' + new Date().toLocaleTimeString('tr-TR');
-    } catch(e) {
-      window.toast('Sunucu bağlantı hatası: ' + e.message, 'error');
-    }
-  }, 800);
+  S._saveTimer = setTimeout(_doSave, 800);
+}
+
+// Sekme kapanırken / gizlenirken pending save'i hemen yolla.
+// fetch(..., { keepalive: true }) tarayıcının unload'dan sonra da
+// isteği tamamlamasını garanti eder (10MB sınırı var; bizim payload
+// genelde <100KB).
+export function apiSaveFlush() {
+  if (!S.API_MOD || !S._savePending) return;
+  clearTimeout(S._saveTimer);
+  S._savePending = false;
+  const token = localStorage.getItem('depoToken') || '';
+  try {
+    fetch(API_URL + '?action=save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify(buildSavePayload()),
+      keepalive: true,
+    });
+  } catch (_) { /* unload sırasında sessiz kal */ }
 }
 
 // ── Hareket API ─────────────────────────────────────────────────────────────

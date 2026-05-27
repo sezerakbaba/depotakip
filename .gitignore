@@ -1,5 +1,7 @@
 node_modules/
 database.sqlite
+database.sqlite-wal
+database.sqlite-shm
 backups/
 *.log
 .app-token

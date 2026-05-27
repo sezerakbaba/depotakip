@@ -1,6 +1,6 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, PAGE_TITLES, STOK_INIT, SKT_INIT, API_URL } from './state.js';
 import { esc, escQ, getKey, updateClock, checkKritikNotification } from './ui-common.js';
-import { apiPing, apiLoad, apiSave, apiBackupOlustur, apiReset } from './api.js';
+import { apiPing, apiLoad, apiSave, apiSaveFlush, apiBackupOlustur, apiReset } from './api.js';
 import { renderDashboard } from './dashboard.js';
 import { renderStok, katBadgeHTML } from './stok.js';
 import { renderHareketList } from './hareket.js';
@@ -234,6 +234,15 @@ document.addEventListener('keydown', function(e) {
     const id = searchMap[S.aktifSayfa];
     if (id) { e.preventDefault(); document.getElementById(id)?.focus(); }
   }
+});
+
+// ── Unload sırasında pending save'i flush et ─────────────────────
+// 800ms debounce içinde sekme kapanırsa son yazımı kaybetmeyelim.
+// visibilitychange (mobil/sekme gizleme) için de tetikle.
+window.addEventListener('pagehide', apiSaveFlush);
+window.addEventListener('beforeunload', apiSaveFlush);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') apiSaveFlush();
 });
 
 // ── Expose on window ─────────────────────────────────────────────
