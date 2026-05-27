@@ -1,4 +1,6 @@
 const express = require('express');
+const helmet  = require('helmet');
+const rateLimit = require('express-rate-limit');
 const crypto  = require('crypto');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -6,6 +8,8 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+// LAN içinde reverse proxy arkasında çalışabilir; rate-limit IP'yi doğru görebilsin diye:
+app.set('trust proxy', 'loopback');
 
 const APP_TOKEN = process.env.APP_TOKEN || (() => {
   const tokenFile = path.join(__dirname, '.app-token');
@@ -43,9 +47,29 @@ function requireToken(req, res, next) {
   next();
 }
 
+// ── Güvenlik middleware'leri ─────────────────────────────────────────────
+app.use(helmet({
+  // Self-host edilmiş vendor (Chart.js, lucide, fontlar) + inline onclick/style
+  // kullanıyoruz; CSP'yi şimdilik kapalı tutuyoruz, ayrı PR'da inline handler
+  // refactor'ü sonrası açılacak.
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Yanlış token brute-force'una karşı: dakikada 30 başarısız istek/IP.
+// Başarılı isteklerde sayacı sıfırla ki normal kullanım engellenmesin.
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { ok: false, error: 'Çok fazla istek — biraz bekleyin' },
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/api', requireToken);
+app.use('/api', authLimiter, requireToken);
 
 // ── Yardımcılar: giriş doğrulama ─────────────────────────────────────────
 const BACKUP_NAME_RE = /^backup_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.json$/;
@@ -95,6 +119,11 @@ function rotateBackups(backupDir) {
 
 const dbPath = path.join(__dirname, 'database.sqlite');
 const db = new sqlite3.Database(dbPath);
+// WAL: eş zamanlı okuma/yazma, daha hızlı commit.
+// synchronous=NORMAL: WAL ile birlikte güvenli/hızlı denge.
+db.run('PRAGMA journal_mode = WAL');
+db.run('PRAGMA synchronous = NORMAL');
+db.run('PRAGMA foreign_keys = ON');
 
 // ── Promise yardımcıları ───────────────────────────────────────────────────
 const dbGet = (sql, p = []) => new Promise((res, rej) =>
@@ -705,6 +734,23 @@ app.post('/api/api.php', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Depo Takip sunucusu http://localhost:${PORT} adresinde çalışıyor`);
 });
+
+// ── Graceful shutdown — WAL checkpoint kaçırılmasın ────────────────────
+function shutdown(signal) {
+  console.log(`\n${signal} alındı — kapatılıyor...`);
+  server.close(() => {
+    db.run('PRAGMA wal_checkpoint(TRUNCATE)', () => {
+      db.close(err => {
+        if (err) console.error('DB close hatası:', err.message);
+        else console.log('DB temiz kapatıldı.');
+        process.exit(0);
+      });
+    });
+  });
+  setTimeout(() => { console.error('Zorla kapatma'); process.exit(1); }, 5000).unref();
+}
+process.on('SIGINT',  () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
