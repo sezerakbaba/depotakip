@@ -119,7 +119,7 @@ export function navigate(page) {
     } else {
       if(di) di.textContent='🔴';
       if(dt) dt.textContent='Sunucu bağlantısı yok — veriler yalnızca bu oturumda mevcut';
-      if(ds) ds.textContent='api/api.php erişilemiyor';
+      if(ds) ds.textContent='Sunucu erişilemiyor';
     }
     renderBackupList();
   }
@@ -261,7 +261,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
   if (alive) {
     await apiLoad();
   } else {
-    console.warn('PHP API bulunamadı — yerel modda çalışıyor (veri kaybolabilir)');
+    console.warn('Sunucu bulunamadı — yerel modda çalışıyor (veri kaybolabilir)');
     window.toast('⚠ Sunucu bağlantısı yok — veriler kaydedilmeyecek', 'error');
   }
   ayarlariYukle();

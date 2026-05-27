@@ -8,16 +8,36 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const APP_TOKEN = process.env.APP_TOKEN || (() => {
+  const tokenFile = path.join(__dirname, '.app-token');
+  if (fs.existsSync(tokenFile)) {
+    const saved = fs.readFileSync(tokenFile, 'utf8').trim();
+    if (saved) {
+      console.log('\n🔑 APP_TOKEN .app-token dosyasından yüklendi.\n');
+      return saved;
+    }
+  }
   const t = crypto.randomBytes(24).toString('hex');
-  console.log('\n⚠  APP_TOKEN ayarlanmamış — bu oturum için rastgele token:');
-  console.log('   ' + t);
-  console.log('   Kalıcı yapmak için: APP_TOKEN=' + t + ' node server.js\n');
+  try {
+    fs.writeFileSync(tokenFile, t, { mode: 0o600 });
+    console.log('\n⚠  APP_TOKEN ayarlanmamış — rastgele üretildi ve .app-token dosyasına yazıldı:');
+    console.log('   ' + t);
+    console.log('   Kalıcı/paylaşılabilir yapmak için: APP_TOKEN=<token> node server.js\n');
+  } catch (e) {
+    console.log('\n⚠  APP_TOKEN üretildi (dosyaya yazılamadı: ' + e.message + '):');
+    console.log('   ' + t + '\n');
+  }
   return t;
 })();
 
+const APP_TOKEN_BUF = Buffer.from(APP_TOKEN);
+
 function requireToken(req, res, next) {
   const auth = req.headers.authorization || '';
-  if (!auth.startsWith('Bearer ') || auth.slice(7) !== APP_TOKEN) {
+  if (!auth.startsWith('Bearer ')) {
+    return res.status(401).json({ ok: false, error: 'Yetkisiz erişim' });
+  }
+  const given = Buffer.from(auth.slice(7));
+  if (given.length !== APP_TOKEN_BUF.length || !crypto.timingSafeEqual(given, APP_TOKEN_BUF)) {
     return res.status(401).json({ ok: false, error: 'Yetkisiz erişim' });
   }
   next();

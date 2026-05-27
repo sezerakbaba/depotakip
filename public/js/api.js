@@ -1,7 +1,7 @@
 import { S, API_URL } from './state.js';
 
 // ═══════════════════════════════════════════════════════════════════
-// PHP API KATMANI — QNAP Web Server
+// API KATMANI — Node/Express backend
 // ═══════════════════════════════════════════════════════════════════
 
 export function getToken() {
