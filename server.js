@@ -244,6 +244,8 @@ app.get('/api', async (req, res) => {
   if (action === 'load') {
     db.get('SELECT data, version FROM AppState WHERE id = 1', (err, row) => {
       if (err) return res.json({ ok: false, error: err.message });
+      // Row silinmişse boş state ile dön — bir sonraki save UPSERT yapacak
+      if (!row) return res.json({ ok: true, data: {}, version: 0, yeni: true });
       try {
         const data = JSON.parse(row.data);
         res.json({ ok: true, data, version: row.version || 0, yeni: Object.keys(data).length === 0 });
@@ -471,19 +473,25 @@ app.post('/api', async (req, res) => {
       db.run('BEGIN IMMEDIATE TRANSACTION');
       db.get('SELECT version FROM AppState WHERE id = 1', (err, row) => {
         if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
-        const serverVersion = row.version || 0;
+        const serverVersion = row ? (row.version || 0) : 0;
         if (clientVersion !== null && clientVersion !== serverVersion) {
           db.run('ROLLBACK');
           return res.status(409).json({ ok: false, error: 'Çakışma: veriler başka yerden değişti', version: serverVersion });
         }
         const newVersion = serverVersion + 1;
-        db.run('UPDATE AppState SET data = ?, version = ? WHERE id = 1', [payload, newVersion], err2 => {
-          if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
-          db.run('COMMIT', err3 => {
-            if (err3) return res.json({ ok: false, error: err3.message });
-            res.json({ ok: true, version: newVersion });
-          });
-        });
+        // UPSERT — id=1 row'u silinmiş olsa bile yazımı garanti et
+        db.run(
+          `INSERT INTO AppState (id, data, version) VALUES (1, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET data = excluded.data, version = excluded.version`,
+          [payload, newVersion],
+          err2 => {
+            if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
+            db.run('COMMIT', err3 => {
+              if (err3) return res.json({ ok: false, error: err3.message });
+              res.json({ ok: true, version: newVersion });
+            });
+          }
+        );
       });
     });
 

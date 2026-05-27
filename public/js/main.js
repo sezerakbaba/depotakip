@@ -81,7 +81,7 @@ export function navigate(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  const ni = document.querySelector(`.nav-item[onclick*="'${page}'"]`);
+  const ni = document.querySelector(`.nav-item[data-action="navigate"][data-arg="${page}"]`);
   if (ni) ni.classList.add('active');
 
   const sb = document.getElementById('sidebar');
@@ -186,10 +186,87 @@ function initSKT() {
 document.getElementById('topbar-date').textContent =
   new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 updateClock();
-setInterval(updateClock, 1000);
+let _clockTimer = setInterval(updateClock, 1000);
+// Sekme gizliyken interval'i durdur, görünür olunca tek bir tick ile yakala
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    clearInterval(_clockTimer);
+    _clockTimer = null;
+  } else if (_clockTimer == null) {
+    updateClock();
+    _clockTimer = setInterval(updateClock, 1000);
+  }
+});
+
+// ── data-action click dispatcher ─────────────────────────────────
+// Inline onclick'lerden delegation pattern'ine geçiş. Whitelist'tir:
+// data-action="<key>" attribute'u olan element'e tıklanınca eşleşen
+// fonksiyon çağrılır. data-arg, ikinci parametre olarak iletilir.
+// Element'in kendisi (chip/buton vs.) ilk parametre.
+function _stokSearchClear(el) {
+  const inp = document.getElementById('stok-search'); if (inp) inp.value = '';
+  if (el) el.style.display = 'none';
+  if (typeof window.stokSayfa !== 'undefined') window.stokSayfa = 0;
+  window.renderStok?.();
+}
+function _harFiltreTemizle() {
+  ['harTarihBas','harTarihBit','harDepoFilter','harPersonelFilter'].forEach(k => { window[k] = ''; });
+  ['har-tarih-bas','har-tarih-bit','har-depo-filter','har-personel-filter'].forEach(id => {
+    const e = document.getElementById(id); if (e) e.value = '';
+  });
+  document.querySelectorAll('.har-tarih-chip').forEach(c => c.classList.remove('active'));
+  if (typeof window.harSayfa !== 'undefined') window.harSayfa = 0;
+  window.renderHareketList?.();
+}
+function _toggleStokSutunMenu() {
+  document.getElementById('stok-sutun-menu')?.classList.toggle('open');
+}
+function _clickFileInput(_el, id) { document.getElementById(id)?.click(); }
+
+const ACTIONS = {
+  navigate:             (_el, arg) => navigate(arg),
+  closeModal:           (_el, arg) => closeModal(arg),
+  toggleSidebar:        () => toggleSidebar(),
+  print:                () => window.print(),
+  toggleStokSutunMenu:  _toggleStokSutunMenu,
+  stokSearchClear:      _stokSearchClear,
+  harFiltreTemizle:     _harFiltreTemizle,
+  clickFileInput:       _clickFileInput,
+  setDurumFilter:       (el, arg) => window.setDurumFilter?.(el, arg),
+  setHarFilter:         (el, arg) => window.setHarFilter?.(el, arg),
+  setHarTarihShortcut:  (_el, arg) => window.setHarTarihShortcut?.(arg),
+  talepKaydet:          (_el, arg) => window.talepKaydet?.(arg),
+  // Parametresiz window-export'lu fonksiyonlar
+  apiBackupOlustur: () => window.apiBackupOlustur?.(),
+  renderBackupList: () => window.renderBackupList?.(),
+  veriDisaAktar:    () => window.veriDisaAktar?.(),
+  veriExcelAktar:   () => window.veriExcelAktar?.(),
+  veriSifirla:      () => window.veriSifirla?.(),
+  renderTalepListesi:() => window.renderTalepListesi?.(),
+  kaydetHareket:    () => window.kaydetHareket?.(),
+  clearHareketForm: () => window.clearHareketForm?.(),
+  toggleNotZorunlu: () => window.toggleNotZorunlu?.(),
+  exportHareketExcel:() => window.exportHareketExcel?.(),
+  kritikTalepAktar: () => window.kritikTalepAktar?.(),
+  talepOnayaGonder: () => window.talepOnayaGonder?.(),
+  talepSifirla:     () => window.talepSifirla?.(),
+  talepAyarlaraKaydet:() => window.talepAyarlaraKaydet?.(),
+  talepSatirEkle:   () => window.talepSatirEkle?.(),
+  malzemeEkle:      () => window.malzemeEkle?.(),
+  _harEkle:         () => window._harEkle?.(),
+  _harMalTemizle:   () => window._harMalTemizle?.(),
+  saveStok:         () => window.saveStok?.(),
+};
 
 // ── Global click handler ─────────────────────────────────────────
 document.addEventListener('click', e => {
+  // 1) data-action delegation
+  const trigger = e.target.closest('[data-action]');
+  if (trigger) {
+    const fn = ACTIONS[trigger.dataset.action];
+    if (fn) { fn(trigger, trigger.dataset.arg, e); return; }
+  }
+  // 2) Açık dropdown/menü'leri kapat
   const menu = document.getElementById('stok-sutun-menu');
   const btn  = document.getElementById('stok-sutun-btn');
   if (menu && !menu.contains(e.target) && !btn?.contains(e.target)) {
