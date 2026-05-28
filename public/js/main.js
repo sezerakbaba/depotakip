@@ -579,6 +579,120 @@ document.addEventListener('keydown', e => {
   fn(trigger, e, ..._parseArgs(trigger));
 });
 
+// ═════════════════════════════════════════════════════════════════
+// Erişilebilirlik (Aşama G)
+// ═════════════════════════════════════════════════════════════════
+
+// 1) Tıklanabilir non-button [data-action] elemanlarına klavye erişimi.
+//    Mevcut <div data-action="..."> elementleri (nav-item, filter-chip,
+//    kpi-kart, c-depo-card vb.) gerçek <button>'a dönüştürmek HTML+CSS
+//    refactor'ü olur; bu hafif yaklaşım Enter/Space'i click'e map eder ve
+//    role="button"/tabindex="0" set eder.
+const _A11Y_SKIP = new Set(['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT', 'LABEL']);
+function _a11yEnhance(root = document) {
+  root.querySelectorAll('[data-action], [data-change], [data-input], [data-keydown]').forEach(el => {
+    if (_A11Y_SKIP.has(el.tagName)) return;
+    if (!el.hasAttribute('role'))     el.setAttribute('role', 'button');
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const trigger = e.target.closest('[data-action]');
+  if (!trigger || _A11Y_SKIP.has(trigger.tagName)) return;
+  // Form alanı içindeysek müdahale etme
+  const t = e.target.tagName;
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+  e.preventDefault();
+  trigger.click();
+});
+
+// Dinamik render edilen (innerHTML ile eklenen) içerik için MutationObserver
+const _a11yObserver = new MutationObserver(muts => {
+  for (const m of muts) {
+    for (const node of m.addedNodes) {
+      if (node.nodeType === 1) _a11yEnhance(node);
+    }
+  }
+});
+_a11yObserver.observe(document.body, { childList: true, subtree: true });
+
+// 2) Modal yönetimi: ESC kapatır, açılınca focus girer, kapanınca
+//    önceki focus'a döner. Basit focus trap (Tab/Shift+Tab cycle).
+const _modalFocusStack = [];
+
+function _focusableIn(el) {
+  return [...el.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )].filter(n => n.offsetWidth > 0 || n.offsetHeight > 0);
+}
+
+function _topOpenModal() {
+  const open = [...document.querySelectorAll('.modal-overlay.open')];
+  return open[open.length - 1] || null;
+}
+
+// ARIA attrs ve focus handling
+const _modalObserver = new MutationObserver(muts => {
+  for (const m of muts) {
+    if (m.attributeName !== 'class' || !m.target.classList.contains('modal-overlay')) continue;
+    const overlay = m.target;
+    const opened = overlay.classList.contains('open');
+    const wasOpen = m.oldValue?.includes('open');
+    if (opened && !wasOpen) {
+      // ARIA
+      const modal = overlay.querySelector('.modal');
+      if (modal) {
+        if (!modal.hasAttribute('role'))      modal.setAttribute('role', 'dialog');
+        if (!modal.hasAttribute('aria-modal')) modal.setAttribute('aria-modal', 'true');
+        const title = modal.querySelector('.modal-title');
+        if (title && !modal.hasAttribute('aria-labelledby')) {
+          if (!title.id) title.id = 'modal-title-' + Math.random().toString(36).slice(2, 8);
+          modal.setAttribute('aria-labelledby', title.id);
+        }
+      }
+      // Focus
+      _modalFocusStack.push(document.activeElement);
+      setTimeout(() => {
+        const focusables = modal ? _focusableIn(modal) : [];
+        (focusables[0] || modal)?.focus?.();
+      }, 30);
+    } else if (!opened && wasOpen) {
+      const prev = _modalFocusStack.pop();
+      prev?.focus?.();
+    }
+  }
+});
+_modalObserver.observe(document.body, {
+  attributes: true,
+  attributeFilter: ['class'],
+  attributeOldValue: true,
+  subtree: true,
+});
+
+document.addEventListener('keydown', e => {
+  const top = _topOpenModal();
+  if (!top) return;
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    top.classList.remove('open');
+    return;
+  }
+  if (e.key === 'Tab') {
+    const modal = top.querySelector('.modal');
+    const focusables = modal ? _focusableIn(modal) : [];
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last  = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  }
+});
+
 // ── Keyboard shortcuts ───────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
   const tag = document.activeElement?.tagName;
@@ -653,6 +767,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
   ayarlariYukle();
   document.title = (S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi') + ' — Depo Takip';
   _syncThemeToggleIcon();
+  _a11yEnhance();
   talepListesiYukle();
   initStok();
   initSKT();

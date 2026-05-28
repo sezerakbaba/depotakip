@@ -74,6 +74,21 @@ html[data-theme="light"] {
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Erişilebilirlik: klavye odak halkası ────────────────────────
+   Mouse tıklamasında outline yok; klavyeyle gezilen her interaktif
+   öğe accent ringi alır. */
+:focus { outline: none; }
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #00897b);
+  border-radius: var(--r-sm, 6px);
+}
+/* role="button" verilen non-button elementlerin Space basıldığında
+   sayfayı kaydırmasını engelle (preventDefault JS'te yapılıyor ama
+   görsel olarak da etkin görünsün) */
+[role="button"] { user-select: none; }
+[role="button"]:focus-visible { box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #00897b); }
+
 /* ── Lucide Icons ── */
 /* Sidebar logo icon */
 .sidebar-logo-icon svg {
