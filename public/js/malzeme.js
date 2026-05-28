@@ -74,7 +74,7 @@ export function renderMalzemeEkleList() {
     const mm  = S.malzemeMeta[getKey(item.depo,item.ad)]||{};
     const key = escKey(item.depo, item.ad);
     const sktHtml = mm.skt ? '<br>'+window.sktBadge(mm.skt) : '';
-    const ozelStar = item.ozel ? '<span style="font-size:10px;color:var(--teal);margin-left:5px">★</span>' : '';
+    const ozelStar = item.ozel ? '<i data-lucide="star" class="icon-inline ozel-star" title="Özel ekleme"></i>' : '';
     const birimTxt = mm.birim || item.birim || '—';
     const katHtml  = item.kategori ? window.katBadgeHTML(item.kategori) : '<span style="color:var(--muted)">—</span>';
     rows += `<tr>
@@ -85,9 +85,8 @@ export function renderMalzemeEkleList() {
       <td class="td-mono" style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
       <td>${durumBadge(d)}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,item.depo,item.ad)} style="margin-right:4px">✎</button>
-        <button class="btn btn-sm" ${dClick('malzemeSil',item.depo,item.ad)}
-          style="background:var(--red-bg);color:var(--red);border:1px solid rgba(239,83,80,.3);padding:4px 10px;font-size:11px">🗑</button>
+        <button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,item.depo,item.ad)} style="margin-right:4px" title="Düzenle"><i data-lucide="pencil"></i></button>
+        <button class="btn btn-sm btn-danger-ghost" ${dClick('malzemeSil',item.depo,item.ad)} title="Sil"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   });

@@ -81,11 +81,11 @@ export async function renderDashboard() {
         const s = getStok(i.depo, i.ad);
         const _mm = S.malzemeMeta[i.depo+'||'+i.ad]||{};
         const _sktD = _mm.skt ? window.sktDurum(_mm.skt) : null;
-        const _icon = _sktD ? _sktD.icon : '⚠';
+        const _icon = _sktD ? _sktD.icon : 'alert-triangle';
         return `<div class="dash-kritik-item">
-          <div class="dash-warn">${_icon}</div>
+          <div class="dash-warn"><i data-lucide="${_icon}"></i></div>
           <div style="flex:1;min-width:0">
-            <div class="dash-kritik-ad">${esc(i.ad)}${_sktD?'<span class="skt-badge '+_sktD.cls+'" style="margin-left:6px">'+esc(_sktD.label)+'</span>':''}</div>
+            <div class="dash-kritik-ad">${esc(i.ad)}${_sktD?'<span class="skt-badge '+_sktD.cls+'" style="margin-left:6px"><i data-lucide="'+_sktD.icon+'" class="icon-inline"></i> '+esc(_sktD.label)+'</span>':''}</div>
             <div class="dash-kritik-depo">${esc(i.depo)} · Mevcut: ${s.mevcut} / Min: ${s.min}</div>
           </div>
           <div class="dash-kritik-stok">${s.mevcut}/${s.min}</div>
@@ -155,7 +155,7 @@ export async function renderDashboard() {
         ? '<p style="color:var(--muted);font-size:13px;">Henüz hareket kaydı yok.</p>'
         : sonHareketler.slice(0, S.ayarlar.sonHareketLimit).map(h => `
           <div class="hareket-item">
-            <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}">${h.tur==='Giriş'?'⬆':'⬇'}</div>
+            <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
             <div class="hareket-info">
               <div class="hareket-mal">${esc(h.malzeme)}</div>
               <div class="hareket-meta">${depoBadge(h.depo)} · <span title="${esc(fmt(new Date(h.tarih)))}">${timeAgo(new Date(h.tarih))}</span>${h.personel?' · '+esc(h.personel):''}</div>

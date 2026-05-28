@@ -23,7 +23,7 @@ export async function renderBackupList() {
         <div style="font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace">${esc(y.tarih)}</div>
         <div style="font-size:10px;color:var(--muted)">${esc(y.dosya)} · ${esc(y.boyut)}</div>
       </div>
-      <button class="btn btn-sm btn-outline" ${dClick('apiBackupLoad',y.dosya)}>↩ Yükle</button>
+      <button class="btn btn-sm btn-outline" ${dClick('apiBackupLoad',y.dosya)}><i data-lucide="rotate-ccw" class="icon-inline"></i> Yükle</button>
     </div>`).join('');
 }
 

@@ -60,8 +60,8 @@ export function durum(mevcut, min, max) {
 
 export function durumBadge(d) {
   const map  = {Kritik:'badge-kritik', Normal:'badge-normal', Fazla:'badge-fazla'};
-  const icon = {Kritik:'⚠', Normal:'✓', Fazla:'↑'};
-  return `<span class="badge ${map[d]}">${icon[d]} ${d}</span>`;
+  const icon = {Kritik:'alert-triangle', Normal:'check', Fazla:'trending-up'};
+  return `<span class="badge ${map[d]}"><i data-lucide="${icon[d]}" class="icon-inline"></i> ${d}</span>`;
 }
 
 export function depoBadge(dep) {
@@ -85,8 +85,11 @@ export function fmt(d) {
 
 export function toast(msg, type='success') {
   const t = document.getElementById('toast');
-  t.textContent = (type==='success'?'✓  ':type==='info'?'ℹ  ':'✕  ') + msg;
+  if (!t) return;
+  const ico = {success:'check-circle', info:'info', error:'x-circle'}[type] || 'check-circle';
+  t.innerHTML = `<i data-lucide="${ico}" class="icon-inline"></i> <span>${esc(msg)}</span>`;
   t.className = 'show ' + type;
+  if (window.lucide) lucide.createIcons({ nodes: [t] });
   setTimeout(()=> t.className='', 2800);
 }
 

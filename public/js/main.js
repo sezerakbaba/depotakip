@@ -39,17 +39,17 @@ export function sktDurum(sktStr) {
   today.setHours(0,0,0,0);
   const skt   = new Date(sktStr);
   const diff  = Math.round((skt - today) / 86400000);
-  if (diff < 0)   return { cls:'skt-gecmis', label: 'SKT GEÇTİ',      days: diff, icon:'☠' };
-  if (diff <= S.ayarlar.sktKritikGun) return { cls:'skt-kritik', label: diff+'g kaldı',   days: diff, icon:'⚠' };
-  if (diff <= S.ayarlar.sktUyariGun)  return { cls:'skt-uyari',  label: sktStr.slice(0,7), days: diff, icon:'⏱' };
-  return               { cls:'skt-ok',     label: sktStr.slice(0,7),  days: diff, icon:'✓' };
+  if (diff < 0)   return { cls:'skt-gecmis', label: 'SKT GEÇTİ',      days: diff, icon:'shield-alert' };
+  if (diff <= S.ayarlar.sktKritikGun) return { cls:'skt-kritik', label: diff+'g kaldı',   days: diff, icon:'alert-triangle' };
+  if (diff <= S.ayarlar.sktUyariGun)  return { cls:'skt-uyari',  label: sktStr.slice(0,7), days: diff, icon:'clock' };
+  return               { cls:'skt-ok',     label: sktStr.slice(0,7),  days: diff, icon:'check' };
 }
 
 export function sktBadge(sktStr) {
   if (!sktStr) return '';
   const d = sktDurum(sktStr);
   if (!d) return '';
-  return '<span class="skt-badge '+d.cls+'" title="Son Kullanma: '+sktStr+'">'+d.icon+' '+d.label+'</span>';
+  return '<span class="skt-badge '+d.cls+'" title="Son Kullanma: '+sktStr+'"><i data-lucide="'+d.icon+'" class="icon-inline"></i> '+d.label+'</span>';
 }
 
 export function closeModal(id) {

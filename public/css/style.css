@@ -2189,3 +2189,55 @@ mark.stok-vurgu {
 }
 .sutun-menu-item:hover { background: var(--hover, var(--bg)); }
 .sutun-menu-item input[type=checkbox] { cursor: pointer; }
+/* ── Aşama A: ikon temizliği ardından eklenen yardımcı sınıflar ── */
+
+/* Lucide ikonların buton/badge içinde hizalanması */
+.btn svg, .badge svg, .skt-badge svg, .filter-chip svg, .nav-item svg,
+.har-sil-btn svg, .talep-mal-temizle svg, .ayarlar-search-clear svg,
+.btn-icon-ghost svg {
+  width: 14px; height: 14px;
+  stroke-width: 2;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.hareket-dot svg { width: 14px; height: 14px; stroke-width: 2.25; }
+.dash-warn svg   { width: 18px; height: 18px; stroke-width: 2.25; }
+
+/* Özel-malzeme yıldızı (★ emoji yerine Lucide) */
+.ozel-star {
+  color: var(--accent);
+  margin-left: 6px;
+}
+.ozel-star svg { fill: var(--accent); }
+
+/* Buton varyantları */
+.btn-success {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+}
+.btn-success:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
+.btn-danger {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.btn-danger:hover { background: color-mix(in srgb, var(--danger) 18%, transparent); }
+.btn-danger-ghost {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  padding: 4px 10px;
+  font-size: var(--fs-xs);
+}
+.btn-danger-ghost:hover { background: color-mix(in srgb, var(--danger) 14%, var(--danger-bg)); }
+.btn-icon-ghost {
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm);
+}
+.btn-icon-ghost:hover { background: var(--surface-0); color: var(--text-secondary); }

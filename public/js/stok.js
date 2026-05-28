@@ -204,7 +204,7 @@ export function renderStok(){
         case 'malzeme': {
           const meta = S.malzemeMeta[getKey(item.depo,item.ad)]||{};
           dynamicCells += '<td class="td-name" data-col="malzeme" data-label="Malzeme">'
-            +'<div>'+vurgula(item.ad)+(item.ozel?'<span style="font-size:10px;color:var(--teal);margin-left:6px">★</span>':'')+'</div>'
+            +'<div>'+vurgula(item.ad)+(item.ozel?' <i data-lucide="star" class="icon-inline ozel-star" title="Özel ekleme"></i>':'')+'</div>'
             +(meta.marka?'<div><span class="marka-badge">'+esc(meta.marka)+'</span></div>':'')
             +(meta.skt?'<div>'+window.sktBadge(meta.skt)+'</div>':'')
             +'</td>';
@@ -404,7 +404,7 @@ export function openStokModal(_key, dep, mal) {
     +'<select id="m-kategori" '+dChange('handleDiger','m-kategori-diger')+'><option value="">— Seçin —</option>'+_ko+'</select>'
     +'<div id="m-kategori-diger-wrap" style="display:'+(_katDiğerVal?'block':'none')+';margin-top:5px">'
     +'<input type="text" id="m-kategori-diger" value="'+_katDiğerVal+'" placeholder="Kategori girin..." style="font-size:12px"></div></div>'
-    +(dep==='Kimyasal Deposu'?'<div class="form-group" style="grid-column:1/-1"><label>☠ Son Kullanma Tarihi</label><input type="date" id="m-skt" value="'+(mm.skt||'')+'" style="font-family:IBM Plex Mono,monospace"></div>':'')
+    +(dep==='Kimyasal Deposu'?'<div class="form-group" style="grid-column:1/-1"><label><i data-lucide="shield-alert" class="icon-inline"></i> Son Kullanma Tarihi</label><input type="date" id="m-skt" value="'+(mm.skt||'')+'" style="font-family:IBM Plex Mono,monospace"></div>':'')
     +'</div>';
   document.getElementById('modal-stok').classList.add('open');
 }

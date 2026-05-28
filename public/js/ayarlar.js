@@ -160,11 +160,11 @@ export function renderAyarlar() {
 
   const birimHtml = `<div class="card"><div class="card-header"><i data-lucide="ruler" class="icon-inline"></i> Birimler</div><div class="card-body">
     <div class="birim-tag-list">
-      ${S.ayarlar.birimler.map(b=>`<span class="birim-tag">${esc(b)}<button ${dClick('birimSil',b)}>×</button></span>`).join('')}
+      ${S.ayarlar.birimler.map(b=>`<span class="birim-tag">${esc(b)}<button ${dClick('birimSil',b)} title="Sil"><i data-lucide="x"></i></button></span>`).join('')}
     </div>
     <div class="ayar-add-row">
       <input type="text" id="yeni-birim-inp" placeholder="Yeni birim..." class="ayar-input-sm" maxlength="20" ${dKeydown('birimEkle','Enter')}>
-      <button class="btn btn-sm btn-outline" ${dClick('birimEkle')}>+ Ekle</button>
+      <button class="btn btn-sm btn-outline" ${dClick('birimEkle')}><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
     </div>
   </div></div>`;
 
@@ -172,7 +172,7 @@ export function renderAyarlar() {
     ${Object.entries(DEPO_META).map(([ad,m])=>`
       <div class="ayar-row" id="depo-row-${CSS.escape(ad)}">
         <div class="ayar-label"><span class="badge" style="background:${m.color}22;color:${m.color};margin-right:6px">${esc(m.kod)}</span>${esc(ad)}</div>
-        <button class="btn btn-sm btn-outline" ${dClick('depoYeniAdDlg',ad)}>✎ Düzenle</button>
+        <button class="btn btn-sm btn-outline" ${dClick('depoYeniAdDlg',ad)}><i data-lucide="pencil" class="icon-inline"></i> Düzenle</button>
       </div>`).join('')}
     <div id="depo-yeniad-form"></div>
     <div class="ayar-subsection">
@@ -181,7 +181,7 @@ export function renderAyarlar() {
         <input type="text" id="yd-ad" placeholder="Depo adı" class="ayar-input-md" maxlength="40">
         <input type="text" id="yd-kod" placeholder="Kod (2-3 harf)" class="ayar-input-sm" maxlength="4">
         <input type="color" id="yd-renk" value="#546e7a" class="ayar-color-inp">
-        <button class="btn btn-sm btn-primary" ${dClick('ekDepoEkle')}>+ Ekle</button>
+        <button class="btn btn-sm btn-primary" ${dClick('ekDepoEkle')}><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
       </div>
     </div>
   </div></div>`;
@@ -190,7 +190,7 @@ export function renderAyarlar() {
     ${Object.entries(KAT_COLORS).map(([ad])=>`
       <div class="ayar-row">
         <div class="ayar-label">${window.katBadgeHTML(ad)}</div>
-        <button class="btn btn-sm btn-outline" ${dClick('katYeniAdDlg',ad)}>✎ Düzenle</button>
+        <button class="btn btn-sm btn-outline" ${dClick('katYeniAdDlg',ad)}><i data-lucide="pencil" class="icon-inline"></i> Düzenle</button>
       </div>`).join('')}
     <div id="kat-yeniad-form"></div>
     <div class="ayar-subsection">
@@ -199,7 +199,7 @@ export function renderAyarlar() {
         <input type="text" id="yk-ad" placeholder="Kategori adı" class="ayar-input-md" maxlength="40">
         <input type="color" id="yk-renk-c" value="#546e7a" class="ayar-color-inp" title="Yazı rengi">
         <input type="color" id="yk-renk-bg" value="#eceff1" class="ayar-color-inp" title="Arkaplan rengi">
-        <button class="btn btn-sm btn-primary" ${dClick('ekKatEkle')}>+ Ekle</button>
+        <button class="btn btn-sm btn-primary" ${dClick('ekKatEkle')}><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
       </div>
     </div>
   </div></div>`;
@@ -251,7 +251,7 @@ export function renderAyarlar() {
     <div class="ayarlar-search">
       <i data-lucide="search" class="icon-inline"></i>
       <input type="text" id="ayarlar-arama-inp" placeholder="Ayarlarda ara..." value="${esc(terim)}" ${dInput('ayarlarAra')}>
-      ${aramaAktif?`<button class="ayarlar-search-clear" ${dClick('ayarlarAraTemizle')} title="Aramayı temizle">×</button>`:''}
+      ${aramaAktif?`<button class="ayarlar-search-clear" ${dClick('ayarlarAraTemizle')} title="Aramayı temizle"><i data-lucide="x"></i></button>`:''}
     </div>
     <nav class="ayarlar-nav-list">
       ${tabs.map(t => `<button class="ayar-nav-btn ${!aramaAktif && S.ayarlarAktifTab===t.id?'active':''}" ${dClick('setAyarlarTab',t.id)}><i data-lucide="${t.icon}" class="icon-inline"></i><span>${t.label}</span></button>`).join('')}
@@ -312,8 +312,8 @@ export function depoYeniAdDlg(eskiAd) {
     <input type="text" id="dyn-ad" value="${esc(eskiAd)}" placeholder="Depo adı" class="ayar-input" style="max-width:160px">
     <input type="text" id="dyn-kod" value="${esc(m.kod)}" maxlength="4" placeholder="Kod" class="ayar-input" style="max-width:80px">
     <input type="color" id="dyn-renk" value="${m.color}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer">
-    <button class="btn btn-sm btn-primary" ${dClick('depoYeniAdKaydet',eskiAd)}>✓ Kaydet</button>
-    <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')}>✕</button>
+    <button class="btn btn-sm btn-primary" ${dClick('depoYeniAdKaydet',eskiAd)}><i data-lucide="check" class="icon-inline"></i> Kaydet</button>
+    <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')} title="İptal"><i data-lucide="x"></i></button>
   </div>`;
 }
 
@@ -364,8 +364,8 @@ export function katYeniAdDlg(eskiAd) {
     <input type="text" id="kyn-ad" value="${esc(eskiAd)}" placeholder="Kategori adı" class="ayar-input" style="max-width:160px">
     <input type="color" id="kyn-c" value="${cc.c}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer" title="Yazı rengi">
     <input type="color" id="kyn-bg" value="${cc.bg}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer" title="Arkaplan">
-    <button class="btn btn-sm btn-primary" ${dClick('katYeniAdKaydet',eskiAd)}>✓ Kaydet</button>
-    <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')}>✕</button>
+    <button class="btn btn-sm btn-primary" ${dClick('katYeniAdKaydet',eskiAd)}><i data-lucide="check" class="icon-inline"></i> Kaydet</button>
+    <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')} title="İptal"><i data-lucide="x"></i></button>
   </div>`;
 }
 

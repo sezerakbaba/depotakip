@@ -86,7 +86,7 @@ export function _renderHarEklenenler() {
       </div>
       <div class="h-eklenen-sag">
         <span class="h-eklenen-tur ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.mik}</span>
-        <button class="har-sil-btn" ${dClick('_harEklenenSil',i)} title="Kaldır">×</button>
+        <button class="har-sil-btn" ${dClick('_harEklenenSil',i)} title="Kaldır"><i data-lucide="x"></i></button>
       </div>
     </div>`).join('');
 }
@@ -253,7 +253,7 @@ export async function renderHareketList() {
     // ── Liste render ───────────────────────────────────────────────
     list.innerHTML = hareketler.map(h => `
       <div class="hareket-item">
-        <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}">${h.tur==='Giriş'?'⬆':'⬇'}</div>
+        <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
         <div class="hareket-info">
           <div class="hareket-mal">${esc(h.malzeme)}</div>
           <div class="hareket-meta">${depoBadge(h.depo)} · <span title="${esc(fmt(new Date(h.tarih)))}">${timeAgo(new Date(h.tarih))}</span> · <span style="color:var(--muted);font-size:10px">${esc(fmt(new Date(h.tarih)))}</span>${h.personel?' · '+esc(h.personel):''}${h.belge?' · <span class="td-mono">'+esc(h.belge)+'</span>':''}</div>
@@ -261,7 +261,7 @@ export async function renderHareketList() {
         </div>
         <div style="display:flex;align-items:center;gap:10px">
           <div class="hareket-miktar ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.miktar}</div>
-          <button class="har-sil-btn" ${dClick('hareketSil',h.id,h.malzeme,h.depo,h.tur,h.miktar)} title="Sil / Geri Al">🗑</button>
+          <button class="har-sil-btn" ${dClick('hareketSil',h.id,h.malzeme,h.depo,h.tur,h.miktar)} title="Sil / Geri Al"><i data-lucide="trash-2"></i></button>
         </div>
       </div>`).join('');
 
@@ -337,10 +337,7 @@ export async function openMalHareket(dep, mal) {
     } else {
       liste.innerHTML = malHar.map(h => `
         <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
-          <div style="width:28px;height:28px;border-radius:50%;background:${h.tur==='Giriş'?'rgba(102,187,106,.15)':'rgba(239,83,80,.12)'};
-               display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">
-            ${h.tur==='Giriş'?'⬆':'⬇'}
-          </div>
+          <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}" style="width:28px;height:28px"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
           <div style="flex:1;min-width:0">
             <div style="font-size:12px;color:var(--ink2)">${esc(fmt(new Date(h.tarih)))}${h.personel?' · '+esc(h.personel):''}</div>
             ${h.not?`<div style="font-size:11px;color:var(--muted)">${esc(h.not)}</div>`:''}

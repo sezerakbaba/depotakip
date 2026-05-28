@@ -89,7 +89,7 @@ export function _talepMalApply(n, val, ad, dep, birim, mevcut, min) {
   if (cell) {
     cell.innerHTML = `<div class="talep-mal-secili">
       <span class="talep-mal-ad" ${dClick('talepMalModalAc',n)} title="Değiştirmek için tıklayın">${esc(ad)}</span>
-      <button class="talep-mal-temizle" type="button" ${dClick('talepMalTemizle',n)}>×</button>
+      <button class="talep-mal-temizle" type="button" ${dClick('talepMalTemizle',n)} title="Temizle"><i data-lucide="x"></i></button>
     </div>`;
   }
   const tr = document.getElementById('talep-satir-'+n);
@@ -112,7 +112,7 @@ export function talepMalTemizle(n) {
   const hid = document.getElementById('talep-hid-'+n);
   if (hid) hid.value = '';
   const cell = document.getElementById('talep-combo-'+n);
-  if (cell) cell.innerHTML = `<button class="talep-mal-btn" type="button" ${dClick('talepMalModalAc',n)}>📦 Malzeme Seç</button>`;
+  if (cell) cell.innerHTML = `<button class="talep-mal-btn" type="button" ${dClick('talepMalModalAc',n)}><i data-lucide="package" class="icon-inline"></i> Malzeme Seç</button>`;
   _talepSatirInfoTemizle(n);
   updateTalepToplam();
 }
@@ -344,9 +344,9 @@ export function renderTalepListesi() {
           <td style="text-align:center">${kalem}</td>
           <td><span class="talep-durum-badge ${durumCls(d)}">${esc(d)}</span></td>
           <td style="text-align:right;white-space:nowrap;display:flex;gap:4px;justify-content:flex-end">
-            ${bekliyor ? `<button class="btn btn-sm" style="background:color-mix(in srgb,var(--teal) 12%,transparent);color:var(--teal);border:1px solid var(--teal)" ${dClick('talepDurumGuncelle',t.id,'Onaylı')}>✓ Onayla</button>
-              <button class="btn btn-sm" style="background:color-mix(in srgb,var(--red) 10%,transparent);color:var(--red);border:1px solid var(--red)" ${dClick('talepDurumGuncelle',t.id,'Reddedildi')}>✕ Reddet</button>` : ''}
-            <button class="btn btn-sm btn-outline" ${dClick('talepGoruntule',t.id)}>👁 Görüntüle</button>
+            ${bekliyor ? `<button class="btn btn-sm btn-success" ${dClick('talepDurumGuncelle',t.id,'Onaylı')}><i data-lucide="check" class="icon-inline"></i> Onayla</button>
+              <button class="btn btn-sm btn-danger" ${dClick('talepDurumGuncelle',t.id,'Reddedildi')}><i data-lucide="x" class="icon-inline"></i> Reddet</button>` : ''}
+            <button class="btn btn-sm btn-outline" ${dClick('talepGoruntule',t.id)}><i data-lucide="eye" class="icon-inline"></i> Görüntüle</button>
           </td>
         </tr>`;
       }).join('')}
@@ -393,7 +393,7 @@ export function talepSatirEkle(malzemeVal) {
     <td style="min-width:180px">
       <input type="hidden" id="talep-hid-${n}" value="">
       <div class="talep-mal-cell" id="talep-combo-${n}">
-        <button class="talep-mal-btn" type="button" ${dClick('talepMalModalAc',n)}>📦 Malzeme Seç</button>
+        <button class="talep-mal-btn" type="button" ${dClick('talepMalModalAc',n)}><i data-lucide="package" class="icon-inline"></i> Malzeme Seç</button>
       </div>
     </td>
     <td class="t-depo-cell"></td>
@@ -401,7 +401,7 @@ export function talepSatirEkle(malzemeVal) {
     <td class="t-mevcut-cell" style="text-align:center"></td>
     <td><input type="number" class="talep-miktar" min="0" placeholder="0" ${dInput('updateTalepToplam')}></td>
     <td class="no-print" style="text-align:center">
-      <button ${dClick('talepSatirSil',n)} style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button>
+      <button ${dClick('talepSatirSil',n)} class="btn-icon-ghost" title="Satırı sil"><i data-lucide="x"></i></button>
     </td>`;
   tbody.appendChild(tr);
   if (malzemeVal) {
