@@ -46,13 +46,21 @@ export function applyTheme() {
   if (el) el.textContent = S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi';
 }
 
+// Hızlı/sürekli değişen ayarlarda (range slider, type-as-you-go) toast spam'i
+// önlemek için 600ms debounce — son durdurmadan sonra tek toast.
+let _ayarToastT = null;
+function _ayarToastDebounced() {
+  clearTimeout(_ayarToastT);
+  _ayarToastT = setTimeout(() => window.toast?.('Ayarlar kaydedildi ✓'), 600);
+}
 export function setAyar(key, val) {
   S.ayarlar[key] = val; ayarlariKaydet();
   if (key === 'kurumAdi') {
     const el = document.getElementById('sidebar-kurum-adi');
     if (el) el.textContent = val || 'Depo Yönetim Sistemi';
+    document.title = (val || 'Depo Yönetim Sistemi') + ' — Depo Takip';
   }
-  window.toast('Ayar kaydedildi ✓');
+  _ayarToastDebounced();
 }
 
 export function setTema(t) {

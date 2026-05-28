@@ -10,14 +10,6 @@ export function katBadgeHTML(kat){
   const cc=KAT_COLORS[kat]||{c:'#546e7a',bg:'#eceff1'};
   return '<span style="display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;background:'+cc.bg+';color:'+cc.c+'">'+esc(kat)+'</span>';
 }
-export function setKatFilter(el,val){
-  document.querySelectorAll('.filter-chip[data-kat]').forEach(c=>c.classList.remove('active'));
-  if(el&&el.classList)el.classList.add('active');
-  S.stokKatFilter=val;S.stokSayfa=0;
-  const sel=document.getElementById('stok-kat-select');
-  if(sel)sel.value=val;
-  renderStok();
-}
 export function setKatFilterSel(val){
   S.stokKatFilter=val;S.stokSayfa=0;
   renderStok();
@@ -46,15 +38,6 @@ export function setDepoFilter(el, val, color) {
   }
   S.stokDepoFilter=val;S.stokSayfa=0;
   renderStok();
-}
-
-export function resetStokSort() {
-  S.stokSortKey = null;
-  S.stokSortDir = 1;
-  ['ad','depo','kategori','mevcut','min','max','durum'].forEach(k => {
-    const el = document.getElementById('sort-'+k);
-    if (el) el.textContent = '';
-  });
 }
 
 export function stokSort(key) {
@@ -467,39 +450,18 @@ export function saveStok() {
     }).catch(e => console.warn('Hareket malzeme güncelleme:', e));
   }
   S.editKey.mal = yeniAd;
-  closeModal('modal-stok');window.refreshAll();
+  window.closeModal('modal-stok');window.refreshAll();
   window.toast(yeniKey!==eskiKey ? '"'+yeniAd+'" olarak güncellendi.' : 'Stok güncellendi.');
-}
-
-export function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-export function filterMalzemeList() {
-  const dep = document.getElementById('h-depo').value;
-  const sel = document.getElementById('h-malzeme');
-  if (!dep) { sel.innerHTML='<option>-- Önce depo seçin --</option>'; return; }
-  sel.innerHTML = getDepoItems(dep).map(i=>{
-    const s = getStok(dep, i.ad);
-    const d = durum(s.mevcut, s.min, s.max);
-    const flag = d==='Kritik' ? ' ⚠ kritik' : d==='Fazla' ? ' ↑ fazla' : '';
-    const mm = S.malzemeMeta[getKey(dep,i.ad)]||{};
-    const bir = mm.birim ? ` [${mm.birim}]` : '';
-    return `<option value="${i.ad}">${i.ad}${bir} — ${s.mevcut} mevcut${flag}</option>`;
-  }).join('') || '<option>Bu depoda malzeme yok</option>';
-  // Seçili malzemenin stok bilgisini göster
-  window.updateHareketStokBilgi();
 }
 
 // Expose on window for inline handlers
 window.katBadgeHTML = katBadgeHTML;
-window.setKatFilter = setKatFilter;
 window.setKatFilterSel = setKatFilterSel;
 window.setDurumFilter = setDurumFilter;
 window.setDepoFilter = setDepoFilter;
 window.stokSort = stokSort;
 window.openStokModal = openStokModal;
 window.saveStok = saveStok;
-window.closeModal = closeModal;
-window.filterMalzemeList = filterMalzemeList;
 window.renderStokSutunMenu = renderStokSutunMenu;
 window.toggleStokSutun = toggleStokSutun;
 window.renderStok = renderStok;

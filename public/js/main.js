@@ -383,7 +383,6 @@ const ACTIONS = {
   talepKaydet:          (_el, arg) => window.talepKaydet?.(arg),
   // Stok
   stokSort:             (_el, arg) => window.stokSort?.(arg),
-  setKatFilter:         (el, arg) => window.setKatFilter?.(el, arg),
   setKatFilterSel:      (el) => window.setKatFilterSel?.(el.value),
   setDepoFilter:        (el, val, color) => window.setDepoFilter?.(el, val, color),
   openStokModal:        (_el, key, dep, mal) => window.openStokModal?.(key, dep, mal),
@@ -631,6 +630,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
     window.toast('⚠ Sunucu bağlantısı yok — veriler kaydedilmeyecek', 'error');
   }
   ayarlariYukle();
+  document.title = (S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi') + ' — Depo Takip';
   talepListesiYukle();
   initStok();
   initSKT();
