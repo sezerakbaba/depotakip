@@ -63,7 +63,7 @@
 
 <!-- Token / Giriş Modal -->
 <div class="modal-overlay" id="modal-login" style="z-index:9999">
-  <div class="modal" style="max-width:420px;width:95%">
+  <div class="modal modal--sm">
     <div class="modal-header">
       <div class="modal-title"><i data-lucide="lock" class="icon-inline"></i> Sunucu Erişimi</div>
     </div>
@@ -83,28 +83,28 @@
 
 <!-- Malzeme Seçici Modal -->
 <div class="modal-overlay" id="modal-mal-sec">
-  <div class="modal" style="max-width:520px;width:95%;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
-    <div class="modal-header" style="padding:18px 20px 14px;flex-shrink:0">
+  <div class="modal modal--md modal--scroll">
+    <div class="modal-header">
       <div class="modal-title"><i data-lucide="package" class="icon-inline"></i> Malzeme Seç</div>
-      <button class="modal-close" data-action="closeModal" data-arg="modal-mal-sec">×</button>
+      <button class="modal-close" data-action="closeModal" data-arg="modal-mal-sec" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
-    <div style="padding:0 20px 12px;flex-shrink:0">
+    <div class="modal-toolbar">
       <div class="search-wrap" style="width:100%">
         <span class="search-icon"><i data-lucide="search"></i></span>
         <input type="text" id="mal-sec-ara" placeholder="Malzeme veya depo ara..." data-input="_talepMalModalRender" autocomplete="off">
       </div>
     </div>
-    <div id="mal-sec-depo-chips" style="display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 12px;flex-shrink:0"></div>
-    <div id="mal-sec-liste" style="flex:1;overflow-y:auto;min-height:0;border-top:1px solid var(--line)"></div>
+    <div id="mal-sec-depo-chips" class="modal-toolbar modal-chips"></div>
+    <div id="mal-sec-liste" class="modal-scroll-body"></div>
   </div>
 </div>
 
 <!-- Malzeme Hareket Geçmişi Modal -->
 <div class="modal-overlay" id="modal-mal-hareket">
-  <div class="modal" style="max-width:560px;width:95%">
+  <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="modal-mal-har-title">Hareket Geçmişi</div>
-      <button class="modal-close" data-action="closeModal" data-arg="modal-mal-hareket">×</button>
+      <button class="modal-close" data-action="closeModal" data-arg="modal-mal-hareket" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
     <div id="modal-mal-har-ozet" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 0 14px"></div>
     <div id="modal-mal-har-liste" style="max-height:340px;overflow-y:auto"></div>
@@ -790,7 +790,7 @@
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Stok Güncelle</div>
-      <button class="modal-close" data-action="closeModal" data-arg="modal-stok">×</button>
+      <button class="modal-close" data-action="closeModal" data-arg="modal-stok" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
     <div id="modal-stok-icerik"></div>
     <div style="display:flex;gap:10px;margin-top:20px">

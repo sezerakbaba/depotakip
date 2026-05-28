@@ -345,7 +345,7 @@ export function renderTalepListesi() {
           <td><span class="talep-durum-badge ${durumCls(d)}">${esc(d)}</span></td>
           <td style="text-align:right;white-space:nowrap;display:flex;gap:4px;justify-content:flex-end">
             ${bekliyor ? `<button class="btn btn-sm btn-success" ${dClick('talepDurumGuncelle',t.id,'Onaylı')}><i data-lucide="check" class="icon-inline"></i> Onayla</button>
-              <button class="btn btn-sm btn-danger" ${dClick('talepDurumGuncelle',t.id,'Reddedildi')}><i data-lucide="x" class="icon-inline"></i> Reddet</button>` : ''}
+              <button class="btn btn-sm btn-danger-soft" ${dClick('talepDurumGuncelle',t.id,'Reddedildi')}><i data-lucide="x" class="icon-inline"></i> Reddet</button>` : ''}
             <button class="btn btn-sm btn-outline" ${dClick('talepGoruntule',t.id)}><i data-lucide="eye" class="icon-inline"></i> Görüntüle</button>
           </td>
         </tr>`;
@@ -401,7 +401,7 @@ export function talepSatirEkle(malzemeVal) {
     <td class="t-mevcut-cell" style="text-align:center"></td>
     <td><input type="number" class="talep-miktar" min="0" placeholder="0" ${dInput('updateTalepToplam')}></td>
     <td class="no-print" style="text-align:center">
-      <button ${dClick('talepSatirSil',n)} class="btn-icon-ghost" title="Satırı sil"><i data-lucide="x"></i></button>
+      <button ${dClick('talepSatirSil',n)} class="btn btn-sm btn-ghost btn-icon" title="Satırı sil"><i data-lucide="x"></i></button>
     </td>`;
   tbody.appendChild(tr);
   if (malzemeVal) {

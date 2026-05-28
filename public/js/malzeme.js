@@ -86,7 +86,7 @@ export function renderMalzemeEkleList() {
       <td>${durumBadge(d)}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,item.depo,item.ad)} style="margin-right:4px" title="Düzenle"><i data-lucide="pencil"></i></button>
-        <button class="btn btn-sm btn-danger-ghost" ${dClick('malzemeSil',item.depo,item.ad)} title="Sil"><i data-lucide="trash-2"></i></button>
+        <button class="btn btn-sm btn-danger-soft btn-icon" ${dClick('malzemeSil',item.depo,item.ad)} title="Sil"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   });

@@ -576,21 +576,35 @@ tbody td {
 .td-name { font-weight: 600; color: var(--ink); white-space: normal; word-break: break-word; }
 .td-mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
 
-/* ── Badges ── */
+/* ── Badges (kurumsal sade) ───────────────────────────────────────
+   Tek base + 4 durum varyantı (success/warning/danger/info) +
+   neutral. Depo kod badge'leri renkleri kendi inline style ile getirir
+   (DEPO_META.color); .badge--code mono + kompakt. */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  line-height: 1.5;
+  white-space: nowrap;
 }
-.badge-normal { background: var(--teal-bg); color: var(--teal); }
-.badge-kritik { background: var(--red-bg); color: var(--red); }
-.badge-fazla  { background: var(--amb-bg); color: var(--amber); }
+.badge-normal,  .badge--success { background: var(--success-bg); color: var(--success); }
+.badge-kritik,  .badge--danger  { background: var(--danger-bg);  color: var(--danger);  }
+.badge-fazla,   .badge--warning { background: var(--warning-bg); color: var(--warning); }
+.badge--info    { background: var(--info-bg); color: var(--info); }
+.badge--neutral { background: var(--surface-0); color: var(--text-secondary); }
 
-/* Depo renk badges */
+/* Depo kodu (eski .badge-td/od/ay/kd/kgd legacy alias olarak kalır,
+   yeni kod inline style + .badge--code kullanmalı) */
+.badge--code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .5px;
+  padding: 2px var(--s-2);
+}
 .badge-td  { background: var(--td-bg);  color: var(--td);  }
 .badge-od  { background: var(--od-bg);  color: var(--od);  }
 .badge-ay  { background: var(--ay-bg);  color: var(--ay);  }
@@ -620,45 +634,97 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus { border-color: var(--teal); }
 textarea { resize: vertical; min-height: 70px; }
 
-/* ── Buttons ── */
+/* ── Buttons (kurumsal sade) ──────────────────────────────────────
+   3 ana varyant: primary / outline / ghost
+   2 boyut:      varsayılan (32h) / sm (24h)
+   Modifier:     danger / success / icon-only / *-soft (translucent)
+   Glow ve translateY hover'lar kurumsal disipline geçildi: subtle
+   border ve background değişimi yeterli. */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-3);
+  height: 32px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
   cursor: pointer;
-  border: none;
-  transition: all .18s cubic-bezier(.4,0,.2,1);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  transition: background var(--motion-fast), color var(--motion-fast),
+              border-color var(--motion-fast), box-shadow var(--motion-fast);
+  white-space: nowrap;
 }
-.btn-primary {
-  background: var(--gradient-primary);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0,137,123,.3);
-}
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0,137,123,.45);
-  filter: brightness(1.05);
-}
-.btn-primary:active { transform: translateY(0); }
-.btn-danger  { background: var(--red);  color: #fff; box-shadow: 0 2px 8px rgba(211,47,47,.2); }
-.btn-danger:hover  { background: #b71c1c; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(211,47,47,.35); }
-.btn-outline { background: transparent; color: var(--ink2); border: 1.5px solid var(--line); }
-.btn-outline:hover { border-color: var(--teal); color: var(--teal); background: rgba(0,137,123,.04); transform: translateY(-1px); }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
 
-/* ── Button group ── */
+.btn-primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn-outline:hover {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+.btn-ghost:hover { background: var(--surface-0); color: var(--text-primary); }
+
+/* Destructive primary (solid red) */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.btn-danger:hover { filter: brightness(.92); }
+
+/* Soft / inline destructive — daha az sert (örn. "Reddet") */
+.btn-danger-soft {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.btn-danger-soft:hover { background: color-mix(in srgb, var(--danger) 18%, transparent); }
+
+/* Soft success — onay aksiyonları */
+.btn-success {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+.btn-success:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
+
+/* Boyut */
+.btn-sm { height: 24px; padding: 0 var(--s-3); font-size: var(--fs-sm); }
+
+/* Sadece ikon (kare) */
+.btn-icon { width: 32px; padding: 0; }
+.btn-icon.btn-sm { width: 24px; }
+
+/* ── Button group ──────────────────────────────────────────────── */
 .btn-group { display: inline-flex; }
-.btn-group .btn { border-radius: 0; border-right-width: 0; }
-.btn-group .btn:first-child { border-radius: 8px 0 0 8px; }
-.btn-group .btn:last-child  { border-radius: 0 8px 8px 0; border-right-width: 1.5px; }
-.btn-group .btn-outline + .btn-outline { border-left-width: 0; }
-.btn-group .btn-outline + .btn-outline:hover,
-.btn-group .btn-outline + .btn-outline.btn-primary { border-left-width: 1.5px; }
+.btn-group .btn { border-radius: 0; }
+.btn-group .btn + .btn { border-left-width: 0; }
+.btn-group .btn:first-child { border-radius: var(--r-sm) 0 0 var(--r-sm); }
+.btn-group .btn:last-child  { border-radius: 0 var(--r-sm) var(--r-sm) 0; }
 
 /* ── Stok bar ── */
 .stok-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
@@ -770,36 +836,57 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .modal-overlay.open { opacity: 1; pointer-events: all; }
 .modal {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 28px;
+  background: var(--surface-1);
+  border-radius: var(--r-lg);
+  padding: var(--s-6);
   width: 560px;
   max-width: 95vw;
-  box-shadow: 0 32px 80px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.12);
-  transform: scale(.94) translateY(8px);
-  transition: transform .28s cubic-bezier(.34,1.2,.64,1), opacity .25s;
+  box-shadow: var(--el-3);
+  transform: scale(.96) translateY(6px);
+  transition: transform var(--motion-base), opacity var(--motion-base);
   opacity: 0;
 }
 .modal-overlay.open .modal { transform: scale(1) translateY(0); opacity: 1; }
+/* Boyut varyantları */
+.modal--sm { width: 420px; }
+.modal--md { width: 520px; }
+.modal--lg { width: 720px; }
+/* Scroll: header sabit, içerik kaydırılır (malzeme seçici tipi) */
+.modal--scroll {
+  max-height: 90vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal--scroll > .modal-header { padding: var(--s-5) var(--s-5) var(--s-3); margin: 0; flex-shrink: 0; }
+.modal-toolbar { padding: 0 var(--s-5) var(--s-3); flex-shrink: 0; }
+.modal-toolbar.modal-chips { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.modal-scroll-body { flex: 1; overflow-y: auto; min-height: 0; border-top: 1px solid var(--border); }
+
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  margin-bottom: var(--s-5);
 }
-.modal-title { font-size: 16px; font-weight: 700; }
+.modal-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
 .modal-close {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%;
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm);
   cursor: pointer;
-  background: var(--bg);
-  color: var(--muted);
-  border: none;
-  font-size: 18px;
-  transition: all .15s;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: background var(--motion-fast), color var(--motion-fast);
 }
-.modal-close:hover { background: var(--red-bg); color: var(--red); }
+.modal-close:hover { background: var(--surface-0); color: var(--text-primary); }
+.modal-close svg { width: 16px; height: 16px; stroke-width: 2; }
 
 /* ── Detay back ── */
 .back-btn {
@@ -2228,34 +2315,5 @@ mark.stok-vurgu {
 }
 .ozel-star svg { fill: var(--accent); }
 
-/* Buton varyantları */
-.btn-success {
-  background: color-mix(in srgb, var(--success) 12%, transparent);
-  color: var(--success);
-  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
-}
-.btn-success:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
-.btn-danger {
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
-  color: var(--danger);
-  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
-}
-.btn-danger:hover { background: color-mix(in srgb, var(--danger) 18%, transparent); }
-.btn-danger-ghost {
-  background: var(--danger-bg);
-  color: var(--danger);
-  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
-  padding: 4px 10px;
-  font-size: var(--fs-xs);
-}
-.btn-danger-ghost:hover { background: color-mix(in srgb, var(--danger) 14%, var(--danger-bg)); }
-.btn-icon-ghost {
-  background: transparent;
-  border: 0;
-  color: var(--text-muted);
-  cursor: pointer;
-  width: 28px; height: 28px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: var(--r-sm);
-}
-.btn-icon-ghost:hover { background: var(--surface-0); color: var(--text-secondary); }
+/* Buton varyantları kanonik tanımı yukarıda (Aşama B). Bu blok eski
+   duplicate tanımları içeriyordu; B'de tek yere taşındı. */
