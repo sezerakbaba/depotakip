@@ -89,13 +89,6 @@ html[data-theme="light"] {
   vertical-align: middle;
 }
 
-/* Hamburger button icon */
-#hamburger svg {
-  width: 18px; height: 18px;
-  color: rgba(255,255,255,.8);
-  stroke-width: 2;
-}
-
 /* Inline icons inside buttons, headers, labels (icon-inline class) */
 .icon-inline {
   display: inline-flex;
@@ -146,7 +139,7 @@ body {
 #sidebar {
   width: var(--sidebar-w);
   min-height: 100vh;
-  background: var(--gradient-sidebar);
+  background: var(--surface-2);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -154,44 +147,31 @@ body {
   z-index: 100;
   transition: transform .28s cubic-bezier(.4,0,.2,1);
   border-right: 1px solid rgba(255,255,255,.06);
-  box-shadow: 2px 0 20px rgba(0,0,0,.25);
 }
 
-/* Logo alanı */
+/* Logo alanı — düz, glow yok */
 .sidebar-logo {
-  padding: 22px 18px 18px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  padding: 18px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
   display: flex;
   align-items: center;
   gap: 12px;
+  height: 56px;
 }
 .sidebar-logo-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  background: var(--gradient-primary);
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  background: var(--accent);
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px;
   flex-shrink: 0;
-  box-shadow: 0 3px 12px rgba(0,191,165,.35);
-  transition: box-shadow .2s;
 }
-.sidebar-logo:hover .sidebar-logo-icon {
-  box-shadow: 0 4px 16px rgba(0,191,165,.5);
-}
-.sidebar-logo-text .logo-badge {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 2.5px;
-  color: var(--teal2);
-  text-transform: uppercase;
-  line-height: 1;
-  margin-bottom: 3px;
-}
-.sidebar-logo-text h1 {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(255,255,255,.85);
-  line-height: 1.35;
+.sidebar-logo-icon svg { color: #fff; }
+.sidebar-logo-text {
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  color: rgba(255,255,255,.92);
+  line-height: 1.3;
+  letter-spacing: -.1px;
 }
 
 /* Nav */
@@ -230,7 +210,7 @@ nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 
   padding-left: 16px;
 }
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(0,191,165,.18) 0%, rgba(0,191,165,.05) 100%);
+  background: rgba(0,191,165,.12);
   color: var(--teal2);
   border-left: 2px solid var(--teal2);
   padding-left: 12px;
@@ -271,28 +251,71 @@ nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 
   transition: margin-left .2s;
 }
 
-#clock-widget {
-  position: absolute;
-  top: 28px;
-  right: 28px;
+/* ── Topbar ─────────────────────────────────────────────── */
+#topbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
   display: flex;
   align-items: center;
-  gap: 8px;
-  z-index: 50;
-  pointer-events: none;
+  gap: var(--s-3);
+  height: 56px;
+  padding: 0 var(--s-6);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--el-1);
+}
+#topbar-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  letter-spacing: -.2px;
+  flex: 1;
+  min-width: 0;
+}
+#topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-shrink: 0;
+}
+.topbar-btn {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.topbar-btn:hover { background: var(--surface-0); color: var(--text-primary); }
+.topbar-btn svg { width: 16px; height: 16px; stroke-width: 2; }
+
+#clock-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+#topbar-clock {
+  font-size: var(--fs-md);
+  color: var(--text-secondary);
+  font-weight: var(--fw-medium);
 }
 .clock-sep {
   width: 1px; height: 14px;
-  background: var(--line);
+  background: var(--border);
   flex-shrink: 0;
 }
 #topbar-date {
-  font-size: 11px;
-  color: var(--muted);
-  font-family: 'IBM Plex Mono', monospace;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
 }
 
-#content { position: relative; padding: 28px; flex: 1; }
+#content { position: relative; padding: var(--s-6); flex: 1; }
 
 /* ── Pages ── */
 .page { display: none; animation: fadeIn .25s ease; }
@@ -339,24 +362,21 @@ nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 
 .empty-state .empty-title { font-size: 14px; font-weight: 600; color: var(--ink2); }
 .empty-state .empty-desc  { font-size: 12px; color: var(--muted); max-width: 260px; line-height: 1.6; }
 
-/* ── Hamburger / mobile ── */
+/* ── Hamburger (sadece mobile'da görünür) ── */
 #hamburger {
   display: none;
-  position: fixed;
-  top: 10px; left: 10px;
-  z-index: 201;
-  background: #0b1120;
-  color: rgba(255,255,255,.8);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 9px;
-  width: 36px; height: 36px;
+  width: 32px; height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 16px;
   align-items: center; justify-content: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,.3);
-  transition: background .15s;
+  transition: background var(--motion-fast);
+  flex-shrink: 0;
 }
-#hamburger:hover { background: #1a2540; }
+#hamburger:hover { background: var(--surface-0); color: var(--text-primary); }
+#hamburger svg { width: 18px; height: 18px; color: currentColor; stroke-width: 2; }
 #sidebar-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.6);
@@ -1443,21 +1463,19 @@ textarea { resize: vertical; min-height: 70px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
-  gap: 12px;
+  margin-bottom: var(--s-3);
+  gap: var(--s-3);
   flex-wrap: wrap;
 }
-.page-header-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -.3px;
-}
+/* Topbar zaten sayfa başlığını gösteriyor; sadece alt yazı + aksiyon kalır */
+.page-header-title { display: none; }
 .page-header-sub {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 0;
 }
+/* Alt yazısı olmayan page-header'ları collapse et (action buton sağa hizalı kalsın) */
+.page-header:not(:has(.page-header-sub)) { margin-bottom: 0; }
 
 /* ── Grid yardımcıları ── */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }

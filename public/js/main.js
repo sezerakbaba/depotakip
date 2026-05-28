@@ -83,6 +83,8 @@ export function navigate(page) {
   document.getElementById('page-' + page).classList.add('active');
   const ni = document.querySelector(`.nav-item[data-action="navigate"][data-arg="${page}"]`);
   if (ni) ni.classList.add('active');
+  const tt = document.getElementById('topbar-title');
+  if (tt) tt.textContent = PAGE_TITLES[page] || page;
 
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -326,7 +328,25 @@ function _setAyarTalepOnPek(el) {
 function _toggleStokSutunChg(el, key) {
   window.toggleStokSutun?.(key, el.checked);
 }
-function _setTemaThen(_el, t) { window.setTema?.(t); }
+function _setTemaThen(_el, t) { window.setTema?.(t); _syncThemeToggleIcon(); }
+
+// Tema toggle (topbar): light → dark → auto → light
+const _TEMA_NEXT = { light: 'dark', dark: 'auto', auto: 'light' };
+const _TEMA_ICON = { light: 'sun', dark: 'moon', auto: 'sun-moon' };
+function _cycleTema() {
+  const cur = S.ayarlar.tema || 'auto';
+  window.setTema?.(_TEMA_NEXT[cur] || 'light');
+  _syncThemeToggleIcon();
+}
+function _syncThemeToggleIcon() {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const cur = S.ayarlar.tema || 'auto';
+  const ico = _TEMA_ICON[cur] || 'sun-moon';
+  btn.innerHTML = `<i data-lucide="${ico}"></i>`;
+  btn.title = 'Tema: ' + cur + ' (değiştirmek için tıkla)';
+  if (window.lucide) lucide.createIcons({ nodes: [btn] });
+}
 function _setTarihFormatThen(_el, fmt) {
   window.setAyar?.('tarihFormat', fmt);
   window.renderAyarlar?.();
@@ -419,6 +439,7 @@ const ACTIONS = {
   talepGoruntule:       (_el, id) => window.talepGoruntule?.(+id),
   // Ayarlar
   setTema:              _setTemaThen,
+  cycleTema:            _cycleTema,
   setTarihFormat:       _setTarihFormatThen,
   birimSil:             (_el, b) => window.birimSil?.(b),
   birimEkle:            () => window.birimEkle?.(),
@@ -631,6 +652,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
   }
   ayarlariYukle();
   document.title = (S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi') + ' — Depo Takip';
+  _syncThemeToggleIcon();
   talepListesiYukle();
   initStok();
   initSKT();
