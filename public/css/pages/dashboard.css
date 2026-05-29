@@ -1,0 +1,189 @@
+/* ══════════════════════════════════════════
+   DASHBOARD C — OPERASYONEL
+══════════════════════════════════════════ */
+/* ── Dashboard KPI'ları (kurumsal sade, tek accent) ──────────────
+   Eski 4 farklı renkli kart yerine: nötr arka plan + sol kenar
+   accent şerit. Sadece "Kritik" rakamı --danger ile vurgulanır. */
+.c-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+.c-kpi {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  padding: var(--s-4);
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  position: relative;
+  overflow: hidden;
+  min-height: 80px;
+  border-left: 3px solid var(--accent);
+}
+/* Renkli ::after şeridi kaldırıldı — border-left tek kaynak */
+.c-kpi::after { display: none; }
+/* Kritik kartında sol şerit kırmızı */
+.c-kpi.amber, .c-kpi.red { border-left-color: var(--danger); }
+
+.c-kpi-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: var(--surface-0);
+  color: var(--text-secondary);
+}
+.c-kpi-icon svg { width: 20px; height: 20px; stroke-width: 1.75; }
+.c-kpi.amber .c-kpi-icon, .c-kpi.red .c-kpi-icon { color: var(--danger); }
+
+.c-kpi-body { flex: 1; min-width: 0; }
+.c-kpi-label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-weight: var(--fw-medium);
+}
+.c-kpi-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+.c-kpi.amber .c-kpi-val, .c-kpi.red .c-kpi-val { color: var(--danger); }
+.c-kpi-sub { font-size: var(--fs-xs); color: var(--text-muted); margin-top: var(--s-1); }
+#dash-sparkline { margin-top: var(--s-1); opacity: .7; line-height: 0; }
+
+/* ── Depo kartları (nötr + sol kenar depo rengi) ────────────────── */
+.c-depo-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+.c-depo-card {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--depo-color, var(--accent));
+  padding: var(--s-3) var(--s-4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+.c-depo-card:hover { background: var(--surface-0); }
+.c-depo-card.has-critical { box-shadow: inset 0 -2px 0 var(--danger); }
+
+.c-depo-info { flex: 1; min-width: 0; }
+.c-depo-name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c-depo-cnt { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+.c-depo-bar {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--surface-0);
+  overflow: hidden;
+  margin-top: var(--s-2);
+}
+.c-depo-bar-fill {
+  height: 100%;
+  background: var(--depo-color, var(--accent));
+  border-radius: 3px;
+  transition: width var(--motion-slow);
+}
+.c-depo-card.has-critical .c-depo-bar-fill { background: var(--danger); }
+.c-depo-arrow { color: var(--text-muted); flex-shrink: 0; display: inline-flex; }
+.c-depo-arrow svg { width: 16px; height: 16px; stroke-width: 2; }
+
+.depo-card-status { display: inline-flex; align-items: center; gap: 3px; font-weight: var(--fw-medium); }
+.depo-card-status.status-ok     { color: var(--success); }
+.depo-card-status.status-danger { color: var(--danger); }
+
+/* Ana 2 kolon */
+.c-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Kritik liste dashboard */
+.dash-kritik-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--line);
+}
+.dash-kritik-item:last-child { border-bottom: none; }
+.dash-warn {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--red-bg); color: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.dash-kritik-ad { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-kritik-depo { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.dash-kritik-stok {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  color: var(--red); flex-shrink: 0;
+}
+
+/* ── Hareket log ── */
+.hareket-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.hareket-item:last-child { border-bottom: none; }
+.hareket-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dot-giris { background: var(--success-bg); color: var(--success); }
+.dot-cikis { background: var(--danger-bg);  color: var(--danger); }
+.hareket-info { flex: 1; }
+.hareket-mal { font-size: var(--fs-md); font-weight: var(--fw-semibold); color: var(--text-primary); }
+.hareket-meta { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+.hareket-miktar { font-family: var(--font-mono); font-size: var(--fs-md); font-weight: var(--fw-semibold); }
+.giris-clr { color: var(--success); }
+.cikis-clr { color: var(--danger); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Print stilleri → public/css/print.css (S7) — index.html'de
+   <link media="print">  ile lazy yüklenir. */
+
+
+/* Marka badge */
+.marka-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  margin-top: 4px;
+  letter-spacing: .3px;
+  cursor: default;
+}
+

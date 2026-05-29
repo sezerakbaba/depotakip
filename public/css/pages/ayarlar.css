@@ -1,0 +1,91 @@
+/* ── Ayarlar Sayfası ── */
+.ayarlar-grid { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
+.ayarlar-nav {
+  position: sticky; top: 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.ayarlar-search {
+  position: relative;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+.ayarlar-search i { color: var(--muted); width: 14px; height: 14px; flex-shrink: 0; }
+.ayarlar-search input {
+  border: none; background: transparent; outline: none;
+  flex: 1; font-size: 13px; color: var(--ink); min-width: 0;
+  padding: 2px 0;
+}
+.ayarlar-search-clear {
+  border: none; background: transparent; cursor: pointer;
+  color: var(--muted); font-size: 16px; line-height: 1; padding: 0 4px;
+}
+.ayarlar-search-clear:hover { color: var(--red); }
+.ayarlar-nav-list { display: flex; flex-direction: column; gap: 2px; }
+.ayar-nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; text-align: left;
+  padding: 9px 12px;
+  background: transparent; border: none;
+  border-radius: 8px;
+  font-size: 13px; color: var(--ink2); cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.ayar-nav-btn i { width: 16px; height: 16px; flex-shrink: 0; }
+.ayar-nav-btn:hover { background: var(--bg); color: var(--ink); }
+.ayar-nav-btn.active {
+  background: var(--teal);
+  color: #fff;
+  font-weight: 600;
+}
+.ayar-nav-btn.active i { color: #fff; }
+.ayarlar-panel { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+@media (max-width: 900px) {
+  .ayarlar-grid { grid-template-columns: 1fr; }
+  .ayarlar-nav { position: static; }
+  .ayarlar-nav-list { flex-direction: row; flex-wrap: wrap; }
+  .ayar-nav-btn { width: auto; }
+}
+.ayar-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0; border-bottom: 1px solid var(--line); gap: 12px;
+}
+.ayar-row:last-child { border-bottom: none; }
+.ayar-label { font-size: 13px; color: var(--ink2); }
+.ayar-label small { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
+/* input varyantları */
+.ayar-input      { width: 80px; text-align: center; padding: 7px 10px; }
+.ayar-input-sm   { width: 90px; padding: 7px 10px; }
+.ayar-input-md   { width: 200px; padding: 7px 10px; }
+.ayar-input-full { width: 100%; max-width: 480px; padding: 7px 10px; }
+.ayar-input-sel  { min-width: 130px; padding: 7px 10px; }
+/* alt bölüm */
+.ayar-subsection { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.ayar-section-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--ink2); }
+.ayar-add-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+/* birim etiketleri */
+.birim-tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.birim-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--bg); border: 1px solid var(--line);
+  font-size: 12px; color: var(--ink2);
+}
+.birim-tag button {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 15px; line-height: 1; padding: 0;
+}
+.birim-tag button:hover { color: var(--red); }
+.ayar-color-inp {
+  width: 38px; height: 34px; padding: 2px; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 8px; background: var(--white);
+  flex-shrink: 0;
+}
+
