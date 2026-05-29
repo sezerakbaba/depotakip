@@ -196,6 +196,7 @@ export async function apiHareketList(params = {}) {
     tur      : params.tur      ?? '',
     tarih_min: params.tarih_min ?? '',
     tarih_max: params.tarih_max ?? '',
+    personel : params.personel ?? '',
     q        : params.q        ?? '',
   });
   const r = await apiFetch(API_URL + '?' + qs);

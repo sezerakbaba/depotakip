@@ -1,5 +1,5 @@
 import { S, STOK_SUTUNLAR, KAT_COLORS, KAYNAK, API_URL } from './state.js';
-import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, escKey, escQ, getKey, dClick, dChange } from './ui-common.js';
+import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, getKey, dClick, dChange } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -190,7 +190,7 @@ export function renderStok(){
     const pct=s.max>0?Math.min(100,Math.round((s.mevcut/s.max)*100)):0;
     const minPct=s.max>0?Math.min(100,Math.round((s.min/s.max)*100)):0;
     const fc=d==='Kritik'?'fill-kritik':d==='Fazla'?'fill-fazla':'fill-normal';
-    const key=escKey(item.depo,item.ad);
+    const key=getKey(item.depo,item.ad);
     const katCell=item.kategori?katBadgeHTML(item.kategori):'<span style="font-size:11px;color:var(--muted)">—</span>';
     const birCell=item.birim?esc(item.birim):'<span style="color:var(--muted)">—</span>';
     const rowCls = d==='Kritik' ? 'row-kritik' : d==='Fazla' ? 'row-fazla' : '';

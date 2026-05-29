@@ -1,5 +1,5 @@
 import { S, DEPO_META } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, escKey, getKey, dClick } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, getKey, dClick } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // KRİTİK STOK & DEPO DETAY
@@ -89,7 +89,7 @@ export function goDetay(dep) {
     const d=durum(s.mevcut,s.min,s.max);
     const pct=s.max>0?Math.min(100,Math.round((s.mevcut/s.max)*100)):0;
     const fillCls=d==='Kritik'?'fill-kritik':d==='Fazla'?'fill-fazla':'fill-normal';
-    const key=escKey(dep,item.ad);
+    const key=getKey(dep,item.ad);
     const rowCls2 = d==='Kritik'?'row-kritik':d==='Fazla'?'row-fazla':'';
     rows+=`<tr class="${rowCls2}">
       <td class="td-mono" style="color:var(--muted)">${idx+1}</td>

@@ -386,18 +386,25 @@ app.get('/api', async (req, res) => {
       const tur     = req.query.tur     || '';
       const tarihMin = req.query.tarih_min || '';
       const tarihMax = req.query.tarih_max || '';
+      const personel = req.query.personel || '';
       const q       = req.query.q        || '';
 
       const where = [];
       const params = [];
+      // LIKE wildcard escape helper
+      const escLike = s => '%' + String(s).replace(/[\\%_]/g, ch => '\\' + ch) + '%';
       if (depo)     { where.push('depo = ?');    params.push(depo); }
       if (malzeme)  { where.push('malzeme = ?'); params.push(malzeme); }
       if (tur && (tur === 'Giriş' || tur === 'Çıkış')) { where.push('tur = ?'); params.push(tur); }
       if (tarihMin) { where.push("substr(tarih,1,10) >= ?"); params.push(tarihMin); }
       if (tarihMax) { where.push("substr(tarih,1,10) <= ?"); params.push(tarihMax); }
+      if (personel) {
+        where.push("personel LIKE ? ESCAPE '\\'");
+        params.push(escLike(personel));
+      }
       if (q) {
         // LIKE wildcard'larını escape et — kullanıcı literal '%' ya da '_' arayabilsin
-        const like = '%' + q.replace(/[\\%_]/g, ch => '\\' + ch) + '%';
+        const like = escLike(q);
         where.push("(malzeme LIKE ? ESCAPE '\\' OR depo LIKE ? ESCAPE '\\' OR personel LIKE ? ESCAPE '\\' OR belge LIKE ? ESCAPE '\\')");
         params.push(like, like, like, like);
       }

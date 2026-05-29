@@ -1,5 +1,5 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, PAGE_TITLES, STOK_INIT, SKT_INIT, API_URL } from './state.js';
-import { esc, escQ, getKey, updateClock, checkKritikNotification, dClick } from './ui-common.js';
+import { esc, getKey, updateClock, checkKritikNotification, dClick } from './ui-common.js';
 import { apiPing, apiLoad, apiSave, apiSaveFlush, apiBackupOlustur, apiReset } from './api.js';
 import { renderDashboard } from './dashboard.js';
 import { renderStok, katBadgeHTML } from './stok.js';

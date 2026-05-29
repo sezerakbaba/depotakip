@@ -451,7 +451,7 @@ nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 
   #sidebar.open { transform: translateX(0); }
   #sidebar-overlay.open { display: block; }
   /* Mobil sidebar açılınca tam menü görünsün */
-  .sidebar-logo-text, .nav-item .nav-text, .sidebar-footer, .logo-badge { display: revert; }
+  .sidebar-logo-text, .nav-item .nav-text, .sidebar-footer { display: revert; }
   .nav-item { justify-content: flex-start; padding: 9px 10px 9px 14px; }
   .nav-item .icon { font-size: 15px; }
   .nav-item::after { display: none !important; } /* tooltip kapalı */
@@ -1915,7 +1915,7 @@ thead th.sortable:hover { color: var(--teal); background: color-mix(in srgb, var
    ══════════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
   :root { --sidebar-w: 68px; }
-  .sidebar-logo-text, .nav-item .nav-text, .sidebar-footer, .logo-badge { display: none; }
+  .sidebar-logo-text, .nav-item .nav-text, .sidebar-footer { display: none; }
   .nav-item { justify-content: center; padding: 12px; position: relative; }
   .nav-item .icon { font-size: 18px; margin: 0; }
 .sidebar-logo { justify-content: center; padding: 15px 0; }

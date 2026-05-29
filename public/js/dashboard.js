@@ -1,6 +1,6 @@
 import { S, DEPO_META, API_URL } from './state.js';
 import { apiFetch } from './api.js';
-import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, escQ, fmt, timeAgo, dClick } from './ui-common.js';
+import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, fmt, timeAgo, dClick } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // DASHBOARD

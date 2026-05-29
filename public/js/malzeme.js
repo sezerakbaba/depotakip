@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, escKey, getKey, dClick } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, getKey, dClick } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // MALZEME EKLE / SİL
@@ -72,7 +72,7 @@ export function renderMalzemeEkleList() {
     const s   = getStok(item.depo, item.ad);
     const d   = durum(s.mevcut, s.min, s.max);
     const mm  = S.malzemeMeta[getKey(item.depo,item.ad)]||{};
-    const key = escKey(item.depo, item.ad);
+    const key = getKey(item.depo, item.ad);
     const sktHtml = mm.skt ? '<br>'+window.sktBadge(mm.skt) : '';
     const ozelStar = item.ozel ? '<i data-lucide="star" class="icon-inline ozel-star" title="Özel ekleme"></i>' : '';
     const birimTxt = mm.birim || item.birim || '—';

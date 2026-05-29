@@ -1,5 +1,5 @@
 import { S, API_URL } from './state.js';
-import { getAllItems, getStok, durum, esc, escQ, getKey, dClick } from './ui-common.js';
+import { getAllItems, getStok, durum, esc, getKey, dClick } from './ui-common.js';
 import { apiFetch, apiBackupList, apiBackupLoad, apiHareketList } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -68,6 +68,7 @@ export async function exportHareketExcel() {
       tur,
       tarih_min: S.harTarihBas || '',
       tarih_max: S.harTarihBit || '',
+      personel: S.harPersonelFilter || '',
       q,
     });
     const filtered = result.hareketler;

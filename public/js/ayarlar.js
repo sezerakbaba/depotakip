@@ -1,5 +1,5 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
-import { esc, escQ, dClick, dChange, dInput, dKeydown } from './ui-common.js';
+import { esc, dClick, dChange, dInput, dKeydown } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -150,10 +150,11 @@ export function renderAyarlar() {
       <input type="checkbox" ${S.ayarlar.hareketNot?'checked':''} ${dChange('setAyarBool','hareketNot')}></div>
     <div class="ayar-row"><div class="ayar-label">Kritik stok bildirimi<small>${
       !('Notification' in window) ? 'Tarayıcınız desteklemiyor' :
+      !window.isSecureContext     ? "HTTPS gerektirir (sunucu HTTP'de bildirim alınmaz)" :
       Notification.permission === 'granted' ? 'İzin verildi ✓' :
       Notification.permission === 'denied'  ? 'Tarayıcıda engellendi' : 'İzin gerekiyor'
     }</small></div>
-      <button class="btn btn-sm ${S.ayarlar.bildirimAktif?'btn-primary':'btn-outline'}" ${dClick('bildirimIzniSor')}>${
+      <button class="btn btn-sm ${S.ayarlar.bildirimAktif?'btn-primary':'btn-outline'}" ${!window.isSecureContext?'disabled':''} ${dClick('bildirimIzniSor')}>${
         S.ayarlar.bildirimAktif ? 'Aktif — Kapat' : 'Bildirimleri Aç'
       }</button></div>
   </div></div>`;

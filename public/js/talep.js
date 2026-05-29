@@ -1,5 +1,5 @@
 import { S, API_URL } from './state.js';
-import { getAllItems, getStok, durum, depoBadge, esc, escQ, getKey, fmtGun, dClick, dInput, dChange } from './ui-common.js';
+import { getAllItems, getStok, durum, depoBadge, esc, getKey, fmtGun, dClick, dInput, dChange } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════

@@ -224,10 +224,11 @@ export async function renderHareketList() {
     const result = await apiHareketList({
       offset   : S.harSayfa * S.ayarlar.harSayfaBoy,
       limit    : S.ayarlar.harSayfaBoy,
-      depo     : S.harDepoFilter   || '',
+      depo     : S.harDepoFilter      || '',
       tur,
-      tarih_min: S.harTarihBas     || '',
-      tarih_max: S.harTarihBit     || '',
+      tarih_min: S.harTarihBas        || '',
+      tarih_max: S.harTarihBit        || '',
+      personel : S.harPersonelFilter  || '',
       q,
     });
 

@@ -16,8 +16,9 @@ export function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-export function escKey(dep, mal) { return (dep+'||'+mal).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-// onclick="fn('${escQ(x)}')" gibi inline handler'larda güvenli (önce JS-string, sonra HTML-attr kaçışı)
+// HTML attribute içinde JS string + attribute escape (sadece <option
+// value="${escQ(...)}"> gibi nadir kullanım için kalır; inline onclick
+// pattern'i artık yok — data-action + JSON args ile temin ediliyor).
 export function escQ(s) { return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r?\n/g,'\\n'); }
 
 // FIX: Varsayılan min=0, max=0 → stok girilmeden hiçbir şey kritik değil
@@ -93,9 +94,21 @@ export function toast(msg, type='success') {
   setTimeout(()=> t.className='', 2800);
 }
 
+// Notification API yalnızca güvenli context'lerde (HTTPS + localhost)
+// kullanılabilir; HTTP origin'de izin istemi kabul edilmez. window.
+// isSecureContext browser-native bayrağı bu durumu özetler.
+export function notificationDestekleniyor() {
+  return 'Notification' in window && window.isSecureContext;
+}
+export function notificationDurumu() {
+  if (!('Notification' in window))  return 'unsupported';
+  if (!window.isSecureContext)      return 'insecure';
+  return Notification.permission; // 'default' | 'granted' | 'denied'
+}
+
 export function checkKritikNotification() {
   if (!S.ayarlar.bildirimAktif) return;
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!notificationDestekleniyor() || Notification.permission !== 'granted') return;
   const now = Date.now();
   if (now - S._sonBildirimZamani < 5 * 60 * 1000) return; // en fazla 5 dakikada bir
   const kritikler = getAllItems().filter(i => durum(getStok(i.depo, i.ad).mevcut, getStok(i.depo, i.ad).min, getStok(i.depo, i.ad).max) === 'Kritik');
@@ -109,6 +122,10 @@ export function checkKritikNotification() {
 
 export async function bildirimIzniSor() {
   if (!('Notification' in window)) { toast('Tarayıcınız bildirimleri desteklemiyor.', 'error'); return; }
+  if (!window.isSecureContext) {
+    toast('Bildirimler yalnızca HTTPS bağlantısında çalışır. Sunucu HTTPS kurulduğunda aktifleşir.', 'error');
+    return;
+  }
   if (S.ayarlar.bildirimAktif) { window.setAyar('bildirimAktif', false); toast('Bildirimler kapatıldı.'); window.renderAyarlar(); return; }
   if (Notification.permission === 'denied') { toast('Bildirimler tarayıcı tarafından engellendi. Tarayıcı ayarlarından izin verin.', 'error'); return; }
   const perm = await Notification.requestPermission();
