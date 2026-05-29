@@ -212,9 +212,18 @@ export async function yeniTalepno() {
   document.getElementById('talep-tarih-display').textContent = fmtGun(new Date());
 }
 
+// Görünen tarih (TR "31.12.2025" veya ISO "2025-12-31") → server için ISO.
+function _talepTarihIso(disp) {
+  const s = String(disp || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  return new Date().toISOString().slice(0, 10); // güvenli fallback
+}
+
 export function talepKaydet(durum = 'Taslak') {
   const no    = document.getElementById('talep-no-display')?.textContent||'';
-  const tarih = document.getElementById('talep-tarih-display')?.textContent||'';
+  const tarih = _talepTarihIso(document.getElementById('talep-tarih-display')?.textContent);
   const satirlar = [];
   document.querySelectorAll('#talep-tbody tr').forEach(tr => {
     const hid    = tr.querySelector('[id^="talep-hid-"]');
