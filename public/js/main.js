@@ -10,6 +10,7 @@ import { renderMalzemeEkleList } from './malzeme.js';
 import { renderBackupList, refreshVeriYonet } from './veri.js';
 import { initTalep, renderTalepListesi, talepListesiYukle } from './talep.js';
 import { ayarlariYukle, ayarlariKaydet, applyTheme, renderAyarlar } from './ayarlar.js';
+import { openGlobalSearch, globalSearch, setupGlobalSearch } from './search.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL HELPERS
@@ -440,6 +441,7 @@ const ACTIONS = {
   // Ayarlar
   setTema:              _setTemaThen,
   cycleTema:            _cycleTema,
+  openGlobalSearch:     () => openGlobalSearch(),
   setTarihFormat:       _setTarihFormatThen,
   birimSil:             (_el, b) => window.birimSil?.(b),
   birimEkle:            () => window.birimEkle?.(),
@@ -513,6 +515,7 @@ const INPUTS = {
   harPersonelFilter:    _harPersonelFilterInp,
   _talepMalModalRender: () => window._talepMalModalRender?.(),
   renderMalzemeEkleList:() => window.renderMalzemeEkleList?.(),
+  globalSearch:         (el) => globalSearch(el),
 };
 
 const KEYDOWNS = {
@@ -770,6 +773,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
   document.title = (S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi') + ' — Depo Takip';
   _syncThemeToggleIcon();
   _a11yEnhance();
+  setupGlobalSearch();
   talepListesiYukle();
   initStok();
   initSKT();

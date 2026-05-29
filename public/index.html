@@ -81,6 +81,24 @@
   </div>
 </div>
 
+<!-- Global Arama Modal (Ctrl+K) -->
+<div class="modal-overlay" id="modal-search">
+  <div class="modal modal--md modal--scroll modal-search">
+    <div class="search-bar">
+      <i data-lucide="search" class="search-bar-icon"></i>
+      <input type="text" id="search-input" placeholder="Stok, depo, talep ara…" autocomplete="off" data-input="globalSearch">
+      <kbd class="kbd">ESC</kbd>
+    </div>
+    <div class="modal-scroll-body" id="search-results"></div>
+    <div class="search-footer">
+      <span><kbd class="kbd">↑</kbd> <kbd class="kbd">↓</kbd> gezin</span>
+      <span><kbd class="kbd">Enter</kbd> aç</span>
+      <span class="search-footer-spacer"></span>
+      <span class="search-footer-hint">Ctrl+K</span>
+    </div>
+  </div>
+</div>
+
 <!-- Malzeme Seçici Modal -->
 <div class="modal-overlay" id="modal-mal-sec">
   <div class="modal modal--md modal--scroll">
@@ -118,6 +136,11 @@
     <button id="hamburger" data-action="toggleSidebar" aria-label="Menü"><i data-lucide="menu"></i></button>
     <h2 id="topbar-title">Dashboard</h2>
     <div id="topbar-actions">
+      <button id="topbar-search-btn" class="topbar-btn topbar-search-btn" data-action="openGlobalSearch" title="Ara (Ctrl+K)" aria-label="Ara">
+        <i data-lucide="search"></i>
+        <span class="topbar-search-label">Ara</span>
+        <kbd class="kbd kbd-ghost">Ctrl K</kbd>
+      </button>
       <button id="theme-toggle" class="topbar-btn" data-action="cycleTema" title="Tema değiştir" aria-label="Tema değiştir">
         <i data-lucide="sun-moon"></i>
       </button>
