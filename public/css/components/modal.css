@@ -1,0 +1,67 @@
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,25,35,.55);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+  backdrop-filter: blur(3px);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface-1);
+  border-radius: var(--r-lg);
+  padding: var(--s-6);
+  width: 560px;
+  max-width: 95vw;
+  box-shadow: var(--el-3);
+  transform: scale(.96) translateY(6px);
+  transition: transform var(--motion-base), opacity var(--motion-base);
+  opacity: 0;
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); opacity: 1; }
+/* Boyut varyantları */
+.modal--sm { width: 420px; }
+.modal--md { width: 520px; }
+.modal--lg { width: 720px; }
+/* Scroll: header sabit, içerik kaydırılır (malzeme seçici tipi) */
+.modal--scroll {
+  max-height: 90vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal--scroll > .modal-header { padding: var(--s-5) var(--s-5) var(--s-3); margin: 0; flex-shrink: 0; }
+.modal-toolbar { padding: 0 var(--s-5) var(--s-3); flex-shrink: 0; }
+.modal-toolbar.modal-chips { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.modal-scroll-body { flex: 1; overflow-y: auto; min-height: 0; border-top: 1px solid var(--border); }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-5);
+}
+.modal-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+.modal-close {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.modal-close:hover { background: var(--surface-0); color: var(--text-primary); }
+.modal-close svg { width: 16px; height: 16px; stroke-width: 2; }
+

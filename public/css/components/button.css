@@ -1,0 +1,92 @@
+/* ── Buttons (kurumsal sade) ──────────────────────────────────────
+   3 ana varyant: primary / outline / ghost
+   2 boyut:      varsayılan (32h) / sm (24h)
+   Modifier:     danger / success / icon-only / *-soft (translucent)
+   Glow ve translateY hover'lar kurumsal disipline geçildi: subtle
+   border ve background değişimi yeterli. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-3);
+  height: 32px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  transition: background var(--motion-fast), color var(--motion-fast),
+              border-color var(--motion-fast), box-shadow var(--motion-fast);
+  white-space: nowrap;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn-outline:hover {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+.btn-ghost:hover { background: var(--surface-0); color: var(--text-primary); }
+
+/* Destructive primary (solid red) */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.btn-danger:hover { filter: brightness(.92); }
+
+/* Soft / inline destructive — daha az sert (örn. "Reddet") */
+.btn-danger-soft {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.btn-danger-soft:hover { background: color-mix(in srgb, var(--danger) 18%, transparent); }
+
+/* Soft success — onay aksiyonları */
+.btn-success {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+.btn-success:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
+
+/* Boyut */
+.btn-sm { height: 24px; padding: 0 var(--s-3); font-size: var(--fs-sm); }
+
+/* Sadece ikon (kare) */
+.btn-icon { width: 32px; padding: 0; }
+.btn-icon.btn-sm { width: 24px; }
+
+/* ── Button group ──────────────────────────────────────────────── */
+.btn-group { display: inline-flex; }
+.btn-group .btn { border-radius: 0; }
+.btn-group .btn + .btn { border-left-width: 0; }
+.btn-group .btn:first-child { border-radius: var(--r-sm) 0 0 var(--r-sm); }
+.btn-group .btn:last-child  { border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+
