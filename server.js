@@ -665,13 +665,24 @@ app.post('/api', async (req, res) => {
     db.serialize(() => {
       db.run('BEGIN IMMEDIATE TRANSACTION');
       // Önce mevcut satırı kontrol et (clientNo varsa)
+      // K3: stok_dusuldu da okunur — onaylı talep mutate edilemez.
       const checkSql = clientNo
-        ? 'SELECT id FROM Talepler WHERE no = ?'
-        : 'SELECT NULL as id WHERE 0';
+        ? 'SELECT id, stok_dusuldu FROM Talepler WHERE no = ?'
+        : 'SELECT NULL as id, 0 as stok_dusuldu WHERE 0';
       db.get(checkSql, clientNo ? [clientNo] : [], (err, existing) => {
         if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
 
         if (existing && existing.id) {
+          // K3: Onaylanmış (stoktan düşülmüş) talep değiştirilemez —
+          // Hareketler tablosundaki Çıkış kayıtları eski satırları
+          // referans alıyor. Değişiklik audit trail'i bozar.
+          if (existing.stok_dusuldu) {
+            db.run('ROLLBACK');
+            return res.status(409).json({
+              ok: false,
+              error: 'Onaylanmış talep değiştirilemez. Yeni bir talep oluşturun.',
+            });
+          }
           // UPDATE — mevcut talebi güncelle
           db.run(
             `UPDATE Talepler SET tarih=?, birim=?, personel=?, depo=?, aciliyet=?,
@@ -717,13 +728,21 @@ app.post('/api', async (req, res) => {
     const err0 = validateTalep(b);
     if (err0) return res.status(400).json({ ok: false, error: err0 });
     if (!Number.isInteger(b.id) || b.id <= 0) return res.status(400).json({ ok: false, error: 'id geçersiz' });
+    // K3: Onaylanmış talep değiştirilemez (audit trail koruması).
+    // WHERE stok_dusuldu = 0 koşulu — 0 satır etkilenirse 409.
     db.run(
       `UPDATE Talepler SET birim=?, personel=?, depo=?, aciliyet=?, gerekce=?,
-       satirlar=?, imza1=?, imza2=?, imza3=?, durum=? WHERE id=?`,
+       satirlar=?, imza1=?, imza2=?, imza3=?, durum=? WHERE id=? AND stok_dusuldu=0`,
       [b.birim, b.personel, b.depo, b.aciliyet, b.gerekce,
        JSON.stringify(b.satirlar || []), b.imza1, b.imza2, b.imza3, b.durum, b.id],
-      err => {
+      function(err) {
         if (err) return res.json({ ok: false, error: err.message });
+        if (!this.changes) {
+          return res.status(409).json({
+            ok: false,
+            error: 'Talep bulunamadı veya onaylanmış (değiştirilemez).',
+          });
+        }
         res.json({ ok: true });
       }
     );
@@ -735,24 +754,36 @@ app.post('/api', async (req, res) => {
     // BEGIN IMMEDIATE TRANSACTION içinde atomik. Idempotency: Talepler.
     // stok_dusuldu=1 set edilir, ikinci kez "Onaylı" denenirse stok
     // tekrar düşülmez.
+    //
+    // K1 fix: Talep ve AppState SELECT'leri BEGIN IMMEDIATE içine
+    // alındı; lock öncesi stale okuma yok.
+    // K2 fix: AppState UPDATE optimistic version check (WHERE version=?).
+    // Yarış halinde 409 + ROLLBACK.
     const b = req.body || {};
     if (!Number.isInteger(b.id) || b.id <= 0) return res.status(400).json({ ok: false, error: 'id geçersiz' });
     if (!DURUM_SET.has(b.durum))               return res.status(400).json({ ok: false, error: 'durum geçersiz' });
 
+    let inTx = false;
     try {
-      // Mevcut talebi oku
+      await dbRun('BEGIN IMMEDIATE TRANSACTION');
+      inTx = true;
+
       const talep = await dbGet('SELECT id, no, durum, stok_dusuldu, satirlar FROM Talepler WHERE id = ?', [b.id]);
-      if (!talep) return res.status(404).json({ ok: false, error: 'Talep bulunamadı' });
+      if (!talep) {
+        await dbRun('ROLLBACK'); inTx = false;
+        return res.status(404).json({ ok: false, error: 'Talep bulunamadı' });
+      }
 
       const willApprove = b.durum === 'Onaylı' && !talep.stok_dusuldu;
 
       if (!willApprove) {
         // Sadece durum değişikliği — basit UPDATE
         await dbRun('UPDATE Talepler SET durum = ? WHERE id = ?', [b.durum, b.id]);
+        await dbRun('COMMIT'); inTx = false;
         return res.json({ ok: true, stokDusuldu: false });
       }
 
-      // Onay + stok düşüşü: atomik
+      // Onay + stok düşüşü
       let satirlar = [];
       try { satirlar = JSON.parse(talep.satirlar || '[]'); } catch(e) {}
       satirlar = satirlar.filter(s =>
@@ -762,17 +793,13 @@ app.post('/api', async (req, res) => {
         Number.isFinite(+s.miktar) && +s.miktar > 0
       );
 
-      // AppState.stok güncelle
       const appRow = await dbGet('SELECT data, version FROM AppState WHERE id = 1');
       let app = {};
       try { app = JSON.parse(appRow?.data || '{}'); } catch(e) {}
       app.stok = app.stok || {};
+      const baselineVersion = appRow?.version || 0;
 
       // Pre-flight: eksik veya yetersiz olanı tespit et.
-      // Onay atomik all-or-nothing; tek satır bile yetersizse ROLLBACK
-      // ve hata mesajı. (Eski sürüm sessizce 0'a indiriyor + yetersiz
-      // listesi dönüyordu; bu, server'da AppState eksik olduğunda tüm
-      // stoğun 0 gibi gözükmesi bug'ına yol açıyordu.)
       const eksikKeys = [];
       const yetersiz  = [];
       for (const s of satirlar) {
@@ -785,6 +812,7 @@ app.post('/api', async (req, res) => {
         }
       }
       if (eksikKeys.length) {
+        await dbRun('ROLLBACK'); inTx = false;
         const ozet = eksikKeys.slice(0, 3).map(x => `${x.ad} (${x.depo})`).join('; ');
         return res.status(409).json({
           ok: false,
@@ -793,6 +821,7 @@ app.post('/api', async (req, res) => {
         });
       }
       if (yetersiz.length) {
+        await dbRun('ROLLBACK'); inTx = false;
         const ozet = yetersiz.slice(0, 3).map(x => `${x.ad} (mevcut ${x.mevcut}, istenen ${x.istenen})`).join('; ');
         return res.status(409).json({
           ok: false,
@@ -801,43 +830,50 @@ app.post('/api', async (req, res) => {
         });
       }
 
-      // Tüm satırlar OK — atomik transaction
-      await dbRun('BEGIN IMMEDIATE TRANSACTION');
-      try {
-        const now = new Date().toISOString();
-        const yeniStok = {}; // client'a delta dönecek
-        for (const s of satirlar) {
-          const key = s.depo + '||' + s.ad;
-          const cur = app.stok[key];
-          const yeniMevcut = cur.mevcut - (+s.miktar);
-          app.stok[key] = { ...cur, mevcut: yeniMevcut };
-          yeniStok[key] = app.stok[key];
-          await dbRun(
-            `INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, belge, personel)
-             VALUES (?, 'Çıkış', ?, ?, ?, ?, ?, ?, ?)`,
-            [now, s.depo, s.ad, +s.miktar, s.birim || '',
-             'Talep ' + (talep.no || '') + ' onayı', talep.no || '', '']
-          );
-        }
-        const yeniVersion = (appRow?.version || 0) + 1;
+      // Tüm satırlar OK
+      const now = new Date().toISOString();
+      const yeniStok = {}; // client'a delta dönecek
+      for (const s of satirlar) {
+        const key = s.depo + '||' + s.ad;
+        const cur = app.stok[key];
+        const yeniMevcut = cur.mevcut - (+s.miktar);
+        app.stok[key] = { ...cur, mevcut: yeniMevcut };
+        yeniStok[key] = app.stok[key];
         await dbRun(
-          'UPDATE AppState SET data = ?, version = ? WHERE id = 1',
-          [JSON.stringify(app), yeniVersion]
+          `INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, belge, personel)
+           VALUES (?, 'Çıkış', ?, ?, ?, ?, ?, ?, ?)`,
+          [now, s.depo, s.ad, +s.miktar, s.birim || '',
+           'Talep ' + (talep.no || '') + ' onayı', talep.no || '', '']
         );
-        await dbRun('UPDATE Talepler SET durum = ?, stok_dusuldu = 1 WHERE id = ?', [b.durum, b.id]);
-        await dbRun('COMMIT');
-        res.json({
-          ok: true,
-          stokDusuldu: true,
-          satirSayisi: satirlar.length,
-          yeniStok,     // key → { mevcut, min, max } — client S.stok'a uygular
-          yeniVersion,
-        });
-      } catch (txErr) {
-        try { await dbRun('ROLLBACK'); } catch(e) {}
-        throw txErr;
       }
+      const yeniVersion = baselineVersion + 1;
+      // K2: optimistic locking — WHERE version=? eşleşmezse rollback.
+      // BEGIN IMMEDIATE zaten write lock alıyor ama AppState row başka
+      // bir transaction'da değişmiş olabilir (lock öncesi). Bu kontrol
+      // savunma katmanı.
+      const upd = await dbRun(
+        'UPDATE AppState SET data = ?, version = ? WHERE id = 1 AND version = ?',
+        [JSON.stringify(app), yeniVersion, baselineVersion]
+      );
+      if (!upd.changes) {
+        await dbRun('ROLLBACK'); inTx = false;
+        return res.status(409).json({
+          ok: false,
+          error: 'Stok başka bir kullanıcı tarafından değiştirildi. Sayfayı yenileyin ve tekrar deneyin.',
+        });
+      }
+      await dbRun('UPDATE Talepler SET durum = ?, stok_dusuldu = 1 WHERE id = ?', [b.durum, b.id]);
+      await dbRun('COMMIT'); inTx = false;
+
+      res.json({
+        ok: true,
+        stokDusuldu: true,
+        satirSayisi: satirlar.length,
+        yeniStok,     // key → { mevcut, min, max } — client S.stok'a uygular
+        yeniVersion,
+      });
     } catch(e) {
+      if (inTx) { try { await dbRun('ROLLBACK'); } catch(_) {} }
       console.error('talep_durum hata:', e);
       res.json({ ok: false, error: e.message });
     }
