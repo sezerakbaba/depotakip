@@ -1,5 +1,5 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
-import { esc, dClick, dChange, dInput, dKeydown } from './ui-common.js';
+import { esc, dClick, dChange, dInput, dKeydown, setFieldError, clearFieldErrors } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -277,8 +277,8 @@ export function renderAyarlar() {
 export function birimEkle() {
   const inp = document.getElementById('yeni-birim-inp') || document.getElementById('yeni-birim-ekle');
   const val = (inp?.value||'').trim();
-  if (!val) return;
-  if (S.ayarlar.birimler.includes(val)) { window.toast('Bu birim zaten var','error'); return; }
+  if (!val) { inp?.focus(); return; }
+  if (S.ayarlar.birimler.includes(val)) { window.toast('Bu birim zaten var','error'); inp?.focus(); return; }
   S.ayarlar.birimler.push(val);
   ayarlariKaydet(); window.initBirimSelects(); inp.value=''; renderAyarlar();
   window.toast(val + ' eklendi ✓');
@@ -296,8 +296,11 @@ export function ekDepoEkle() {
   const ad    = (document.getElementById('yd-ad')?.value||'').trim();
   const kod   = (document.getElementById('yd-kod')?.value||'').trim().toUpperCase();
   const color = document.getElementById('yd-renk')?.value||'#546e7a';
-  if (!ad||!kod) { window.toast('Ad ve kod zorunlu','error'); return; }
-  if (DEPO_META[ad]) { window.toast('Bu depo zaten var','error'); return; }
+  let ok = true;
+  if (!ad)  { setFieldError('yd-ad',  'Depo adı zorunlu'); ok = false; }
+  if (!kod) { setFieldError('yd-kod', 'Kod zorunlu');      ok = false; }
+  if (ok && DEPO_META[ad]) { setFieldError('yd-ad', 'Bu isimde depo zaten var'); ok = false; }
+  if (!ok) { document.querySelector('.field--error input')?.focus(); return; }
   if (!S.ayarlar.ekDepo) S.ayarlar.ekDepo=[];
   S.ayarlar.ekDepo.push({ad,kod,color});
   DEPO_META[ad]={kod,cls:'',color}; DEPO_BADGE[ad]='';
@@ -348,8 +351,8 @@ export function ekKatEkle() {
   const ad  = (document.getElementById('yk-ad')?.value||'').trim();
   const c   = document.getElementById('yk-renk-c')?.value||'#546e7a';
   const bg  = document.getElementById('yk-renk-bg')?.value||'#eceff1';
-  if (!ad) { window.toast('Kategori adı zorunlu','error'); return; }
-  if (KAT_COLORS[ad]) { window.toast('Bu kategori zaten var','error'); return; }
+  if (!ad)            { setFieldError('yk-ad', 'Kategori adı zorunlu');     document.getElementById('yk-ad')?.focus(); return; }
+  if (KAT_COLORS[ad]) { setFieldError('yk-ad', 'Bu kategori zaten var');    document.getElementById('yk-ad')?.focus(); return; }
   if (!S.ayarlar.ekKategori) S.ayarlar.ekKategori=[];
   S.ayarlar.ekKategori.push({ad,c,bg});
   KAT_COLORS[ad]={c,bg};

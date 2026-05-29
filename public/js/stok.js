@@ -1,5 +1,5 @@
 import { S, STOK_SUTUNLAR, KAT_COLORS, KAYNAK, API_URL } from './state.js';
-import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, getKey, dClick, dChange } from './ui-common.js';
+import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, getKey, dClick, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -415,7 +415,13 @@ export function saveStok() {
   const mevcut = parseInt(document.getElementById('m-mevcut').value)||0;
   const min    = parseInt(document.getElementById('m-min').value)||0;
   const max    = parseInt(document.getElementById('m-max').value)||0;
-  if (!yeniAd) { window.toast('Malzeme adı boş olamaz!','error'); return; }
+  const modal = document.getElementById('modal-stok');
+  clearFieldErrors(modal);
+  if (!yeniAd) {
+    setFieldError('m-ad', 'Malzeme adı boş olamaz');
+    document.getElementById('m-ad')?.focus();
+    return;
+  }
   const eskiAd = S.editKey.mal;
   const dep    = S.editKey.dep;
   const eskiKey= getKey(dep, eskiAd);

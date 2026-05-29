@@ -1,6 +1,6 @@
 import { S, KAYNAK } from './state.js';
 import { apiFetch, apiSave, apiHareketEkle, apiHareketSil, apiHareketList } from './api.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, fmt, getKey, timeAgo, dClick, dChange } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, fmt, getKey, timeAgo, dClick, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GİRİŞ / ÇIKIŞ — hareketler artık sunucu tablosunda
@@ -55,8 +55,13 @@ export function _harEkle() {
   const mal = document.getElementById('h-malzeme').value;
   const tur = document.getElementById('h-tur').value;
   const mik = parseInt(document.getElementById('h-miktar').value);
-  if (!dep || !mal) { window.toast('Malzeme seçin', 'error'); return; }
-  if (!mik || mik <= 0) { window.toast('Geçerli miktar girin', 'error'); return; }
+  if (!dep || !mal) { window.toast('Önce malzeme seçin', 'error'); document.getElementById('h-mal-search')?.focus(); return; }
+  if (!mik || mik <= 0) {
+    clearFieldErrors(document.getElementById('h-ekle-satir'));
+    setFieldError('h-miktar', 'Geçerli miktar girin');
+    document.getElementById('h-miktar')?.focus();
+    return;
+  }
   S._harEklenenler.push({ dep, mal, tur, mik });
   _renderHarEklenenler();
   _harMalTemizle();
@@ -96,8 +101,10 @@ export async function kaydetHareket() {
   const belge = document.getElementById('h-belge').value;
   const pers  = document.getElementById('h-personel').value;
   const not   = document.getElementById('h-not').value;
+  const form = document.getElementById('page-hareket');
+  clearFieldErrors(form);
   if ((S.notZorunlu || S.ayarlar.hareketNot) && !not.trim()) {
-    window.toast('Not alanı zorunlu!', 'error');
+    setFieldError('h-not', 'Not alanı zorunlu');
     document.getElementById('h-not')?.focus();
     return;
   }

@@ -74,6 +74,19 @@ html[data-theme="light"] {
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Utility class'lar (S9: inline style yerine) ───────────────── */
+.is-hidden        { display: none !important; }
+.flex-1           { flex: 1; }
+.stack            { display: flex; flex-direction: column; gap: var(--s-2); }
+.stack-md         { display: flex; flex-direction: column; gap: var(--s-3); }
+.stack-lg         { display: flex; flex-direction: column; gap: var(--s-4); }
+.row-between      { display: flex; align-items: center; justify-content: space-between; }
+.text-muted       { color: var(--text-muted); }
+.text-danger      { color: var(--danger); }
+.text-sm          { font-size: var(--fs-sm); }
+.text-xs          { font-size: var(--fs-xs); }
+.text-md-muted    { font-size: var(--fs-md); color: var(--text-muted); }
+
 /* ── Erişilebilirlik: klavye odak halkası ────────────────────────
    Mouse tıklamasında outline yok; klavyeyle gezilen her interaktif
    öğe accent ringi alır. */
