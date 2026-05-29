@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, getKey, dClick } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, getKey, dClick, setFieldError, clearFieldErrors } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // MALZEME EKLE / SİL
@@ -20,13 +20,20 @@ export function malzemeEkle() {
   const min    = parseInt(document.getElementById('yeni-min').value)||0;
   const max    = parseInt(document.getElementById('yeni-max').value)||0;
 
-  if (!dep)  { window.toast('Depo seçin!','error'); return; }
-  if (!ad)   { window.toast('Malzeme adı girin!','error'); return; }
-  if (!kategori && S.ayarlar.katZorunlu) { window.toast('Kategori seçimi zorunlu!','error'); return; }
-
-  const mevcut_items = getDepoItems(dep);
-  if (mevcut_items.find(i=>i.ad.toLowerCase()===ad.toLowerCase())) {
-    window.toast('Bu isimde malzeme zaten mevcut!','error'); return;
+  // Alan-bazlı validasyon: tüm hatalar tek seferde gösterilir, ilk
+  // hatalı alana focus geçer.
+  const form = document.getElementById('page-malzeme-ekle');
+  clearFieldErrors(form);
+  let ok = true;
+  if (!dep)                                  { setFieldError('yeni-depo', 'Depo seçin');               ok = false; }
+  if (!ad)                                   { setFieldError('yeni-ad',   'Malzeme adı zorunlu');     ok = false; }
+  if (!kategori && S.ayarlar.katZorunlu)     { setFieldError('yeni-kategori', 'Kategori seçimi zorunlu'); ok = false; }
+  if (ok && getDepoItems(dep).find(i => i.ad.toLowerCase() === ad.toLowerCase())) {
+    setFieldError('yeni-ad', 'Bu isimde malzeme zaten mevcut'); ok = false;
+  }
+  if (!ok) {
+    form?.querySelector('.field--error input, .field--error select, .field--error textarea')?.focus();
+    return;
   }
 
   const k = getKey(dep, ad);

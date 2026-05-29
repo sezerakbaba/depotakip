@@ -629,8 +629,31 @@ tbody td {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group.full { grid-column: 1 / -1; }
+.form-group, .field { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full, .field.full { grid-column: 1 / -1; }
+
+/* ── Form alanı hata UI'ı (S5) ───────────────────────────────────
+   setFieldError(id, msg) → wrapper'a .field--error ekler, altına
+   .field__error küçük yazısı koyar. clearFieldErrors() ile sıfırlanır
+   (kullanıcı yazmaya başlayınca otomatik temizlenir). */
+.field--error > input,
+.field--error > select,
+.field--error > textarea {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--danger) 40%, transparent);
+}
+.field__error {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--danger);
+  margin-top: 2px;
+  font-weight: var(--fw-medium);
+}
+.field__hint {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
 label { font-size: 12px; font-weight: 600; color: var(--ink2); text-transform: uppercase; letter-spacing: .5px; }
 input, select, textarea {
   padding: 10px 14px;

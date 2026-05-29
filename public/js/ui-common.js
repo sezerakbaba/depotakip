@@ -154,6 +154,49 @@ export function updateClock() {
   if (cl) cl.textContent = now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
+// ── Form alanı hata UI'ı ──────────────────────────────────────────
+// setFieldError(id, msg)   → alanın .field/.form-group wrapper'ına
+//   .field--error ekler, altına .field__error küçük yazısı koyar,
+//   aria-invalid=true set eder.
+// clearFieldErrors(scope?) → verilen scope (varsayılan: document)
+//   içindeki tüm hata izlerini temizler.
+// Kullanım örneği: malzemeEkle() validasyonu.
+export function setFieldError(id, msg) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  const field = inp.closest('.field, .form-group') || inp.parentElement;
+  if (!field) return;
+  field.classList.add('field--error');
+  let err = field.querySelector(':scope > .field__error');
+  if (!err) {
+    err = document.createElement('small');
+    err.className = 'field__error';
+    field.appendChild(err);
+  }
+  err.textContent = msg;
+  inp.setAttribute('aria-invalid', 'true');
+}
+export function clearFieldErrors(scope) {
+  const root = scope || document;
+  root.querySelectorAll('.field--error').forEach(f => {
+    f.classList.remove('field--error');
+    f.querySelector(':scope > .field__error')?.remove();
+  });
+  root.querySelectorAll('[aria-invalid="true"]').forEach(el => el.removeAttribute('aria-invalid'));
+}
+// Bir alanı tek tıklamayla "temizle" (kullanıcı yazmaya başlayınca hata gitsin)
+function _wireClearOnInput(scope = document) {
+  scope.addEventListener('input', e => {
+    const f = e.target.closest('.field, .form-group');
+    if (f?.classList.contains('field--error')) {
+      f.classList.remove('field--error');
+      f.querySelector(':scope > .field__error')?.remove();
+      e.target.removeAttribute?.('aria-invalid');
+    }
+  }, true);
+}
+_wireClearOnInput();
+
 // ── data-* delegation helpers ─────────────────────────────────────
 // Inline onclick/onchange/oninput/onkeydown yerine HTML template'lerde
 // kullanılır. main.js'teki delegation dispatcher'ları bunları okur.
