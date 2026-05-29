@@ -300,15 +300,6 @@ function _talepDurumGoster(dur) {
   if (!el) return;
   const cls = { 'Taslak':'taslak','Onay Bekliyor':'onay-bekliyor','Onaylı':'onayli','Reddedildi':'reddedildi' };
   el.innerHTML = dur ? `<span class="talep-durum-badge ${cls[dur]||'taslak'}">${dur}</span>` : '';
-  const stamp = document.getElementById('ts-stamp');
-  const stampTxt = document.getElementById('ts-stamp-text');
-  if (stamp && stampTxt) {
-    stamp.className = 'ts-stamp';
-    const stamps = {'Taslak':'ts-stamp-taslak','Onay Bekliyor':'ts-stamp-onay','Onaylı':'ts-stamp-onayli','Reddedildi':'ts-stamp-red'};
-    stamp.classList.add(stamps[dur] || 'ts-stamp-taslak');
-    const labels = {'Taslak':'TASLAK','Onay Bekliyor':'ONAY\nBEKLİYOR','Onaylı':'ONAYLANDI','Reddedildi':'REDDEDİLDİ'};
-    stampTxt.textContent = labels[dur] || dur;
-  }
 }
 
 export function renderTalepListesi() {

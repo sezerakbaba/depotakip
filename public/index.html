@@ -438,176 +438,122 @@
 
     <!-- ── TALEPNAME ── -->
     <div class="page" id="page-talep">
-      <div class="ts-studio">
+      <!-- Aksiyon toolbar (baskıda gizli) -->
+      <div class="talep-toolbar no-print">
+        <div class="talep-toolbar-meta">
+          <span class="talep-toolbar-no">No: <strong id="talep-no-display">—</strong></span>
+          <span class="talep-toolbar-tarih" id="talep-tarih-display"></span>
+          <span id="talep-durum-badge"></span>
+        </div>
+        <div class="talep-toolbar-actions">
+          <button class="btn btn-sm btn-ghost" data-action="talepAyarlaraKaydet" title="İmza ve personel isimlerini ayarlara kaydet">
+            <i data-lucide="bookmark" class="icon-inline"></i> Ayarlara Kaydet
+          </button>
+          <button class="btn btn-sm btn-ghost" data-action="talepSifirla">
+            <i data-lucide="file-plus" class="icon-inline"></i> Yeni Talep
+          </button>
+          <button class="btn btn-sm btn-ghost" data-action="print">
+            <i data-lucide="printer" class="icon-inline"></i> Yazdır
+          </button>
+          <button class="btn btn-sm btn-outline" data-action="talepKaydet" data-arg="Taslak">
+            <i data-lucide="save" class="icon-inline"></i> Taslak Kaydet
+          </button>
+          <button class="btn btn-sm btn-primary" data-action="talepOnayaGonder">
+            <i data-lucide="send" class="icon-inline"></i> Onaya Gönder
+          </button>
+        </div>
+      </div>
 
-        <!-- ── SOL: Kontrol Paneli (baskıda gizli) ── -->
-        <aside class="ts-panel no-print">
-          <div class="ts-panel-brand">
-            <div class="ts-panel-icon"><i data-lucide="file-text"></i></div>
-            <div>
-              <div class="ts-panel-title">Talepname</div>
-              <div class="ts-panel-sub">Satın Alma Talebi</div>
+      <!-- Belge -->
+      <div class="card talep-paper" id="talep-card">
+        <!-- Antet -->
+        <header class="talep-header">
+          <div class="talep-header-left">
+            <div class="talep-kurum" id="talep-form-kurum"></div>
+            <h2 class="talep-baslik">MALZEME TALEP FORMU</h2>
+          </div>
+          <div class="talep-header-right">
+            <div class="talep-no-block">
+              <span class="talep-no-label">Talep No</span>
+              <span class="talep-no-val" id="talep-no-display-doc">—</span>
+            </div>
+            <div class="talep-tarih-doc" id="talep-tarih-display-doc"></div>
+          </div>
+        </header>
+
+        <!-- Talep Bilgileri -->
+        <section class="talep-section">
+          <div class="talep-section-eyebrow">Talep Bilgileri</div>
+          <div class="talep-field-grid">
+            <div class="field">
+              <label class="field-lbl">Talep Eden Birim</label>
+              <input type="text" id="t-birim" class="field-inp" placeholder="Birim adı">
+            </div>
+            <div class="field">
+              <label class="field-lbl">Sorumlu Personel</label>
+              <input type="text" id="t-personel" class="field-inp" placeholder="Ad Soyad">
+            </div>
+            <div class="field">
+              <label class="field-lbl">Aciliyet</label>
+              <select id="t-aciliyet" class="field-inp" data-change="talepAciliyetGuncelle">
+                <option>Normal</option>
+                <option>Acil</option>
+                <option>Çok Acil</option>
+              </select>
+            </div>
+            <div class="field field--full">
+              <label class="field-lbl">Gerekçe</label>
+              <input type="text" id="t-gerekce" class="field-inp" placeholder="Talep gerekçesi...">
             </div>
           </div>
+        </section>
 
-          <div class="ts-panel-block">
-            <div class="ts-block-label">Durum</div>
-            <span id="talep-durum-badge"></span>
-          </div>
-
-          <div class="ts-panel-block">
-            <div class="ts-block-label">Talep No</div>
-            <div class="ts-ref-no" id="talep-no-display">—</div>
-            <div class="ts-ref-date" id="talep-tarih-display"></div>
-          </div>
-
-          <div class="ts-panel-actions">
-            <button class="ts-btn ts-btn-primary" data-action="talepOnayaGonder">
-              <i data-lucide="send" class="icon-inline"></i> Onaya Gönder
-            </button>
-            <button class="ts-btn ts-btn-teal" data-action="talepKaydet" data-arg="Taslak">
-              <i data-lucide="save" class="icon-inline"></i> Taslak Kaydet
-            </button>
-            <div class="ts-panel-sep"></div>
-            <button class="ts-btn ts-btn-ghost" data-action="print">
-              <i data-lucide="printer" class="icon-inline"></i> Yazdır
-            </button>
-            <button class="ts-btn ts-btn-ghost" data-action="talepSifirla">
-              <i data-lucide="file-plus" class="icon-inline"></i> Yeni Talep
-            </button>
-            <button class="ts-btn ts-btn-ghost" data-action="talepAyarlaraKaydet" title="İsimleri ayarlara kaydet">
-              <i data-lucide="bookmark" class="icon-inline"></i> Ayarlara Kaydet
+        <!-- Malzeme Listesi -->
+        <section class="talep-section">
+          <div class="talep-section-head">
+            <div class="talep-section-eyebrow">Malzeme Listesi</div>
+            <button class="btn btn-sm btn-outline no-print" data-action="talepSatirEkle">
+              <i data-lucide="plus" class="icon-inline"></i> Satır Ekle
             </button>
           </div>
-
-          <div class="ts-panel-hint">
-            <i data-lucide="lightbulb" class="icon-inline"></i>
-            Malzeme eklemek için tablodaki <strong>Malzeme Seç</strong> butonunu kullanın.
+          <div class="talep-table-scroll">
+            <table class="talep-table" id="talep-satirlar">
+              <thead>
+                <tr>
+                  <th style="width:32px">#</th>
+                  <th>Malzeme</th>
+                  <th style="width:110px">Depo</th>
+                  <th style="width:65px">Birim</th>
+                  <th style="width:75px;text-align:center">Mevcut</th>
+                  <th style="width:100px">Talep Miktarı</th>
+                  <th style="width:32px" class="no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="talep-tbody"></tbody>
+            </table>
           </div>
+        </section>
 
-          <div class="ts-panel-footer">
-            <i data-lucide="shield-check" class="icon-inline"></i>
-            Depo Yönetim Sistemi
+        <!-- İmza Bölümü -->
+        <section class="talep-section talep-sig-section">
+          <div class="talep-sig-row">
+            <div class="talep-sig-box">
+              <div class="talep-sig-space"></div>
+              <div class="talep-sig-label">Talebi Hazırlayan</div>
+              <input type="text" id="imza1" class="talep-sig-inp" placeholder="Ad Soyad">
+            </div>
+            <div class="talep-sig-box">
+              <div class="talep-sig-space"></div>
+              <div class="talep-sig-label">Depo Sorumlusu</div>
+              <input type="text" id="imza2" class="talep-sig-inp" placeholder="Ad Soyad">
+            </div>
+            <div class="talep-sig-box">
+              <div class="talep-sig-space"></div>
+              <div class="talep-sig-label">Onaylayan Amir</div>
+              <input type="text" id="imza3" class="talep-sig-inp" placeholder="Ad Soyad">
+            </div>
           </div>
-        </aside>
-
-        <!-- ── SAĞ: Belge Kağıdı ── -->
-        <div class="ts-canvas">
-          <div class="ts-paper" id="talep-card">
-
-            <!-- Renkli üst bant -->
-            <div class="ts-paper-stripe"></div>
-
-            <!-- Antet -->
-            <header class="ts-paper-header">
-              <div class="ts-header-left">
-                <div class="talep-kurum" id="talep-form-kurum"></div>
-                <div class="talep-baslik">MALZEME TALEP FORMU</div>
-              </div>
-              <div class="ts-header-right">
-                <div class="ts-stamp" id="ts-stamp">
-                  <svg class="ts-stamp-ring" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" fill="none" stroke-width="2.5" stroke-dasharray="4 3"/>
-                    <circle cx="40" cy="40" r="26" fill="none" stroke-width="1.5"/>
-                  </svg>
-                  <div class="ts-stamp-text" id="ts-stamp-text">TASLAK</div>
-                </div>
-                <div class="ts-no-block">
-                  <div class="ts-no-label">No</div>
-                  <div class="ts-no-val" id="talep-no-display-doc">—</div>
-                  <div class="ts-no-date" id="talep-tarih-display-doc"></div>
-                </div>
-              </div>
-            </header>
-
-            <!-- Talep Bilgileri -->
-            <section class="ts-section">
-              <div class="ts-section-eyebrow">Talep Bilgileri</div>
-              <div class="ts-field-grid">
-                <div class="ts-field">
-                  <label class="ts-field-lbl">Talep Eden Birim</label>
-                  <input type="text" id="t-birim" class="ts-field-inp" placeholder="Birim adı">
-                </div>
-                <div class="ts-field">
-                  <label class="ts-field-lbl">Sorumlu Personel</label>
-                  <input type="text" id="t-personel" class="ts-field-inp" placeholder="Ad Soyad">
-                </div>
-                <div class="ts-field">
-                  <label class="ts-field-lbl">Aciliyet</label>
-                  <select id="t-aciliyet" class="ts-field-inp" data-change="talepAciliyetGuncelle">
-                    <option>Normal</option>
-                    <option>Acil</option>
-                    <option>Çok Acil</option>
-                  </select>
-                </div>
-                <div class="ts-field ts-field-full">
-                  <label class="ts-field-lbl">Gerekçe</label>
-                  <input type="text" id="t-gerekce" class="ts-field-inp" placeholder="Talep gerekçesi...">
-                </div>
-              </div>
-            </section>
-
-            <div class="ts-rule"></div>
-
-            <!-- Malzeme Listesi -->
-            <section class="ts-section ts-table-section">
-              <div class="ts-table-head no-print">
-                <div class="ts-section-eyebrow" style="margin-bottom:0">
-                  <i data-lucide="package" class="icon-inline"></i> Malzeme Listesi
-                </div>
-                <button class="ts-add-btn" data-action="talepSatirEkle">
-                  <i data-lucide="plus" class="icon-inline"></i> Satır Ekle
-                </button>
-              </div>
-              <div class="ts-table-scroll">
-                <table class="talep-table" id="talep-satirlar">
-                  <thead>
-                    <tr>
-                      <th style="width:32px">#</th>
-                      <th>Malzeme</th>
-                      <th style="width:110px">Depo</th>
-                      <th style="width:65px">Birim</th>
-                      <th style="width:75px;text-align:center">Mevcut</th>
-                      <th style="width:100px">Talep Miktarı</th>
-                      <th style="width:38px" class="no-print"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="talep-tbody"></tbody>
-                </table>
-              </div>
-            </section>
-
-            <div class="ts-rule"></div>
-
-            <!-- İmza Bölümü -->
-            <section class="ts-section ts-sig-section">
-              <div class="imza-row">
-                <div class="imza-box ts-sig-box">
-                  <div class="ts-sig-space"></div>
-                  <div class="imza-label">Talebi Hazırlayan</div>
-                  <input type="text" id="imza1" class="ts-sig-inp" placeholder="Ad Soyad">
-                </div>
-                <div class="imza-box ts-sig-box">
-                  <div class="ts-sig-space"></div>
-                  <div class="imza-label">Depo Sorumlusu</div>
-                  <input type="text" id="imza2" class="ts-sig-inp" placeholder="Ad Soyad">
-                </div>
-                <div class="imza-box ts-sig-box">
-                  <div class="ts-sig-space"></div>
-                  <div class="imza-label">Onaylayan Amir</div>
-                  <input type="text" id="imza3" class="ts-sig-inp" placeholder="Ad Soyad">
-                </div>
-              </div>
-            </section>
-
-            <!-- Belge Altbilgisi -->
-            <footer class="ts-paper-foot">
-              <span>Veteriner Kontrol Enstitüsü · Depo Yönetim Sistemi · v3.1</span>
-            </footer>
-
-          </div>
-        </div>
-
+        </section>
       </div>
     </div>
 

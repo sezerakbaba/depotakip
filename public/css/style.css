@@ -924,434 +924,296 @@ textarea { resize: vertical; min-height: 70px; }
 .talep-durum-badge.onayli        { background:color-mix(in srgb,var(--teal) 15%,transparent);  color:var(--teal); }
 .talep-durum-badge.reddedildi    { background:color-mix(in srgb,var(--red) 15%,transparent);   color:var(--red); }
 /* ══════════════════════════════════════════════════════
-   TALEPNAME STUDIO — Kurumsal Doküman Stüdyosu
+   TALEPNAME (sade — Aşama F yeniden tasarım)
 ══════════════════════════════════════════════════════ */
 
-/* Sayfa sıfırlama — studio tam alana yayılır */
-#page-talep { padding: 0 !important; margin: -28px; }
-
-/* Studio: sol panel + sağ tuval */
-.ts-studio {
-  display: flex;
-  min-height: calc(100vh - 56px);
-  align-items: stretch;
-}
-
-/* ── SOL PANEL ── */
-.ts-panel {
-  width: 264px;
-  flex-shrink: 0;
-  background: #0b1726;
-  border-right: 1px solid rgba(255,255,255,.06);
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: -28px;
-  height: calc(100vh - 56px);
-  overflow-y: auto;
-}
-
-/* Marka başlığı */
-.ts-panel-brand {
+/* Aksiyon toolbar (belge üstünde, baskıda gizli) */
+.talep-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 22px 18px 18px;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+  flex-wrap: wrap;
 }
-.ts-panel-icon {
-  width: 38px; height: 38px;
-  background: linear-gradient(135deg, #00897b, #00bfa5);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(0,137,123,.3);
+.talep-toolbar-meta {
+  display: flex; align-items: center; gap: var(--s-3);
+  font-size: var(--fs-md);
+  color: var(--text-secondary);
 }
-.ts-panel-icon svg { width: 18px; height: 18px; color: #fff; }
-.ts-panel-title {
-  font-size: 13px; font-weight: 800;
-  color: #e8edf2; letter-spacing: -.2px;
+.talep-toolbar-no strong {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  margin-left: 4px;
 }
-.ts-panel-sub {
-  font-size: 10px; color: #455a64; margin-top: 1px;
-  letter-spacing: .3px;
-}
-
-/* Blok (durum, meta vb.) */
-.ts-panel-block {
-  padding: 14px 18px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.ts-block-label {
-  font-size: 9px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1px;
-  color: #37474f;
+.talep-toolbar-tarih { color: var(--text-muted); font-size: var(--fs-sm); }
+.talep-toolbar-actions {
+  display: flex; align-items: center; gap: var(--s-2);
+  flex-wrap: wrap;
 }
 
-/* Referans no/tarih (sidebar'da) */
-.ts-ref-no {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 17px; font-weight: 700;
-  color: #00bfa5; letter-spacing: -.3px;
-  line-height: 1.2;
-}
-.ts-ref-date {
-  font-size: 11px; color: #546e7a;
-}
-
-/* Eylem butonları */
-.ts-panel-actions {
-  padding: 14px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-}
-.ts-panel-sep {
-  height: 1px;
-  background: rgba(255,255,255,.05);
-  margin: 4px 0;
-}
-.ts-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 9px 13px;
-  border-radius: 8px;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer; border: 1.5px solid transparent;
-  transition: all .15s; text-align: left; width: 100%;
-  letter-spacing: -.1px;
-}
-.ts-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
-.ts-btn-primary {
-  background: linear-gradient(135deg, #00897b, #00bfa5);
-  color: #fff; border-color: transparent;
-  box-shadow: 0 3px 12px rgba(0,137,123,.35);
-}
-.ts-btn-primary:hover {
-  box-shadow: 0 5px 20px rgba(0,137,123,.5);
-  filter: brightness(1.06);
-}
-.ts-btn-teal {
-  background: rgba(0,137,123,.14);
-  color: #00bfa5;
-  border-color: rgba(0,137,123,.28);
-}
-.ts-btn-teal:hover { background: rgba(0,137,123,.22); }
-.ts-btn-ghost {
-  background: transparent; color: #607d8b;
-  border-color: rgba(255,255,255,.07);
-}
-.ts-btn-ghost:hover {
-  background: rgba(255,255,255,.05);
-  color: #90a4ae;
-  border-color: rgba(255,255,255,.14);
-}
-
-/* İpucu */
-.ts-panel-hint {
-  margin: 0 18px 14px;
-  padding: 10px 12px;
-  background: rgba(255,255,255,.03);
-  border-left: 3px solid rgba(0,191,165,.25);
-  border-radius: 0 7px 7px 0;
-  font-size: 10.5px; color: #455a64; line-height: 1.55;
-  display: flex; align-items: flex-start; gap: 6px;
-}
-.ts-panel-hint svg { width: 12px; height: 12px; flex-shrink: 0; margin-top: 1px; color: #00897b; }
-.ts-panel-hint strong { color: #607d8b; }
-
-/* Panel footer */
-.ts-panel-footer {
-  padding: 12px 18px;
-  border-top: 1px solid rgba(255,255,255,.05);
-  font-size: 10px; color: #263238;
-  display: flex; align-items: center; gap: 5px;
-  letter-spacing: .3px;
-}
-.ts-panel-footer svg { width: 12px; height: 12px; color: #37474f; }
-
-/* ── SAĞ TUVAL ── */
-.ts-canvas {
-  flex: 1;
-  background: #d8e0eb;
-  background-image:
-    radial-gradient(ellipse at 10% 10%, rgba(0,137,123,.07) 0%, transparent 55%),
-    radial-gradient(ellipse at 90% 90%, rgba(21,101,192,.05) 0%, transparent 55%);
-  padding: 40px 32px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  overflow-y: auto;
-}
-
-/* ── KAĞIT ── */
-.ts-paper {
-  width: 100%;
-  max-width: 740px;
-  background: #fff;
-  border-radius: 3px;
-  box-shadow:
-    0 1px 3px rgba(0,0,0,.1),
-    0 6px 24px rgba(0,0,0,.12),
-    0 20px 48px rgba(0,0,0,.07);
-  overflow: hidden;
-}
-
-/* Üst renkli şerit */
-.ts-paper-stripe {
-  height: 5px;
-  background: linear-gradient(90deg, #00695c 0%, #00897b 40%, #00bfa5 70%, #1565c0 100%);
+/* Belge kartı: A4-ish, kâğıt hissi sade */
+.talep-paper {
+  padding: var(--s-8);
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 /* Antet */
-.ts-paper-header {
-  padding: 22px 32px 18px;
-  border-bottom: 2px solid #1a2a3a;
+.talep-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--s-6);
+  padding-bottom: var(--s-5);
+  border-bottom: 2px solid var(--border-strong);
+  margin-bottom: var(--s-6);
 }
-.ts-header-left { flex: 1; }
+.talep-header-left { flex: 1; min-width: 0; }
 .talep-kurum {
-  font-size: 9px; font-weight: 800;
-  letter-spacing: 2px;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
   text-transform: uppercase;
-  color: #78909c;
-  margin-bottom: 5px;
+  letter-spacing: .5px;
+  margin-bottom: var(--s-2);
 }
 .talep-baslik {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 17px; font-weight: 700;
-  color: #0b1726; letter-spacing: -.3px;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  letter-spacing: -.2px;
+  line-height: 1.2;
 }
-.ts-header-right {
+.talep-header-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.talep-no-block {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-2);
+}
+.talep-no-label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.talep-no-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+}
+.talep-tarih-doc {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-top: var(--s-1);
+}
+
+/* Sections */
+.talep-section { margin-bottom: var(--s-6); }
+.talep-section-head {
   display: flex;
   align-items: center;
-  gap: 18px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  margin-bottom: var(--s-3);
+  gap: var(--s-3);
 }
-
-/* Döner damga */
-.ts-stamp {
-  position: relative;
-  width: 78px; height: 78px;
-  display: flex; align-items: center; justify-content: center;
-  transform: rotate(-11deg);
-  transition: all .35s cubic-bezier(.34,1.56,.64,1);
-  flex-shrink: 0;
-}
-.ts-stamp:hover { transform: rotate(-8deg) scale(1.04); }
-.ts-stamp-ring {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  color: #b0bec5;
-  transition: color .3s;
-}
-.ts-stamp-text {
-  position: relative;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 8px; font-weight: 900;
-  letter-spacing: 1.2px;
+.talep-section-eyebrow {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
   text-transform: uppercase;
-  color: #b0bec5;
-  text-align: center;
-  line-height: 1.4;
-  transition: color .3s;
-  white-space: pre-line;
+  letter-spacing: .8px;
+  margin-bottom: var(--s-2);
 }
-/* Damga renk durumları */
-.ts-stamp-taslak .ts-stamp-ring,
-.ts-stamp-taslak .ts-stamp-text { color: #90a4ae; }
-.ts-stamp-onay .ts-stamp-ring,
-.ts-stamp-onay .ts-stamp-text { color: #e65100; }
-.ts-stamp-onayli .ts-stamp-ring,
-.ts-stamp-onayli .ts-stamp-text { color: #00897b; }
-.ts-stamp-red .ts-stamp-ring,
-.ts-stamp-red .ts-stamp-text { color: #d32f2f; }
+.talep-section-head .talep-section-eyebrow { margin-bottom: 0; }
 
-/* No kutusu */
-.ts-no-block { text-align: right; }
-.ts-no-label {
-  font-size: 9px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1px;
-  color: #90a4ae; margin-bottom: 3px;
-}
-.ts-no-val {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 20px; font-weight: 700;
-  color: #00897b; letter-spacing: -.5px;
-}
-.ts-no-date { font-size: 11px; color: #90a4ae; margin-top: 2px; }
-
-/* Bölüm kutusu */
-.ts-section { padding: 18px 32px; }
-.ts-section-eyebrow {
-  font-size: 9.5px; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 1px;
-  color: #00897b; margin-bottom: 14px;
-  display: flex; align-items: center; gap: 5px;
-}
-.ts-section-eyebrow svg { width: 13px; height: 13px; }
-
-/* Yatay kural */
-.ts-rule { height: 1px; background: #e8edf4; margin: 0 32px; }
-
-/* Form alanları ızgarası */
-.ts-field-grid {
+/* Form alanları (yeni .field pattern) */
+.talep-field-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-4) var(--s-5);
 }
-.ts-field { display: flex; flex-direction: column; gap: 5px; }
-.ts-field-full { grid-column: 1 / -1; }
-.ts-field-lbl {
-  font-size: 9px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .9px;
-  color: #90a4ae;
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field--full { grid-column: 1 / -1; }
+.field-lbl {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
 }
-.ts-field-inp {
-  border: none;
-  border-bottom: 1.5px solid #dde4ec;
-  border-radius: 0;
-  padding: 7px 0;
-  font-size: 13px;
-  font-family: inherit;
-  color: #0b1726;
+.field-inp {
   background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  padding: var(--s-1) 0 var(--s-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+  transition: border-color var(--motion-fast);
+}
+.field-inp:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+.field-inp::placeholder {
+  color: var(--text-muted);
+  font-style: normal;
+  opacity: .6;
+}
+
+/* Aciliyet vurguları */
+.field-inp.talep-aciliyet-acil    { color: var(--warning); font-weight: var(--fw-semibold); }
+.field-inp.talep-aciliyet-cokacil { color: var(--danger);  font-weight: var(--fw-semibold); }
+
+/* Malzeme tablosu */
+.talep-table-scroll { overflow-x: auto; }
+.talep-table {
   width: 100%;
-  transition: border-color .15s;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
 }
-.ts-field-inp:focus { outline: none; border-bottom-color: #00897b; }
-.ts-field-inp::placeholder { color: #c5d0dd; font-style: italic; }
-
-/* Aciliyet renklendirme */
-#t-aciliyet.talep-aciliyet-acil {
-  border-bottom-color: #e65100 !important;
-  color: #e65100; font-weight: 700;
-}
-#t-aciliyet.talep-aciliyet-cokacil {
-  border-bottom-color: #d32f2f !important;
-  color: #d32f2f; font-weight: 700;
-}
-
-/* Malzeme tablosu bölümü */
-.ts-table-section { padding-bottom: 8px; }
-.ts-table-head {
-  display: flex; align-items: center;
-  justify-content: space-between; margin-bottom: 10px;
-}
-.ts-add-btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 13px;
-  background: transparent;
-  border: 1.5px dashed #c5d0dd;
-  border-radius: 7px;
-  font-size: 11px; font-weight: 700;
-  color: #78909c; cursor: pointer;
-  transition: all .15s;
-}
-.ts-add-btn svg { width: 13px; height: 13px; }
-.ts-add-btn:hover {
-  border-color: #00897b; color: #00897b;
-  background: rgba(0,137,123,.04);
-}
-
-/* Talep tablosu */
-.ts-table-scroll { overflow-x: auto; }
-.talep-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .talep-table th {
-  padding: 8px 10px;
   text-align: left;
-  font-size: 9.5px; font-weight: 800;
-  text-transform: uppercase; letter-spacing: .5px;
-  color: #78909c;
-  border-bottom: 2px solid #e8edf4;
-  background: #f7f9fc;
-  white-space: nowrap;
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-0);
 }
 .talep-table td {
-  padding: 9px 10px;
-  border-bottom: 1px solid #f0f4f9;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
+  color: var(--text-primary);
 }
 .talep-table tbody tr:last-child td { border-bottom: none; }
-.talep-table tbody tr:nth-child(even) td { background: #fafbfd; }
-.talep-table tbody tr:hover td { background: rgba(0,137,123,.035); }
+.talep-table tbody tr:hover td { background: var(--surface-0); }
 .talep-table input {
-  border: none;
-  border-bottom: 1px solid #dde4ec;
-  border-radius: 0; padding: 3px 4px;
-  font-size: 12px; width: 100%;
+  width: 100%;
   background: transparent;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  padding: 2px 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
 }
-.talep-table input:focus { outline: none; border-bottom-color: #00897b; }
-
-/* İmza bölümü */
-.ts-sig-section { padding-top: 14px; padding-bottom: 26px; }
-.imza-row {
-  display: grid; grid-template-columns: repeat(3,1fr); gap: 24px;
-}
-.ts-sig-box { display: flex; flex-direction: column; }
-.imza-box {
-  border-top: 2px solid #263238;
-  padding-top: 10px;
-}
-.ts-sig-space { height: 40px; }
-.imza-label {
-  font-size: 9.5px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .7px;
-  color: #78909c; margin-bottom: 6px;
-}
-.ts-sig-inp {
-  border: none;
-  border-bottom: 1px solid #c5d0dd;
-  border-radius: 0; padding: 4px 0;
-  font-size: 12px; font-weight: 600;
-  width: 100%; background: transparent; color: #0b1726;
-}
-.ts-sig-inp:focus { outline: none; border-bottom-color: #00897b; }
-.ts-sig-inp::placeholder { color: #b0bec5; font-weight: 400; font-style: italic; }
-
-/* Belge altbilgisi */
-.ts-paper-foot {
-  padding: 10px 32px;
-  background: #f7f9fc;
-  border-top: 1px solid #e8edf4;
-  text-align: center;
-  font-size: 9px; color: #b0bec5;
-  text-transform: uppercase; letter-spacing: 1.2px;
+.talep-table input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
 }
 
-/* ── Malzeme seçici buton stili (JS'ten render edilen) ── */
+/* Malzeme seçici buton (JS'ten render) */
 .talep-mal-btn {
-  width: 100%; padding: 7px 10px;
-  background: #f7f9fc; border: 1.5px dashed #dde4ec;
-  border-radius: 7px; color: #90a4ae;
-  font-size: 11.5px; cursor: pointer; text-align: left;
-  transition: border-color .15s, color .15s, background .15s;
+  width: 100%;
+  padding: var(--s-1) var(--s-2);
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex; align-items: center; gap: 4px;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
 }
-.talep-mal-btn:hover { border-color: #00897b; color: #00897b; background: #fff; }
+.talep-mal-btn:hover { border-color: var(--accent); color: var(--accent); }
 .talep-mal-secili {
-  display: flex; align-items: center; gap: 4px;
-  background: rgba(0,137,123,.07);
-  border: 1.5px solid rgba(0,137,123,.4);
-  border-radius: 7px; padding: 5px 8px;
+  display: flex; align-items: center; gap: var(--s-1);
+  background: var(--accent-bg);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: var(--r-sm);
+  padding: 3px var(--s-2);
 }
 .talep-mal-ad {
-  flex: 1; font-size: 12px; font-weight: 500; color: #2d3f50;
-  cursor: pointer; min-width: 0;
+  flex: 1;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  min-width: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.talep-mal-ad:hover { color: #00897b; }
+.talep-mal-ad:hover { color: var(--accent-hover); }
 .talep-mal-temizle {
-  flex-shrink: 0; background: none; border: none;
-  color: #90a4ae; cursor: pointer; font-size: 15px;
-  line-height: 1; padding: 0 2px; border-radius: 4px;
+  flex-shrink: 0;
+  background: transparent; border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--r-xs);
+  line-height: 0;
 }
-.talep-mal-temizle:hover { color: #d32f2f; }
+.talep-mal-temizle svg { width: 12px; height: 12px; }
+.talep-mal-temizle:hover { color: var(--danger); }
+
+/* İmza alanı */
+.talep-sig-section {
+  margin-top: var(--s-8);
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--border);
+}
+.talep-sig-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-6);
+}
+.talep-sig-box {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.talep-sig-space {
+  height: 56px;
+  border-bottom: 1px solid var(--text-secondary);
+  margin-bottom: var(--s-2);
+}
+.talep-sig-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: var(--s-1);
+}
+.talep-sig-inp {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed var(--border);
+  padding: 2px 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+.talep-sig-inp:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+.talep-sig-inp::placeholder {
+  color: var(--text-muted);
+  font-style: normal;
+  opacity: .5;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .talep-paper { padding: var(--s-4); }
+  .talep-field-grid { grid-template-columns: 1fr; }
+  .talep-sig-row { grid-template-columns: 1fr; }
+  .talep-header { flex-direction: column; gap: var(--s-3); }
+  .talep-header-right { text-align: left; }
+  .talep-toolbar { flex-direction: column; align-items: stretch; }
+  .talep-toolbar-actions { justify-content: flex-end; }
+}
 
 /* ══════════════════════════════════════════
    DASHBOARD C — OPERASYONEL
