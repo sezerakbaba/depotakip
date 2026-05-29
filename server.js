@@ -48,13 +48,36 @@ function requireToken(req, res, next) {
 }
 
 // ── Güvenlik middleware'leri ─────────────────────────────────────────────
+// CSP politikası: inline JS Aşama 1+2'de temizlendi → script-src 'self'.
+// Inline style hâlâ HTML'de var (~50 yer) → style-src 'self' 'unsafe-inline'.
+// S9 (inline style purge) sonrası 'unsafe-inline' style kaldırılır.
+// Chart.js canvas + lucide.min.js + IBM Plex fontları zaten /vendor/'dan
+// servis edildiği için 'self' yeterli. data: URI'lar (favicons, SVG
+// kritik bildirim ikonu) için img-src 'self' data:.
+//
+// CSP_ENFORCE=false (varsayılan) → Report-Only mode; ihlal raporu
+// console'a düşer ama bloklanmaz. CSP_ENFORCE=true ise enforce edilir.
+const CSP_DIRECTIVES = {
+  defaultSrc: ["'self'"],
+  scriptSrc:  ["'self'"],
+  styleSrc:   ["'self'", "'unsafe-inline'"], // S9'da kaldırılacak
+  fontSrc:    ["'self'"],
+  imgSrc:     ["'self'", 'data:'],
+  connectSrc: ["'self'"],
+  objectSrc:  ["'none'"],
+  baseUri:    ["'self'"],
+  formAction: ["'self'"],
+  frameAncestors: ["'none'"],
+};
+const cspEnforce = process.env.CSP_ENFORCE === 'true';
 app.use(helmet({
-  // Self-host edilmiş vendor (Chart.js, lucide, fontlar) + inline onclick/style
-  // kullanıyoruz; CSP'yi şimdilik kapalı tutuyoruz, ayrı PR'da inline handler
-  // refactor'ü sonrası açılacak.
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: CSP_DIRECTIVES,
+    reportOnly: !cspEnforce,
+  },
   crossOriginEmbedderPolicy: false,
 }));
+console.log(`🛡  CSP ${cspEnforce ? 'ENFORCE' : 'REPORT-ONLY'} aktif`);
 
 // Yanlış token brute-force'una karşı: dakikada 30 başarısız istek/IP.
 // Başarılı isteklerde sayacı sıfırla ki normal kullanım engellenmesin.
