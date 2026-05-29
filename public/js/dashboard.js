@@ -24,8 +24,10 @@ export async function renderDashboard() {
   // Stok trend göstergeleri (sync)
   const nt=document.getElementById('s-normal-trend');
   const kt=document.getElementById('s-kritik-trend');
-  if(nt) nt.innerHTML = tümü.length>0 ? '<span class="stat-trend trend-up" style="font-size:10px">%'+Math.round(normalC/tümü.length*100)+' yeterli</span>' : '';
-  if(kt) kt.innerHTML = kritikC>0 ? '<span class="stat-trend trend-down" style="font-size:10px">⚠ '+kritikC+' kritik</span>' : '<span class="stat-trend trend-up" style="font-size:10px">✓ Kritik yok</span>';
+  if(nt) nt.innerHTML = tümü.length>0 ? '<span class="stat-trend trend-up">%'+Math.round(normalC/tümü.length*100)+' yeterli</span>' : '';
+  if(kt) kt.innerHTML = kritikC>0
+    ? '<span class="stat-trend trend-down"><i data-lucide="alert-triangle" class="icon-inline"></i> '+kritikC+' kritik</span>'
+    : '<span class="stat-trend trend-up"><i data-lucide="check" class="icon-inline"></i> Kritik yok</span>';
 
   // Depo kartları — Düzen C kompakt
   const dc = document.getElementById('depo-cards');
@@ -35,21 +37,18 @@ export async function renderDashboard() {
     let dk = 0;
     items.forEach(it => { const s = getStok(dep, it.ad); if (durum(s.mevcut,s.min,s.max)==='Kritik') dk++; });
     const cntHtml = dk > 0
-      ? `<span style="color:var(--red)">⚠ ${dk} kritik</span>`
-      : `<span style="color:var(--green)">✓ ${items.length} kalem</span>`;
+      ? `<span class="depo-card-status status-danger"><i data-lucide="alert-triangle" class="icon-inline"></i> ${dk} kritik</span>`
+      : `<span class="depo-card-status status-ok"><i data-lucide="check" class="icon-inline"></i> ${items.length} kalem</span>`;
     const pctNormal = items.length > 0 ? Math.round((items.length - dk) / items.length * 100) : 100;
     const dotColor  = meta.color || '#aaa';
     dc.innerHTML += `
-      <div class="c-depo-card" ${dClick('goDetay',dep)}>
-        <div class="c-depo-dot" style="background:${dotColor}"></div>
+      <div class="c-depo-card${dk>0?' has-critical':''}" ${dClick('goDetay',dep)} style="--depo-color:${dotColor}">
         <div class="c-depo-info">
-          <div class="c-depo-name" style="color:${dotColor}">${esc(dep)}</div>
+          <div class="c-depo-name">${esc(dep)}</div>
           <div class="c-depo-cnt">${cntHtml}</div>
-          <div style="height:3px;border-radius:3px;background:${dk>0?'rgba(211,47,47,.2)':'var(--line)'};overflow:hidden;margin-top:6px">
-            <div style="height:100%;width:${pctNormal}%;background:${dotColor};border-radius:3px;transition:width .4s"></div>
-          </div>
+          <div class="c-depo-bar"><div class="c-depo-bar-fill" style="width:${pctNormal}%"></div></div>
         </div>
-        <div class="c-depo-arrow">→</div>
+        <div class="c-depo-arrow"><i data-lucide="chevron-right"></i></div>
       </div>`;
   }
 
@@ -127,10 +126,14 @@ export async function renderDashboard() {
 
     const ht = document.getElementById('s-hareket-trend');
     if (ht) {
-      if (dun===0 && bugun===0) ht.innerHTML = '<span class="stat-trend trend-neu">— değişim yok</span>';
-      else if (bugun>dun) ht.innerHTML = '<span class="stat-trend trend-up">↑ '+bugun+' işlem</span>';
-      else if (bugun<dun) ht.innerHTML = '<span class="stat-trend trend-down">↓ '+bugun+' işlem</span>';
-      else ht.innerHTML = '<span class="stat-trend trend-neu">= '+bugun+' işlem</span>';
+      if (dun===0 && bugun===0)
+        ht.innerHTML = '<span class="stat-trend trend-neu">değişim yok</span>';
+      else if (bugun>dun)
+        ht.innerHTML = '<span class="stat-trend trend-up"><i data-lucide="trending-up" class="icon-inline"></i> '+bugun+' işlem</span>';
+      else if (bugun<dun)
+        ht.innerHTML = '<span class="stat-trend trend-down"><i data-lucide="trending-down" class="icon-inline"></i> '+bugun+' işlem</span>';
+      else
+        ht.innerHTML = '<span class="stat-trend trend-neu">'+bugun+' işlem</span>';
     }
 
     // 7-günlük sparkline

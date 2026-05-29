@@ -565,20 +565,17 @@ tbody tr {
   transition: background .1s;
 }
 /* Zebra striping */
-tbody tr:nth-child(even) { background: color-mix(in srgb, var(--bg) 60%, transparent); }
-tbody tr:hover { background: color-mix(in srgb, var(--teal) 6%, var(--bg)) !important; }
+/* Zebra striping kaldırıldı — kurumsal sade görünüm */
+tbody tr:hover { background: var(--surface-0) !important; }
 
-/* Kritik satır vurgusu */
+/* Kritik/fazla satır: arka plan rengi yerine sol kenar şeridi (sade) */
 tbody tr.row-kritik {
-  background: color-mix(in srgb, var(--red) 5%, transparent) !important;
-  border-left: 3px solid var(--red);
+  box-shadow: inset 3px 0 0 var(--danger);
 }
-tbody tr.row-kritik:hover { background: color-mix(in srgb, var(--red) 10%, transparent) !important; }
+tbody tr.row-kritik:hover { background: var(--surface-0) !important; }
 
-/* Fazla satır vurgusu */
 tbody tr.row-fazla {
-  background: color-mix(in srgb, var(--amber) 4%, transparent) !important;
-  border-left: 3px solid var(--amber);
+  box-shadow: inset 3px 0 0 var(--warning);
 }
 
 tbody td {
@@ -1359,94 +1356,114 @@ textarea { resize: vertical; min-height: 70px; }
 /* ══════════════════════════════════════════
    DASHBOARD C — OPERASYONEL
 ══════════════════════════════════════════ */
+/* ── Dashboard KPI'ları (kurumsal sade, tek accent) ──────────────
+   Eski 4 farklı renkli kart yerine: nötr arka plan + sol kenar
+   accent şerit. Sadece "Kritik" rakamı --danger ile vurgulanır. */
 .c-kpi-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
 }
 .c-kpi {
-  background: var(--white);
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  padding: 14px 16px;
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  padding: var(--s-4);
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--s-3);
   position: relative;
   overflow: hidden;
-  min-height: 84px;
+  min-height: 80px;
+  border-left: 3px solid var(--accent);
 }
-.c-kpi::after {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 4px;
-  border-radius: var(--radius) 0 0 var(--radius);
-}
-.c-kpi.blue::after  { background: var(--blue); }
-.c-kpi.teal::after  { background: var(--teal); }
-.c-kpi.amber::after { background: var(--amber); }
-.c-kpi.red::after   { background: var(--red); }
+/* Renkli ::after şeridi kaldırıldı — border-left tek kaynak */
+.c-kpi::after { display: none; }
+/* Kritik kartında sol şerit kırmızı */
+.c-kpi.amber, .c-kpi.red { border-left-color: var(--danger); }
 
 .c-kpi-icon {
-  width: 44px; height: 44px;
-  border-radius: 10px;
+  width: 40px; height: 40px;
+  border-radius: var(--r-sm);
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
+  flex-shrink: 0;
+  background: var(--surface-0);
+  color: var(--text-secondary);
 }
-.c-kpi.blue  .c-kpi-icon { background: var(--blu-bg); }
-.c-kpi.teal  .c-kpi-icon { background: var(--teal-bg); }
-.c-kpi.amber .c-kpi-icon { background: var(--amb-bg); }
-.c-kpi.red   .c-kpi-icon { background: var(--red-bg); }
-.c-kpi.blue  .c-kpi-icon svg { color: var(--blue); }
-.c-kpi.teal  .c-kpi-icon svg { color: var(--teal); }
-.c-kpi.amber .c-kpi-icon svg { color: var(--amber); }
-.c-kpi.red   .c-kpi-icon svg { color: var(--red); }
+.c-kpi-icon svg { width: 20px; height: 20px; stroke-width: 1.75; }
+.c-kpi.amber .c-kpi-icon, .c-kpi.red .c-kpi-icon { color: var(--danger); }
 
-.c-kpi-body { flex: 1; }
-.c-kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.c-kpi-body { flex: 1; min-width: 0; }
+.c-kpi-label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-weight: var(--fw-medium);
+}
 .c-kpi-val {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 28px; font-weight: 700; line-height: 1.1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-top: 2px;
 }
-.c-kpi.blue  .c-kpi-val { color: var(--blue); }
-.c-kpi.teal  .c-kpi-val { color: var(--teal); }
-.c-kpi.amber .c-kpi-val { color: var(--amber); }
-.c-kpi.red   .c-kpi-val { color: var(--red); }
-.c-kpi-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
-#dash-sparkline { margin-top: 5px; opacity: .8; line-height: 0; }
+.c-kpi.amber .c-kpi-val, .c-kpi.red .c-kpi-val { color: var(--danger); }
+.c-kpi-sub { font-size: var(--fs-xs); color: var(--text-muted); margin-top: var(--s-1); }
+#dash-sparkline { margin-top: var(--s-1); opacity: .7; line-height: 0; }
 
-/* Depo kompakt satır */
+/* ── Depo kartları (nötr + sol kenar depo rengi) ────────────────── */
 .c-depo-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
 }
 .c-depo-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  padding: 11px 14px;
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--depo-color, var(--accent));
+  padding: var(--s-3) var(--s-4);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
-  transition: border-color .2s, transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s;
+  gap: var(--s-3);
+  transition: background var(--motion-fast), border-color var(--motion-fast);
 }
-.c-depo-card:hover {
-  border-color: var(--teal);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,137,123,.12);
-}
-.c-depo-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.c-depo-card:hover { background: var(--surface-0); }
+.c-depo-card.has-critical { box-shadow: inset 0 -2px 0 var(--danger); }
+
 .c-depo-info { flex: 1; min-width: 0; }
-.c-depo-name { font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.c-depo-cnt { font-size: 10px; color: var(--muted); margin-top: 2px; }
-.c-depo-arrow { font-size: 14px; color: var(--muted); flex-shrink: 0; }
+.c-depo-name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c-depo-cnt { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+.c-depo-bar {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--surface-0);
+  overflow: hidden;
+  margin-top: var(--s-2);
+}
+.c-depo-bar-fill {
+  height: 100%;
+  background: var(--depo-color, var(--accent));
+  border-radius: 3px;
+  transition: width var(--motion-slow);
+}
+.c-depo-card.has-critical .c-depo-bar-fill { background: var(--danger); }
+.c-depo-arrow { color: var(--text-muted); flex-shrink: 0; display: inline-flex; }
+.c-depo-arrow svg { width: 16px; height: 16px; stroke-width: 2; }
+
+.depo-card-status { display: inline-flex; align-items: center; gap: 3px; font-weight: var(--fw-medium); }
+.depo-card-status.status-ok     { color: var(--success); }
+.depo-card-status.status-danger { color: var(--danger); }
 
 /* Ana 2 kolon */
 .c-main-grid {
@@ -2102,9 +2119,6 @@ thead th.sortable:hover { color: var(--teal); background: color-mix(in srgb, var
     margin-bottom: 10px;
     box-shadow: var(--shadow);
   }
-  #stok-table tbody tr.row-kritik { border-left: 3px solid var(--red) !important; }
-  #stok-table tbody tr.row-fazla  { border-left: 3px solid var(--amber) !important; }
-
   #stok-table tbody td {
     display: block;
     padding: 2px 0 !important;
@@ -2236,36 +2250,46 @@ mark.stok-vurgu {
 .stok-kpi-bar {
   display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
 }
+/* Stok KPI çubuğu — sade kart şeridi, sadece "Kritik" renkli */
 .kpi-kart {
   flex: 1; min-width: 100px;
-  background: var(--white); border: 1.5px solid var(--line);
-  border-radius: 10px; padding: 12px 16px;
-  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
   text-align: center;
 }
-.kpi-kart:hover { border-color: var(--teal); box-shadow: 0 2px 8px rgba(0,0,0,.07); }
-.kpi-kart.kpi-aktif { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 8%, var(--white)); }
-.kpi-sayi { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace; }
-.kpi-lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.kpi-kart:hover { background: var(--surface-0); }
+.kpi-kart.kpi-aktif { border-color: var(--accent); background: var(--accent-bg); }
+.kpi-sayi {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: 1; margin-bottom: var(--s-1);
+  color: var(--text-primary);
+}
+.kpi-lbl {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
 .kpi-lbl svg { width: 12px; height: 12px; }
-.kpi-kritik .kpi-sayi { color: var(--red); }
-.kpi-kritik.kpi-aktif { border-color: var(--red); background: color-mix(in srgb, var(--red) 6%, var(--white)); }
-.kpi-kritik:hover { border-color: var(--red); }
-.kpi-normal .kpi-sayi { color: var(--green); }
-.kpi-normal.kpi-aktif { border-color: var(--green); background: color-mix(in srgb, var(--green) 6%, var(--white)); }
-.kpi-normal:hover { border-color: var(--green); }
-.kpi-fazla .kpi-sayi { color: var(--amber); }
-.kpi-fazla.kpi-aktif { border-color: var(--amber); background: color-mix(in srgb, var(--amber) 6%, var(--white)); }
-.kpi-fazla:hover { border-color: var(--amber); }
+.kpi-kritik .kpi-sayi { color: var(--danger); }
+.kpi-kritik.kpi-aktif { border-color: var(--danger); background: var(--danger-bg); }
 
-/* ── Aktif filtre şeridi ── */
+/* ── Aktif filtre şeridi (nötr — eski teal arka plan kaldırıldı) ── */
 .stok-aktif-filtreler {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  background: color-mix(in srgb, var(--teal) 5%, var(--white));
-  border: 1px solid color-mix(in srgb, var(--teal) 20%, var(--line));
-  border-radius: 8px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2);
+  margin-bottom: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
   font-size: 12px;
 }
 .af-chip {
