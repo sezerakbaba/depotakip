@@ -1,0 +1,307 @@
+/* ══════════════════════════════════════════════════════
+   pages/talep.css — Talepname + Talep Listesi
+   (Aşama F yeniden tasarım + Talep Listesi tablosu).
+   S7 modülerizasyon kapsamında style.css'ten ayrıldı.
+══════════════════════════════════════════════════════ */
+
+/* ── Talep Listesi ── */
+#talep-list-table { width:100%; border-collapse:collapse; }
+#talep-list-table thead th { padding:9px 12px; text-align:left; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; border-bottom:2px solid var(--line); background:var(--bg); white-space:nowrap; }
+#talep-list-table tbody td { padding:10px 12px; font-size:12px; border-bottom:1px solid var(--line); }
+#talep-list-table tbody tr:hover { background:color-mix(in srgb, var(--teal) 5%, var(--bg)); }
+.talep-durum-badge { display:inline-block; padding:2px 10px; border-radius:10px; font-size:10px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; }
+.talep-durum-badge.taslak        { background:color-mix(in srgb,var(--muted) 15%,transparent); color:var(--ink2); }
+.talep-durum-badge.onay-bekliyor { background:color-mix(in srgb,var(--amber) 18%,transparent); color:var(--amber); }
+.talep-durum-badge.onayli        { background:color-mix(in srgb,var(--teal) 15%,transparent);  color:var(--teal); }
+.talep-durum-badge.reddedildi    { background:color-mix(in srgb,var(--red) 15%,transparent);   color:var(--red); }
+/* ══════════════════════════════════════════════════════
+   TALEPNAME (sade — Aşama F yeniden tasarım)
+══════════════════════════════════════════════════════ */
+
+/* Aksiyon toolbar (belge üstünde, baskıda gizli) */
+.talep-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+  flex-wrap: wrap;
+}
+.talep-toolbar-meta {
+  display: flex; align-items: center; gap: var(--s-3);
+  font-size: var(--fs-md);
+  color: var(--text-secondary);
+}
+.talep-toolbar-no strong {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  margin-left: 4px;
+}
+.talep-toolbar-tarih { color: var(--text-muted); font-size: var(--fs-sm); }
+.talep-toolbar-actions {
+  display: flex; align-items: center; gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+/* Belge kartı: A4-ish, kâğıt hissi sade */
+.talep-paper {
+  padding: var(--s-8);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Antet */
+.talep-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-6);
+  padding-bottom: var(--s-5);
+  border-bottom: 2px solid var(--border-strong);
+  margin-bottom: var(--s-6);
+}
+.talep-header-left { flex: 1; min-width: 0; }
+.talep-kurum {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: var(--s-2);
+}
+.talep-baslik {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  letter-spacing: -.2px;
+  line-height: 1.2;
+}
+.talep-header-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.talep-no-block {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-2);
+}
+.talep-no-label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.talep-no-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+}
+.talep-tarih-doc {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-top: var(--s-1);
+}
+
+/* Sections */
+.talep-section { margin-bottom: var(--s-6); }
+.talep-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-3);
+  gap: var(--s-3);
+}
+.talep-section-eyebrow {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: var(--s-2);
+}
+.talep-section-head .talep-section-eyebrow { margin-bottom: 0; }
+
+/* Form alanları (yeni .field pattern) */
+.talep-field-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-4) var(--s-5);
+}
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field--full { grid-column: 1 / -1; }
+.field-lbl {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.field-inp {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  padding: var(--s-1) 0 var(--s-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+  transition: border-color var(--motion-fast);
+}
+.field-inp:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+.field-inp::placeholder {
+  color: var(--text-muted);
+  font-style: normal;
+  opacity: .6;
+}
+
+/* Aciliyet vurguları */
+.field-inp.talep-aciliyet-acil    { color: var(--warning); font-weight: var(--fw-semibold); }
+.field-inp.talep-aciliyet-cokacil { color: var(--danger);  font-weight: var(--fw-semibold); }
+
+/* Malzeme tablosu */
+.talep-table-scroll { overflow-x: auto; }
+.talep-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.talep-table th {
+  text-align: left;
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-0);
+}
+.talep-table td {
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+.talep-table tbody tr:last-child td { border-bottom: none; }
+.talep-table tbody tr:hover td { background: var(--surface-0); }
+.talep-table input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  padding: 2px 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+.talep-table input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+/* Malzeme seçici buton (JS'ten render) */
+.talep-mal-btn {
+  width: 100%;
+  padding: var(--s-1) var(--s-2);
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex; align-items: center; gap: 4px;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+}
+.talep-mal-btn:hover { border-color: var(--accent); color: var(--accent); }
+.talep-mal-secili {
+  display: flex; align-items: center; gap: var(--s-1);
+  background: var(--accent-bg);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: var(--r-sm);
+  padding: 3px var(--s-2);
+}
+.talep-mal-ad {
+  flex: 1;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.talep-mal-ad:hover { color: var(--accent-hover); }
+.talep-mal-temizle {
+  flex-shrink: 0;
+  background: transparent; border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--r-xs);
+  line-height: 0;
+}
+.talep-mal-temizle svg { width: 12px; height: 12px; }
+.talep-mal-temizle:hover { color: var(--danger); }
+
+/* İmza alanı */
+.talep-sig-section {
+  margin-top: var(--s-8);
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--border);
+}
+.talep-sig-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-6);
+}
+.talep-sig-box {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.talep-sig-space {
+  height: 56px;
+  border-bottom: 1px solid var(--text-secondary);
+  margin-bottom: var(--s-2);
+}
+.talep-sig-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: var(--s-1);
+}
+.talep-sig-inp {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed var(--border);
+  padding: 2px 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+.talep-sig-inp:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+.talep-sig-inp::placeholder {
+  color: var(--text-muted);
+  font-style: normal;
+  opacity: .5;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .talep-paper { padding: var(--s-4); }
+  .talep-field-grid { grid-template-columns: 1fr; }
+  .talep-sig-row { grid-template-columns: 1fr; }
+  .talep-header { flex-direction: column; gap: var(--s-3); }
+  .talep-header-right { text-align: left; }
+  .talep-toolbar { flex-direction: column; align-items: stretch; }
+  .talep-toolbar-actions { justify-content: flex-end; }
+}

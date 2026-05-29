@@ -1,0 +1,105 @@
+/* ══════════════════════════════════════════════════════
+   PRINT (Aşama J — sade A4)
+   - Talepname: belge tek sayfaya optimize, monokrom + ince
+     gri sınırlar, accent renkler korunur (no-print kalkar).
+   - Stok / Hareket / Kritik listeleri: tablo başlık tekrarı,
+     sayfa numarası, tarih.
+
+   Bu dosya index.html'de media="print" ile çekiliyor — tarayıcı
+   yalnızca yazdırma sırasında parse eder, ekran render'ına yük
+   bindirmez.
+══════════════════════════════════════════════════════ */
+
+/* Genel */
+@page { size: A4 portrait; margin: 14mm 12mm; }
+body { background: #fff !important; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+#sidebar, #topbar, .no-print { display: none !important; }
+#main { margin-left: 0 !important; height: auto !important; overflow: visible !important; }
+#content { padding: 0 !important; }
+.page { display: none !important; }
+.page.active { display: block !important; }
+
+/* Kart gölgeleri ve border'ları sade */
+.card { box-shadow: none !important; border: 1px solid #cfd6df !important; border-radius: 0 !important; }
+.card-header { background: #f3f5f8 !important; border-bottom: 1px solid #cfd6df !important; }
+
+/* ── Talepname baskı ───────────────────────────────────────── */
+.talep-paper {
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+.talep-header { border-bottom: 2px solid #000 !important; margin-bottom: 12mm; padding-bottom: 8mm; }
+.talep-kurum  { color: #333 !important; }
+.talep-baslik { color: #000 !important; font-size: 16pt !important; }
+.talep-no-label, .talep-tarih-doc { color: #555 !important; }
+.talep-no-val { color: #000 !important; }
+.talep-section { margin-bottom: 8mm; }
+.talep-section-eyebrow {
+  color: #444 !important;
+  border-bottom: 1px solid #cfd6df;
+  padding-bottom: 2mm;
+  margin-bottom: 4mm;
+}
+.field-inp, .talep-sig-inp {
+  border-bottom: 1px solid #888 !important;
+  color: #000 !important;
+  background: transparent !important;
+}
+/* Tablo */
+.talep-table { font-size: 10pt !important; }
+.talep-table th {
+  background: #ecf0f5 !important;
+  color: #000 !important;
+  border-bottom: 1px solid #888 !important;
+  padding: 2mm 3mm !important;
+}
+.talep-table td {
+  border-bottom: 1px solid #d8dde4 !important;
+  padding: 2mm 3mm !important;
+  color: #000 !important;
+}
+.talep-table input {
+  border-bottom: 1px dotted #888 !important;
+  color: #000 !important;
+  background: transparent !important;
+}
+.talep-mal-secili { background: transparent !important; border: 0 !important; padding: 0 !important; }
+.talep-mal-ad { color: #000 !important; }
+
+/* İmza */
+.talep-sig-section { margin-top: 14mm; border-top: 1px solid #cfd6df !important; padding-top: 6mm; }
+.talep-sig-space { border-bottom: 1px solid #000 !important; height: 18mm; }
+.talep-sig-label { color: #333 !important; }
+
+/* Durum pill — baskıda monokrom */
+.talep-durum-badge {
+  background: transparent !important;
+  color: #000 !important;
+  border: 1px solid #000 !important;
+}
+
+/* ── Liste sayfaları (stok / hareket / kritik) ────────────── */
+.stok-toolbar-sticky, .stok-aktif-filtreler, .stok-kpi-bar, #stok-sayfalama,
+#har-sayfalama, .toolbar, #hareket-list .har-sil-btn,
+#depo-cards, .c-kpi-row, #dash-sparkline, #stok-sutun-menu,
+.har-ozet-row { display: none !important; }
+.page-header { margin-bottom: 6mm; }
+.page-header-title { display: block !important; font-size: 14pt; font-weight: 700; }
+.page-header-sub { color: #555 !important; }
+
+table { border-collapse: collapse; width: 100%; }
+table th, table td {
+  border-bottom: 1px solid #cfd6df !important;
+  padding: 2mm 2.5mm !important;
+  font-size: 9pt !important;
+}
+table thead { display: table-header-group; }   /* her sayfada başlık tekrar */
+tbody tr { page-break-inside: avoid; }
+.badge { border: 1px solid currentColor; background: transparent !important; }
+
+/* Renkli row şeritlerini koru (mavi/kırmızı/sarı) */
+tbody tr.row-kritik { box-shadow: inset 3px 0 0 #000 !important; }
+tbody tr.row-fazla  { box-shadow: inset 3px 0 0 #777 !important; }
