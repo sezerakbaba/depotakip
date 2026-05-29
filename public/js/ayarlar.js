@@ -1,5 +1,5 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
-import { esc, dClick, dChange, dInput, dKeydown, setFieldError, clearFieldErrors } from './ui-common.js';
+import { esc, dClick, dChange, dInput, dKeydown, setFieldError, clearFieldErrors, notificationDurumu } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -149,12 +149,15 @@ export function renderAyarlar() {
     <div class="ayar-row"><div class="ayar-label">Hareket notu zorunlu<small>Giriş/çıkış kaydederken not alanı boş bırakılamaz</small></div>
       <input type="checkbox" ${S.ayarlar.hareketNot?'checked':''} ${dChange('setAyarBool','hareketNot')}></div>
     <div class="ayar-row"><div class="ayar-label">Kritik stok bildirimi<small>${
-      !('Notification' in window) ? 'Tarayıcınız desteklemiyor' :
-      !window.isSecureContext     ? "HTTPS gerektirir (sunucu HTTP'de bildirim alınmaz)" :
-      Notification.permission === 'granted' ? 'İzin verildi ✓' :
-      Notification.permission === 'denied'  ? 'Tarayıcıda engellendi' : 'İzin gerekiyor'
+      ({
+        unsupported: 'Tarayıcınız desteklemiyor',
+        insecure:    "HTTPS gerektirir (sunucu HTTP'de bildirim alınmaz)",
+        granted:     'İzin verildi ✓',
+        denied:      'Tarayıcıda engellendi',
+        default:     'İzin gerekiyor',
+      })[notificationDurumu()] || 'Bilinmiyor'
     }</small></div>
-      <button class="btn btn-sm ${S.ayarlar.bildirimAktif?'btn-primary':'btn-outline'}" ${!window.isSecureContext?'disabled':''} ${dClick('bildirimIzniSor')}>${
+      <button class="btn btn-sm ${S.ayarlar.bildirimAktif?'btn-primary':'btn-outline'}" ${notificationDurumu()==='insecure'||notificationDurumu()==='unsupported'?'disabled':''} ${dClick('bildirimIzniSor')}>${
         S.ayarlar.bildirimAktif ? 'Aktif — Kapat' : 'Bildirimleri Aç'
       }</button></div>
   </div></div>`;

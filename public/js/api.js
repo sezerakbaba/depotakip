@@ -145,10 +145,17 @@ export function apiSave() {
 // Talep onayı gibi server'da AppState modifikasyonu öncesi gereklidir:
 // server-side stok eksiltmesinin doğru baseline'a karşı yapılması için
 // local state önce sunucuya flush edilmeli.
-export async function apiSaveSync() {
-  if (!S.API_MOD) return;
+//
+// Ö2 fix: in-flight promise cache — paralel apiSaveSync() çağrıları
+// aynı POST'a join olur. Eski sürüm her çağrıda yeni POST yolluyor,
+// race koşulu yaratıyordu.
+let _saveSyncInflight = null;
+export function apiSaveSync() {
+  if (!S.API_MOD) return Promise.resolve();
+  if (_saveSyncInflight) return _saveSyncInflight;
   clearTimeout(S._saveTimer);
-  await _doSave();
+  _saveSyncInflight = _doSave().finally(() => { _saveSyncInflight = null; });
+  return _saveSyncInflight;
 }
 
 // Sekme kapanırken / gizlenirken pending save'i hemen yolla.

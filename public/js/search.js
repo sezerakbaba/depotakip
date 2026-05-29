@@ -46,13 +46,19 @@ function _highlight(text, q) {
        + esc(t.slice(idx + q.length));
 }
 
+// Ö3 fix: her grup için kendi cap'i. Global slice(0,50) yerine grup-bazlı
+// cap (mid-group truncation count'u yanıltıyordu). Toplam cap = 60.
+const _GROUP_CAP = { Stok: 30, Depo: 10, Talep: 20 };
 function _gather(q) {
   const ql = q.toLowerCase().trim();
   if (!ql) return [];
 
   const results = [];
+  let stokCount = 0, talepCount = 0;
+
   // Stok malzemeler
   for (const i of getAllItems()) {
+    if (stokCount >= _GROUP_CAP.Stok) break;
     const adMatch  = i.ad.toLowerCase().includes(ql);
     const depMatch = i.depo.toLowerCase().includes(ql);
     if (!adMatch && !depMatch) continue;
@@ -64,17 +70,19 @@ function _gather(q) {
       title: i.ad,
       sub: i.depo + ' · Mevcut: ' + s.mevcut + (d === 'Kritik' ? ' · KRİTİK' : ''),
       titleHtml: _highlight(i.ad, ql),
-      subHtml:   _highlight(i.depo, ql) + ' · Mevcut: ' + s.mevcut + (d === 'Kritik' ? ' · <span style="color:var(--danger)">KRİTİK</span>' : ''),
+      subHtml:   _highlight(i.depo, ql) + ' · Mevcut: ' + s.mevcut + (d === 'Kritik' ? ' · <span class="text-danger">KRİTİK</span>' : ''),
       action: () => {
         closeGlobalSearch();
         window.navigate?.('stok');
         setTimeout(() => window.openStokModal?.(i.depo + '||' + i.ad, i.depo, i.ad), 60);
       },
     });
-    if (results.length >= 40) break;
+    stokCount++;
   }
-  // Depolar
+  // Depolar (cap düşük, kısa dön)
+  let depoCount = 0;
   for (const [dep, meta] of Object.entries(DEPO_META)) {
+    if (depoCount >= _GROUP_CAP.Depo) break;
     if (!dep.toLowerCase().includes(ql)) continue;
     results.push({
       group: 'Depo',
@@ -88,9 +96,11 @@ function _gather(q) {
         window.goDetay?.(dep);
       },
     });
+    depoCount++;
   }
   // Talepler
   for (const t of (S._talepListesi || [])) {
+    if (talepCount >= _GROUP_CAP.Talep) break;
     const no   = String(t.no || '').toLowerCase();
     const bir  = String(t.birim || '').toLowerCase();
     const per  = String(t.personel || '').toLowerCase();
@@ -107,8 +117,9 @@ function _gather(q) {
         window.talepGoruntule?.(t.id);
       },
     });
+    talepCount++;
   }
-  return results.slice(0, 50);
+  return results;
 }
 
 function _renderResults(q) {
@@ -125,14 +136,16 @@ function _renderResults(q) {
     return;
   }
 
-  // Grupla
+  // Grupla — explicit sıra (M2 fix): insertion-order bağımlılığı yerine
+  // sabit Stok → Depo → Talep sırası.
+  const GROUP_ORDER = ['Stok', 'Depo', 'Talep'];
   const groups = {};
   _currentResults.forEach((r, i) => {
     if (!groups[r.group]) groups[r.group] = [];
     groups[r.group].push({ ...r, idx: i });
   });
 
-  const html = Object.entries(groups).map(([g, items]) => `
+  const html = GROUP_ORDER.filter(g => groups[g]).map(g => [g, groups[g]]).map(([g, items]) => `
     <div class="search-group-label">${esc(g)} (${items.length})</div>
     ${items.map(r => `
       <div class="search-item${r.idx === _selectedIdx ? ' active' : ''}" data-idx="${r.idx}">
