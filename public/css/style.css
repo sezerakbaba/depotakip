@@ -1502,20 +1502,19 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .hareket-item:last-child { border-bottom: none; }
 .hareket-dot {
-  width: 36px; height: 36px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
   flex-shrink: 0;
 }
-.dot-giris { background: var(--grn-bg); }
-.dot-cikis { background: var(--red-bg); }
+.dot-giris { background: var(--success-bg); color: var(--success); }
+.dot-cikis { background: var(--danger-bg);  color: var(--danger); }
 .hareket-info { flex: 1; }
-.hareket-mal { font-size: 13px; font-weight: 600; color: var(--ink); }
-.hareket-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.hareket-miktar { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; }
-.giris-clr { color: var(--green); }
-.cikis-clr { color: var(--red); }
+.hareket-mal { font-size: var(--fs-md); font-weight: var(--fw-semibold); color: var(--text-primary); }
+.hareket-meta { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+.hareket-miktar { font-family: var(--font-mono); font-size: var(--fs-md); font-weight: var(--fw-semibold); }
+.giris-clr { color: var(--success); }
+.cikis-clr { color: var(--danger); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -1637,40 +1636,58 @@ textarea { resize: vertical; min-height: 70px; }
 .text-sm { font-size: 12px; color: var(--ink2); }
 
 /* ── SKT Badge ── */
+/* SKT badge'leri — durum semantic token'lara map */
 .skt-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 7px;
-  border-radius: 20px;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
   font-size: 10px;
-  font-weight: 700;
-  font-family: 'IBM Plex Mono', monospace;
+  font-weight: var(--fw-semibold);
+  font-family: var(--font-mono);
   letter-spacing: .3px;
-  margin-top: 3px;
+  margin-top: 2px;
   cursor: default;
   white-space: nowrap;
 }
-.skt-gecmis { background: rgba(239,83,80,.15);  color: #ef5350; border: 1px solid rgba(239,83,80,.3); }
-.skt-kritik { background: rgba(255,112,67,.15);  color: #ff7043; border: 1px solid rgba(255,112,67,.3); }
-.skt-uyari  { background: rgba(255,193,7,.12);   color: #f9a825; border: 1px solid rgba(255,193,7,.25); }
-.skt-ok     { background: rgba(102,187,106,.1);  color: #66bb6a; border: 1px solid rgba(102,187,106,.2); }
+.skt-gecmis { background: var(--danger-bg);  color: var(--danger); }
+.skt-kritik { background: var(--warning-bg); color: var(--warning); }
+.skt-uyari  { background: var(--info-bg);    color: var(--info); }
+.skt-ok     { background: var(--success-bg); color: var(--success); }
 
 /* SKT Özet Paneli */
-.skt-ozet-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
-.skt-ozet-kart { padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--white); text-align: center; }
-.skt-ozet-sayi { font-size: 28px; font-weight: 700; font-family: 'IBM Plex Mono',monospace; line-height: 1; margin-bottom: 4px; }
-.skt-ozet-lbl  { font-size: 11px; color: var(--muted); }
+.skt-ozet-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
+.skt-ozet-kart {
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  text-align: center;
+}
+.skt-ozet-sayi {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  font-family: var(--font-mono);
+  line-height: 1;
+  margin-bottom: var(--s-1);
+}
+.skt-ozet-lbl  { font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
 
-/* Hareket özet satırı */
-.har-ozet-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-.har-ozet-kart { padding:10px 14px; border-radius:var(--radius); border:1px solid var(--line); background:var(--white); }
+/* Hareket özet satırı (sade — tek tasarım, sadece sayı tonu farkı) */
+.har-ozet-row { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--s-3); }
+.har-ozet-kart {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+}
 
-/* Hareket özet renkleri */
-.har-sayi-giris  { color: var(--green); }
-.har-sayi-cikis  { color: var(--red); }
-.har-sayi-toplam { color: var(--blue); }
-.har-sayi-aktif  { font-size: 13px !important; color: var(--teal2); }
+/* Hareket özet rakam renkleri — sadece anlam belirten yerlerde */
+.har-sayi-giris  { color: var(--success); }
+.har-sayi-cikis  { color: var(--danger); }
+.har-sayi-toplam { color: var(--text-primary); }
+.har-sayi-aktif  { font-size: var(--fs-md) !important; color: var(--text-primary); }
 
 /* Hareket mod butonu */
 .har-mod-btn { font-size: 11px; }
