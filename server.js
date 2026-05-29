@@ -68,6 +68,9 @@ const CSP_DIRECTIVES = {
   baseUri:    ["'self'"],
   formAction: ["'self'"],
   frameAncestors: ["'none'"],
+  // Report-only modda anlamsız; ayrıca uygulama LAN'da HTTP servis edildiği
+  // için upgrade-insecure-requests istenmez. Helmet default'unu null ile devre dışı bırak.
+  upgradeInsecureRequests: null,
 };
 const cspEnforce = process.env.CSP_ENFORCE === 'true';
 app.use(helmet({
