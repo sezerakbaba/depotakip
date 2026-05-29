@@ -168,7 +168,7 @@ export async function initTalep() {
       }
     });
     if (S.talepSatirCount === 0) talepSatirEkle();
-    _talepDurumGoster(t.durum || 'Taslak');
+    _talepDurumGoster(t.durum || 'Onay Bekliyor');
     updateTalepToplam();
     return;
   }
@@ -194,7 +194,7 @@ export async function initTalep() {
     if (S.ayarlar.talepOnaylayan1) { const el=document.getElementById('imza1');      if(el&&!el.value) el.value=S.ayarlar.talepOnaylayan1; }
     if (S.ayarlar.talepOnaylayan2) { const el=document.getElementById('imza2');      if(el&&!el.value) el.value=S.ayarlar.talepOnaylayan2; }
     if (S.ayarlar.talepOnaylayan3) { const el=document.getElementById('imza3');      if(el&&!el.value) el.value=S.ayarlar.talepOnaylayan3; }
-    _talepDurumGoster('Taslak');
+    _talepDurumGoster('Onay Bekliyor');
   }
 }
 
@@ -221,7 +221,7 @@ function _talepTarihIso(disp) {
   return new Date().toISOString().slice(0, 10); // güvenli fallback
 }
 
-export function talepKaydet(durum = 'Taslak') {
+export function talepKaydet(durum = 'Onay Bekliyor') {
   const no    = document.getElementById('talep-no-display')?.textContent||'';
   const tarih = _talepTarihIso(document.getElementById('talep-tarih-display')?.textContent);
   const satirlar = [];
@@ -271,7 +271,7 @@ export function talepKaydet(durum = 'Taslak') {
       })
       .catch(e => { console.warn('talep_kaydet:', e); window.toast('Sunucuya kaydedilemedi, yerelde tutuldu', 'error'); });
   }
-  const msg = durum==='Taslak' ? 'taslak olarak kaydedildi' : 'onaya gönderildi';
+  const msg = durum==='Onay Bekliyor' ? 'kaydedildi ve onaya gönderildi' : ('durumu: ' + durum);
   window.toast(`Talep ${no} ${msg} ✓`);
   _talepDurumGoster(durum);
 }
@@ -306,7 +306,7 @@ export function talepSifirla() {
     if (S.ayarlar.talepOnaylayan1) { const el=document.getElementById('imza1');      if(el) el.value=S.ayarlar.talepOnaylayan1; }
     if (S.ayarlar.talepOnaylayan2) { const el=document.getElementById('imza2');      if(el) el.value=S.ayarlar.talepOnaylayan2; }
     if (S.ayarlar.talepOnaylayan3) { const el=document.getElementById('imza3');      if(el) el.value=S.ayarlar.talepOnaylayan3; }
-    _talepDurumGoster('Taslak');
+    _talepDurumGoster('Onay Bekliyor');
     updateTalepToplam();
   });
 }
@@ -314,8 +314,9 @@ export function talepSifirla() {
 function _talepDurumGoster(dur) {
   const el = document.getElementById('talep-durum-badge');
   if (!el) return;
+  // 'Taslak' artık akışta yok ama eski kayıtlarda görünebilir.
   const cls = { 'Taslak':'taslak','Onay Bekliyor':'onay-bekliyor','Onaylı':'onayli','Reddedildi':'reddedildi' };
-  el.innerHTML = dur ? `<span class="talep-durum-badge ${cls[dur]||'taslak'}">${dur}</span>` : '';
+  el.innerHTML = dur ? `<span class="talep-durum-badge ${cls[dur]||'onay-bekliyor'}">${dur}</span>` : '';
 }
 
 export function renderTalepListesi() {
@@ -329,7 +330,7 @@ export function renderTalepListesi() {
     return;
   }
   const acilRenk = { 'Normal':'var(--ink2)', 'Acil':'var(--amber)', 'Çok Acil':'var(--red)' };
-  const durumCls = d => ({ 'Taslak':'taslak','Onay Bekliyor':'onay-bekliyor','Onaylı':'onayli','Reddedildi':'reddedildi' }[d]||'taslak');
+  const durumCls = d => ({ 'Taslak':'taslak','Onay Bekliyor':'onay-bekliyor','Onaylı':'onayli','Reddedildi':'reddedildi' }[d]||'onay-bekliyor');
   el.innerHTML = `<div class="card" style="overflow:hidden"><div style="overflow-x:auto">
     <table id="talep-list-table">
       <thead><tr>
@@ -340,7 +341,7 @@ export function renderTalepListesi() {
       <tbody>
       ${liste.map(t => {
         const kalem = (t.satirlar||[]).filter(s=>s.ad).length;
-        const d = t.durum || 'Taslak';
+        const d = t.durum || 'Onay Bekliyor';
         const bekliyor = d === 'Onay Bekliyor';
         return `<tr>
           <td><strong style="font-family:'IBM Plex Mono',monospace;font-size:12px">${esc(t.no)}</strong></td>
