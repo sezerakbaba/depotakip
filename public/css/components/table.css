@@ -1,0 +1,107 @@
+/* ── Tables ── */
+.table-wrapper { border-radius: var(--radius); border: 1px solid var(--line); overflow-x: auto; }
+/* Stok tablosu: table-wrapper kendi scroll container'ı, thead top:0 ile sticky çalışır */
+#page-stok .table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 60vh; /* JS tarafından dinamik güncellenir */
+  min-height: 200px;
+  border: none;
+  border-radius: 0;
+}
+.stok-toolbar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 35;
+  background: var(--bg);
+  padding: 4px 0 6px;
+}
+.stok-toolbar-sticky .toolbar { margin-bottom: 6px; }
+.stok-toolbar-sticky .toolbar:last-child { margin-bottom: 0; }
+.stok-page-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: -.3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#stok-table { table-layout: auto; width: 100%; }
+thead tr { background: var(--bg); }
+thead th {
+  padding: 12px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+  position: sticky; top: 0; z-index: 30;
+  background-color: var(--bg);
+  opacity: 1;
+  min-height: 40px;
+  box-shadow: 0 1px 0 var(--line);
+}
+/* Sütun genişlikleri — table-layout:auto modunda min-width garantili */
+/* Malzeme hariç tüm sütunlar ortalı */
+#stok-table th[data-col="malzeme"],
+#stok-table td[data-col="malzeme"]  { min-width: 180px; white-space: normal; text-align: left; }
+#stok-table th[data-col="depo"],
+#stok-table td[data-col="depo"]     { min-width: 90px;  width: 110px; white-space: nowrap; text-align: center; }
+#stok-table th[data-col="kategori"],
+#stok-table td[data-col="kategori"] { min-width: 80px;  width: 110px; white-space: nowrap; text-align: center; }
+#stok-table th[data-col="mevcut"],
+#stok-table td[data-col="mevcut"]   { min-width: 60px;  width: 80px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="birim"],
+#stok-table td[data-col="birim"]    { min-width: 50px;  width: 70px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="min"],
+#stok-table td[data-col="min"]      { min-width: 50px;  width: 70px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="max"],
+#stok-table td[data-col="max"]      { min-width: 50px;  width: 70px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="durum"],
+#stok-table td[data-col="durum"]    { min-width: 75px;  width: 95px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="doluluk"],
+#stok-table td[data-col="doluluk"]  { min-width: 100px; width: 120px; text-align: center; white-space: nowrap; }
+#stok-table th[data-col="islem"],
+#stok-table td[data-col="islem"]    { min-width: 110px; width: 120px; text-align: center; white-space: nowrap; }
+
+/* Sabit sütunlar */
+#stok-table th:first-child,
+#stok-table td:first-child { width: 40px; text-align: center; color: var(--muted); font-size: 11px; }
+
+
+
+tbody tr {
+  border-bottom: 1px solid var(--line);
+  transition: background .1s;
+}
+/* Zebra striping */
+/* Zebra striping kaldırıldı — kurumsal sade görünüm */
+tbody tr:hover { background: var(--surface-0) !important; }
+
+/* Kritik/fazla satır: arka plan rengi yerine sol kenar şeridi (sade) */
+tbody tr.row-kritik {
+  box-shadow: inset 3px 0 0 var(--danger);
+}
+tbody tr.row-kritik:hover { background: var(--surface-0) !important; }
+
+tbody tr.row-fazla {
+  box-shadow: inset 3px 0 0 var(--warning);
+}
+
+tbody td {
+  padding: 9px 12px;
+  color: var(--ink2);
+  vertical-align: middle;
+}
+/* td hizalamaları data-col seçicilerde tanımlandı — nth-child kuralları kaldırıldı */
+
+.td-name { font-weight: 600; color: var(--ink); white-space: normal; word-break: break-word; }
+.td-mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+

@@ -1,0 +1,35 @@
+/* ── Badges (kurumsal sade) ───────────────────────────────────────
+   Tek base + 4 durum varyantı (success/warning/danger/info) +
+   neutral. Depo kod badge'leri renkleri kendi inline style ile getirir
+   (DEPO_META.color); .badge--code mono + kompakt. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.badge-normal,  .badge--success { background: var(--success-bg); color: var(--success); }
+.badge-kritik,  .badge--danger  { background: var(--danger-bg);  color: var(--danger);  }
+.badge-fazla,   .badge--warning { background: var(--warning-bg); color: var(--warning); }
+.badge--info    { background: var(--info-bg); color: var(--info); }
+.badge--neutral { background: var(--surface-0); color: var(--text-secondary); }
+
+/* Depo kodu (eski .badge-td/od/ay/kd/kgd legacy alias olarak kalır,
+   yeni kod inline style + .badge--code kullanmalı) */
+.badge--code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .5px;
+  padding: 2px var(--s-2);
+}
+.badge-td  { background: var(--td-bg);  color: var(--td);  }
+.badge-od  { background: var(--od-bg);  color: var(--od);  }
+.badge-ay  { background: var(--ay-bg);  color: var(--ay);  }
+.badge-kd  { background: var(--kd-bg);  color: var(--kd);  }
+.badge-kgd { background: var(--kgd-bg); color: var(--kgd); }
+
