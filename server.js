@@ -650,31 +650,63 @@ app.post('/api', async (req, res) => {
     }
 
   } else if (action === 'talep_kaydet') {
+    // Upsert: client'ın gönderdiği `no` zaten varsa UPDATE, yoksa INSERT.
+    // Eski sürüm her çağrıda yeni INSERT yapıyordu → aynı talep birden çok
+    // kez kaydedildiğinde duplicate row + farklı no'lar üretiyordu.
     const b = req.body || {};
     const err0 = validateTalep(b);
     if (err0) return res.status(400).json({ ok: false, error: err0 });
     if (!b.tarih) return res.status(400).json({ ok: false, error: 'tarih zorunlu' });
 
+    const clientNo = typeof b.no === 'string' && /^[A-Z]{2,4}-\d{1,6}$/.test(b.no) ? b.no : null;
+
     db.serialize(() => {
       db.run('BEGIN IMMEDIATE TRANSACTION');
-      db.get('SELECT COALESCE(MAX(id), 0) + 1 AS next FROM Talepler', (err, row) => {
+      // Önce mevcut satırı kontrol et (clientNo varsa)
+      const checkSql = clientNo
+        ? 'SELECT id FROM Talepler WHERE no = ?'
+        : 'SELECT NULL as id WHERE 0';
+      db.get(checkSql, clientNo ? [clientNo] : [], (err, existing) => {
         if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
-        const nextId = row.next;
-        const no = 'TLN-' + String(nextId).padStart(4, '0');
-        db.run(
-          `INSERT INTO Talepler (no, tarih, birim, personel, depo, aciliyet, gerekce, satirlar, imza1, imza2, imza3, durum)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [no, b.tarih, b.birim, b.personel, b.depo, b.aciliyet, b.gerekce,
-           JSON.stringify(b.satirlar || []), b.imza1, b.imza2, b.imza3, b.durum || 'Taslak'],
-          function(err2) {
+
+        if (existing && existing.id) {
+          // UPDATE — mevcut talebi güncelle
+          db.run(
+            `UPDATE Talepler SET tarih=?, birim=?, personel=?, depo=?, aciliyet=?,
+             gerekce=?, satirlar=?, imza1=?, imza2=?, imza3=?, durum=? WHERE id=?`,
+            [b.tarih, b.birim, b.personel, b.depo, b.aciliyet, b.gerekce,
+             JSON.stringify(b.satirlar || []), b.imza1, b.imza2, b.imza3,
+             b.durum || 'Taslak', existing.id],
+            function(err2) {
+              if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
+              db.run('COMMIT', err3 => {
+                if (err3) return res.json({ ok: false, error: err3.message });
+                res.json({ ok: true, id: existing.id, no: clientNo, updated: true });
+              });
+            }
+          );
+        } else {
+          // INSERT — yeni talep, max(id)+1 ile no üret
+          db.get('SELECT COALESCE(MAX(id), 0) + 1 AS next FROM Talepler', (err2, row) => {
             if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
-            const insertedId = this.lastID;
-            db.run('COMMIT', err3 => {
-              if (err3) return res.json({ ok: false, error: err3.message });
-              res.json({ ok: true, id: insertedId, no });
-            });
-          }
-        );
+            const nextId = row.next;
+            const no = clientNo || 'TLN-' + String(nextId).padStart(4, '0');
+            db.run(
+              `INSERT INTO Talepler (no, tarih, birim, personel, depo, aciliyet, gerekce, satirlar, imza1, imza2, imza3, durum)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [no, b.tarih, b.birim, b.personel, b.depo, b.aciliyet, b.gerekce,
+               JSON.stringify(b.satirlar || []), b.imza1, b.imza2, b.imza3, b.durum || 'Taslak'],
+              function(err3) {
+                if (err3) { db.run('ROLLBACK'); return res.json({ ok: false, error: err3.message }); }
+                const insertedId = this.lastID;
+                db.run('COMMIT', err4 => {
+                  if (err4) return res.json({ ok: false, error: err4.message });
+                  res.json({ ok: true, id: insertedId, no, updated: false });
+                });
+              }
+            );
+          });
+        }
       });
     });
 

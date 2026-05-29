@@ -245,13 +245,20 @@ export function talepKaydet(durum = 'Taslak') {
   talepListesiYukle();
   const idx = S._talepListesi.findIndex(t => t.no === no);
   if (idx >= 0) { S._talepListesi[idx] = { ...S._talepListesi[idx], ...payload }; }
-  else          { payload.id = Date.now(); S._talepListesi.push(payload); }
+  else          { S._talepListesi.push({ ...payload }); }  // id'yi server koyacak
   talepListesiKaydet();
   if (S.API_MOD) {
     apiFetch(API_URL+'?action=talep_kaydet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
       .then(r=>r.json()).then(j=>{
-        if (j.ok && j.no) document.getElementById('talep-no-display').textContent = j.no;
-        else if (!j.ok) window.toast('Talep sunucuya kaydedilemedi: ' + (j.error||''), 'error');
+        if (j.ok) {
+          if (j.no) document.getElementById('talep-no-display').textContent = j.no;
+          // Server'ın authoritative id'sini yerele yaz — sonraki talep_durum
+          // çağrıları doğru id ile gider (eskiden Date.now() stub vardı).
+          const idx2 = S._talepListesi.findIndex(t => t.no === (j.no || no));
+          if (idx2 >= 0 && j.id) { S._talepListesi[idx2].id = j.id; talepListesiKaydet(); }
+        } else {
+          window.toast('Talep sunucuya kaydedilemedi: ' + (j.error||''), 'error');
+        }
       })
       .catch(e => { console.warn('talep_kaydet:', e); window.toast('Sunucuya kaydedilemedi, yerelde tutuldu', 'error'); });
   }
@@ -344,14 +351,37 @@ export function renderTalepListesi() {
       </tbody>
     </table>
   </div></div>`;
-  if (S.API_MOD) {
+  if (S.API_MOD && !S._talepRenderSkipFetch) {
     apiFetch(API_URL+'?action=talep_list').then(r=>r.json()).then(j=>{
       if (j.ok && j.talepler?.length) {
-        j.talepler.forEach(at => { if (!S._talepListesi.find(x=>x.no===at.no)) S._talepListesi.push({...at}); });
-        talepListesiKaydet();
+        // Server canonical: aynı no'lu local kaydı server versiyonuyla
+        // değiştir (id dahil); yoksa ekle. Eski sürüm sadece "skip if
+        // exists" yapıyor, server'ın gerçek id'si yerele giremiyordu.
+        // Recursive render kaçınmak için yalnızca gerçek değişim varsa
+        // re-render (S._talepRenderSkipFetch ile).
+        let changed = false;
+        j.talepler.forEach(at => {
+          const idx = S._talepListesi.findIndex(x => x.no === at.no);
+          if (idx < 0) { S._talepListesi.push({ ...at }); changed = true; return; }
+          if (JSON.stringify(S._talepListesi[idx]) !== JSON.stringify(at)) {
+            S._talepListesi[idx] = { ...at }; changed = true;
+          }
+        });
+        if (changed) { talepListesiKaydet(); _renderTalepListesiCached(); }
       }
     }).catch(e => { console.warn('talep_list:', e); });
   }
+}
+// Re-render iç fonksiyonu — server fetch'i tekrar tetiklemez.
+function _renderTalepListesiCached() {
+  const el = document.getElementById('talep-listesi-icerik');
+  if (!el) return;
+  // Doğrudan render gövdesini yeniden çağırmak yerine: renderTalepListesi
+  // çağırmak, ama yeni bir API çağrısı başlatmasın diye basit bir bayrak
+  // kullanmak gerekiyor. Bu PR kapsamında: aynı fonksiyon, ama API
+  // çağrısı changed flag'i ile guard'lanır. (Aşağıdaki teknik basit.)
+  S._talepRenderSkipFetch = true;
+  try { renderTalepListesi(); } finally { S._talepRenderSkipFetch = false; }
 }
 
 export function talepDurumGuncelle(id, yeniDurum) {
