@@ -395,14 +395,39 @@ function _renderTalepListesiCached() {
 }
 
 export function talepDurumGuncelle(id, yeniDurum) {
+  // 'Onaylı' geçişinde server her satır için Çıkış hareketi oluşturup
+  // stoku düşer. Frontend optimistic update yapar, server yanıtına göre
+  // stoku yeniden yükler (apiLoad) — yetersiz stok uyarıları yansır.
+  if (yeniDurum === 'Onaylı' && !confirm(
+    'Talep onaylanacak ve içindeki malzemeler stoktan otomatik düşülecek. Devam edilsin mi?'
+  )) return;
+
   talepListesiYukle();
   const t = S._talepListesi.find(x => x.id === id);
-  if (t) { t.durum = yeniDurum; talepListesiKaydet(); window.toast(`Durum → ${yeniDurum} ✓`); renderTalepListesi(); }
-  if (S.API_MOD) {
-    apiFetch(API_URL+'?action=talep_durum',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,durum:yeniDurum})})
-      .then(r=>r.json()).then(j=>{ if(!j.ok) window.toast('Durum sunucuya yansıtılamadı: '+(j.error||''), 'error'); })
-      .catch(e => { console.warn('talep_durum:', e); window.toast('Sunucu bağlantı hatası', 'error'); });
+  if (t) { t.durum = yeniDurum; talepListesiKaydet(); renderTalepListesi(); }
+  if (!S.API_MOD) {
+    window.toast(`Durum → ${yeniDurum} (yerel, sunucu yok)`, 'info');
+    return;
   }
+  apiFetch(API_URL+'?action=talep_durum',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,durum:yeniDurum})})
+    .then(r=>r.json()).then(async j=>{
+      if (!j.ok) { window.toast('Durum sunucuya yansıtılamadı: '+(j.error||''), 'error'); return; }
+      if (j.stokDusuldu) {
+        // Stok server-side değişti → yeniden yükle ve tüm sayfaları tazele
+        try { await window.apiLoad?.(); } catch(e) {}
+        window.refreshAll?.();
+        const yetersiz = j.yetersizSatirlar || [];
+        if (yetersiz.length === 0) {
+          window.toast(`Talep onaylandı. ${j.satirSayisi} satır stoktan düşüldü ✓`);
+        } else {
+          const ozet = yetersiz.slice(0, 3).map(x => `${x.ad} (mevcut ${x.mevcut}, istenen ${x.istenen})`).join('; ');
+          window.toast(`Onaylandı; ${yetersiz.length} satırda yetersiz stok vardı: ${ozet}${yetersiz.length>3?'…':''}`, 'error');
+        }
+      } else {
+        window.toast(`Durum → ${yeniDurum} ✓`);
+      }
+    })
+    .catch(e => { console.warn('talep_durum:', e); window.toast('Sunucu bağlantı hatası', 'error'); });
 }
 
 export function talepGoruntule(id) {

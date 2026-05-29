@@ -751,6 +751,7 @@ window.initDepoSelects = initDepoSelects;
 window.initBirimSelects = initBirimSelects;
 window.katBadgeHTML = katBadgeHTML;
 window.apiSave = apiSave;
+window.apiLoad = apiLoad;
 window.apiReset = apiReset;
 window.apiBackupOlustur = apiBackupOlustur;
 window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;

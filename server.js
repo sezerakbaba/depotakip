@@ -239,6 +239,8 @@ db.serialize(() => {
   )`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_talepler_no    ON Talepler(no)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_talepler_durum ON Talepler(durum)`);
+  // Onaylanan talep stoktan düşülmüş mü? Idempotency için.
+  db.run(`ALTER TABLE Talepler ADD COLUMN stok_dusuldu INTEGER DEFAULT 0`, () => {});
 
   // ── ROADMAP #5: Hareketler tablosu ────────────────────────────────────
   db.run(`CREATE TABLE IF NOT EXISTS Hareketler (
@@ -727,13 +729,94 @@ app.post('/api', async (req, res) => {
     );
 
   } else if (action === 'talep_durum') {
+    // Durum güncelleme.
+    // 'Onaylı' geçişinde (ve henüz düşülmediyse) her satır için bir
+    // Çıkış hareketi oluşturulur ve AppState.stok azaltılır. Tek bir
+    // BEGIN IMMEDIATE TRANSACTION içinde atomik. Idempotency: Talepler.
+    // stok_dusuldu=1 set edilir, ikinci kez "Onaylı" denenirse stok
+    // tekrar düşülmez.
     const b = req.body || {};
     if (!Number.isInteger(b.id) || b.id <= 0) return res.status(400).json({ ok: false, error: 'id geçersiz' });
     if (!DURUM_SET.has(b.durum))               return res.status(400).json({ ok: false, error: 'durum geçersiz' });
-    db.run('UPDATE Talepler SET durum=? WHERE id=?', [b.durum, b.id], err => {
-      if (err) return res.json({ ok: false, error: err.message });
-      res.json({ ok: true });
-    });
+
+    try {
+      // Mevcut talebi oku
+      const talep = await dbGet('SELECT id, no, durum, stok_dusuldu, satirlar FROM Talepler WHERE id = ?', [b.id]);
+      if (!talep) return res.status(404).json({ ok: false, error: 'Talep bulunamadı' });
+
+      const willApprove = b.durum === 'Onaylı' && !talep.stok_dusuldu;
+
+      if (!willApprove) {
+        // Sadece durum değişikliği — basit UPDATE
+        await dbRun('UPDATE Talepler SET durum = ? WHERE id = ?', [b.durum, b.id]);
+        return res.json({ ok: true, stokDusuldu: false });
+      }
+
+      // Onay + stok düşüşü: atomik
+      let satirlar = [];
+      try { satirlar = JSON.parse(talep.satirlar || '[]'); } catch(e) {}
+      satirlar = satirlar.filter(s =>
+        s && typeof s === 'object' &&
+        typeof s.ad === 'string' && s.ad.trim() &&
+        typeof s.depo === 'string' && s.depo.trim() &&
+        Number.isFinite(+s.miktar) && +s.miktar > 0
+      );
+
+      // AppState.stok güncelle
+      const appRow = await dbGet('SELECT data, version FROM AppState WHERE id = 1');
+      let app = {};
+      try { app = JSON.parse(appRow?.data || '{}'); } catch(e) {}
+      app.stok = app.stok || {};
+
+      await dbRun('BEGIN IMMEDIATE TRANSACTION');
+      try {
+        const now = new Date().toISOString();
+        const dusulen = [];
+        const yetersiz = [];
+        for (const s of satirlar) {
+          const key = s.depo + '||' + s.ad;
+          const cur = app.stok[key] || { mevcut: 0, min: 0, max: 0 };
+          const yeniMevcut = cur.mevcut - (+s.miktar);
+          if (yeniMevcut < 0) {
+            yetersiz.push({ depo: s.depo, ad: s.ad, mevcut: cur.mevcut, istenen: +s.miktar });
+            // Yine de işlemi yap (0'a indir) — admin bilgisini görsün.
+            app.stok[key] = { ...cur, mevcut: 0 };
+            dusulen.push({ ...s, dusulenMiktar: cur.mevcut });
+          } else {
+            app.stok[key] = { ...cur, mevcut: yeniMevcut };
+            dusulen.push({ ...s, dusulenMiktar: +s.miktar });
+          }
+          // Hareket kaydı
+          await dbRun(
+            `INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, belge, personel)
+             VALUES (?, 'Çıkış', ?, ?, ?, ?, ?, ?, ?)`,
+            [now, s.depo, s.ad, +s.miktar, s.birim || '',
+             'Talep ' + (talep.no || '') + ' onayı', talep.no || '', '']
+          );
+        }
+        // AppState yaz
+        const yeniVersion = (appRow?.version || 0) + 1;
+        await dbRun(
+          'UPDATE AppState SET data = ?, version = ? WHERE id = 1',
+          [JSON.stringify(app), yeniVersion]
+        );
+        // Talep flag
+        await dbRun('UPDATE Talepler SET durum = ?, stok_dusuldu = 1 WHERE id = ?', [b.durum, b.id]);
+        await dbRun('COMMIT');
+        res.json({
+          ok: true,
+          stokDusuldu: true,
+          satirSayisi: satirlar.length,
+          yetersizSatirlar: yetersiz, // boş array ise hepsi tam düşürüldü
+        });
+      } catch (txErr) {
+        try { await dbRun('ROLLBACK'); } catch(e) {}
+        throw txErr;
+      }
+    } catch(e) {
+      console.error('talep_durum hata:', e);
+      res.json({ ok: false, error: e.message });
+    }
 
   } else if (action === 'backup_olustur') {
     try {
