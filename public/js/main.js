@@ -612,10 +612,31 @@ document.addEventListener('keydown', e => {
 });
 
 // Dinamik render edilen (innerHTML ile eklenen) içerik için MutationObserver
+// Ö1 fix: her node için anında querySelectorAll çalıştırmak büyük tablo
+// renderlerinde yavaş. Eklenen node'ları bir Set'e topla, requestIdleCallback
+// ile tek seferde işle (deduplicate + UI'ye yük bindirmez).
+const _pendingA11y = new Set();
+let _a11yScheduled = false;
+function _scheduleA11y(node) {
+  _pendingA11y.add(node);
+  if (_a11yScheduled) return;
+  _a11yScheduled = true;
+  const work = () => {
+    _a11yScheduled = false;
+    const nodes = [..._pendingA11y];
+    _pendingA11y.clear();
+    for (const n of nodes) {
+      if (n.isConnected) _a11yEnhance(n);
+    }
+  };
+  if (window.requestIdleCallback) requestIdleCallback(work, { timeout: 200 });
+  else setTimeout(work, 30);
+}
+
 const _a11yObserver = new MutationObserver(muts => {
   for (const m of muts) {
     for (const node of m.addedNodes) {
-      if (node.nodeType === 1) _a11yEnhance(node);
+      if (node.nodeType === 1) _scheduleA11y(node);
     }
   }
 });
