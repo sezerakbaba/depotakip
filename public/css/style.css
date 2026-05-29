@@ -1385,40 +1385,107 @@ textarea { resize: vertical; min-height: 70px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
 /* ── Print ── */
+/* ══════════════════════════════════════════════════════
+   PRINT (Aşama J — sade A4)
+   - Talepname: belge tek sayfaya optimize, monokrom + ince
+     gri sınırlar, accent renkler korunur (no-print kalkar).
+   - Stok / Hareket / Kritik listeleri: tablo başlık tekrarı,
+     sayfa numarası, tarih.
+══════════════════════════════════════════════════════ */
 @media print {
-  #sidebar, #clock-widget, .no-print { display: none !important; }
-  #main { margin-left: 0 !important; }
+  /* Genel */
+  @page { size: A4 portrait; margin: 14mm 12mm; }
+  body { background: #fff !important; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #sidebar, #topbar, .no-print { display: none !important; }
+  #main { margin-left: 0 !important; height: auto !important; overflow: visible !important; }
   #content { padding: 0 !important; }
   .page { display: none !important; }
-  #page-talep.active { display: block !important; }
+  .page.active { display: block !important; }
 
-  /* Talepname Studio — Baskı optimizasyonu */
-  #page-talep { margin: 0 !important; padding: 0 !important; }
-  .ts-studio { display: block; min-height: auto; }
-  .ts-canvas {
-    padding: 0;
-    background: none !important;
-    display: block;
+  /* Kart gölgeleri ve border'ları sade */
+  .card { box-shadow: none !important; border: 1px solid #cfd6df !important; border-radius: 0 !important; }
+  .card-header { background: #f3f5f8 !important; border-bottom: 1px solid #cfd6df !important; }
+
+  /* ── Talepname baskı ───────────────────────────────────────── */
+  .talep-paper {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
   }
-  .ts-paper {
-    box-shadow: none;
-    border-radius: 0;
-    max-width: 100%;
+  .talep-header { border-bottom: 2px solid #000 !important; margin-bottom: 12mm; padding-bottom: 8mm; }
+  .talep-kurum  { color: #333 !important; }
+  .talep-baslik { color: #000 !important; font-size: 16pt !important; }
+  .talep-no-label, .talep-tarih-doc { color: #555 !important; }
+  .talep-no-val { color: #000 !important; }
+  .talep-section { margin-bottom: 8mm; }
+  .talep-section-eyebrow {
+    color: #444 !important;
+    border-bottom: 1px solid #cfd6df;
+    padding-bottom: 2mm;
+    margin-bottom: 4mm;
   }
-  .ts-paper-stripe { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .ts-paper-header { border-bottom: 2px solid #000; padding: 16px 24px; }
-  .talep-baslik { font-size: 15px; }
-  .ts-no-val { color: #00897b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .ts-section { padding: 12px 24px; }
-  .ts-rule { margin: 0 24px; background: #bbb; }
-  .talep-table th { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .talep-table td, .talep-table th { padding: 6px 8px; }
-  .talep-table input { border: none !important; border-bottom: 1px solid #999 !important; padding: 2px 0; }
-  .ts-field-inp { border: none !important; border-bottom: 1px solid #999 !important; padding: 4px 0 !important; }
-  .imza-box { border-top: 2px solid #000; }
-  .ts-sig-inp { border-bottom: 1px solid #999 !important; }
-  .ts-paper-foot { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .ts-stamp { display: block; }
+  .field-inp, .talep-sig-inp {
+    border-bottom: 1px solid #888 !important;
+    color: #000 !important;
+    background: transparent !important;
+  }
+  /* Tablo */
+  .talep-table { font-size: 10pt !important; }
+  .talep-table th {
+    background: #ecf0f5 !important;
+    color: #000 !important;
+    border-bottom: 1px solid #888 !important;
+    padding: 2mm 3mm !important;
+  }
+  .talep-table td {
+    border-bottom: 1px solid #d8dde4 !important;
+    padding: 2mm 3mm !important;
+    color: #000 !important;
+  }
+  .talep-table input {
+    border-bottom: 1px dotted #888 !important;
+    color: #000 !important;
+    background: transparent !important;
+  }
+  .talep-mal-secili { background: transparent !important; border: 0 !important; padding: 0 !important; }
+  .talep-mal-ad { color: #000 !important; }
+
+  /* İmza */
+  .talep-sig-section { margin-top: 14mm; border-top: 1px solid #cfd6df !important; padding-top: 6mm; }
+  .talep-sig-space { border-bottom: 1px solid #000 !important; height: 18mm; }
+  .talep-sig-label { color: #333 !important; }
+
+  /* Durum pill — baskıda monokrom */
+  .talep-durum-badge {
+    background: transparent !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+
+  /* ── Liste sayfaları (stok / hareket / kritik) ────────────── */
+  .stok-toolbar-sticky, .stok-aktif-filtreler, .stok-kpi-bar, #stok-sayfalama,
+  #har-sayfalama, .toolbar, #hareket-list .har-sil-btn,
+  #depo-cards, .c-kpi-row, #dash-sparkline, #stok-sutun-menu,
+  .har-ozet-row { display: none !important; }
+  .page-header { margin-bottom: 6mm; }
+  .page-header-title { display: block !important; font-size: 14pt; font-weight: 700; }
+  .page-header-sub { color: #555 !important; }
+
+  table { border-collapse: collapse; width: 100%; }
+  table th, table td {
+    border-bottom: 1px solid #cfd6df !important;
+    padding: 2mm 2.5mm !important;
+    font-size: 9pt !important;
+  }
+  table thead { display: table-header-group; }   /* her sayfada başlık tekrar */
+  tbody tr { page-break-inside: avoid; }
+  .badge { border: 1px solid currentColor; background: transparent !important; }
+
+  /* Renkli row şeritlerini koru (mavi/kırmızı/sarı) */
+  tbody tr.row-kritik { box-shadow: inset 3px 0 0 #000 !important; }
+  tbody tr.row-fazla  { box-shadow: inset 3px 0 0 #777 !important; }
 }
 
 
@@ -1891,27 +1958,8 @@ thead th.sortable:hover { color: var(--teal); background: color-mix(in srgb, var
   /* Hareket personel filtresi mobilde genişlesin */
   #har-personel-filter { width: 100% !important; }
 
-  /* İmza satırı: 3→2 kolon (bu responsive blokta gerekli değil, talep 480px bloğu halleder) */
-
-  /* Talepname Studio — 900px altı */
-  .ts-studio { flex-direction: column; min-height: auto; }
-  .ts-panel {
-    width: 100%; height: auto; position: static;
-    flex-direction: row; flex-wrap: wrap; gap: 8px;
-    padding: 12px 16px; align-items: center;
-  }
-  .ts-panel-brand { border-bottom: none; padding: 0; }
-  .ts-panel-block { border-bottom: none; padding: 0; flex-direction: row; align-items: center; gap: 6px; }
-  .ts-block-label { display: none; }
-  .ts-ref-no { font-size: 13px; }
-  .ts-ref-date { display: none; }
-  .ts-panel-actions { flex-direction: row; flex-wrap: wrap; padding: 0; flex: none; gap: 4px; }
-  .ts-panel-sep { display: none; }
-  .ts-panel-hint { display: none; }
-  .ts-panel-footer { display: none; }
-  .ts-btn { padding: 7px 11px; font-size: 11px; }
-  .ts-canvas { padding: 20px 16px; }
-  .ts-field-grid { grid-template-columns: 1fr 1fr; }
+  /* Talepname 900px altı (eski ts-* kuralları F'de kaldırıldı;
+     mobile düzeni talep-paper @media bloğu içinde) */
 
   /* Arama alanı daha dar */
   .search-wrap { min-width: 140px; }
@@ -2078,18 +2126,10 @@ thead th.sortable:hover { color: var(--teal); background: color-mix(in srgb, var
   .page-header { margin-bottom: 14px; }
   .page-header-title { font-size: 14px; }
 
-  /* Talepname Studio — 480px altı */
-  .talep-kurum { display: none; }
-  .talep-baslik { font-size: 14px; }
-  .ts-paper-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 18px; }
-  .ts-stamp { display: none; }
-  .ts-header-right { align-self: flex-start; }
-  .ts-field-grid { grid-template-columns: 1fr; }
-  .imza-row { grid-template-columns: 1fr; gap: 14px; }
-  .ts-canvas { padding: 12px 10px; }
-  .ts-section { padding: 12px 18px; }
-  .ts-rule { margin: 0 18px; }
-  .ts-paper-foot { padding: 8px 18px; }
+  /* Talepname 480px altı */
+  .talep-kurum  { display: none; }
+  .talep-baslik { font-size: var(--fs-lg); }
+  .talep-paper  { padding: var(--s-3); }
 }
 
 /* ── Stok İşlem Butonları ── */
