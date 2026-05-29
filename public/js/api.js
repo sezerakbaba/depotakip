@@ -141,6 +141,16 @@ export function apiSave() {
   S._saveTimer = setTimeout(_doSave, 800);
 }
 
+// Bekleyen debounce'lu save'i hemen yolla ve sonucunu bekle.
+// Talep onayı gibi server'da AppState modifikasyonu öncesi gereklidir:
+// server-side stok eksiltmesinin doğru baseline'a karşı yapılması için
+// local state önce sunucuya flush edilmeli.
+export async function apiSaveSync() {
+  if (!S.API_MOD) return;
+  clearTimeout(S._saveTimer);
+  await _doSave();
+}
+
 // Sekme kapanırken / gizlenirken pending save'i hemen yolla.
 // fetch(..., { keepalive: true }) tarayıcının unload'dan sonra da
 // isteği tamamlamasını garanti eder (10MB sınırı var; bizim payload

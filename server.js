@@ -768,25 +768,50 @@ app.post('/api', async (req, res) => {
       try { app = JSON.parse(appRow?.data || '{}'); } catch(e) {}
       app.stok = app.stok || {};
 
+      // Pre-flight: eksik veya yetersiz olanı tespit et.
+      // Onay atomik all-or-nothing; tek satır bile yetersizse ROLLBACK
+      // ve hata mesajı. (Eski sürüm sessizce 0'a indiriyor + yetersiz
+      // listesi dönüyordu; bu, server'da AppState eksik olduğunda tüm
+      // stoğun 0 gibi gözükmesi bug'ına yol açıyordu.)
+      const eksikKeys = [];
+      const yetersiz  = [];
+      for (const s of satirlar) {
+        const key = s.depo + '||' + s.ad;
+        const cur = app.stok[key];
+        if (!cur || typeof cur.mevcut !== 'number') {
+          eksikKeys.push({ depo: s.depo, ad: s.ad });
+        } else if (cur.mevcut < +s.miktar) {
+          yetersiz.push({ depo: s.depo, ad: s.ad, mevcut: cur.mevcut, istenen: +s.miktar });
+        }
+      }
+      if (eksikKeys.length) {
+        const ozet = eksikKeys.slice(0, 3).map(x => `${x.ad} (${x.depo})`).join('; ');
+        return res.status(409).json({
+          ok: false,
+          error: `Stok bilgisi server'da eksik (${eksikKeys.length} satır): ${ozet}${eksikKeys.length>3?'…':''}. Lütfen önce Stok Listesi açılınca veri otomatik kaydedilir, sonra tekrar onaylayın.`,
+          eksikKeys,
+        });
+      }
+      if (yetersiz.length) {
+        const ozet = yetersiz.slice(0, 3).map(x => `${x.ad} (mevcut ${x.mevcut}, istenen ${x.istenen})`).join('; ');
+        return res.status(409).json({
+          ok: false,
+          error: `Yetersiz stok (${yetersiz.length} satır): ${ozet}${yetersiz.length>3?'…':''}. Talep onaylanmadı.`,
+          yetersizSatirlar: yetersiz,
+        });
+      }
+
+      // Tüm satırlar OK — atomik transaction
       await dbRun('BEGIN IMMEDIATE TRANSACTION');
       try {
         const now = new Date().toISOString();
-        const dusulen = [];
-        const yetersiz = [];
+        const yeniStok = {}; // client'a delta dönecek
         for (const s of satirlar) {
           const key = s.depo + '||' + s.ad;
-          const cur = app.stok[key] || { mevcut: 0, min: 0, max: 0 };
+          const cur = app.stok[key];
           const yeniMevcut = cur.mevcut - (+s.miktar);
-          if (yeniMevcut < 0) {
-            yetersiz.push({ depo: s.depo, ad: s.ad, mevcut: cur.mevcut, istenen: +s.miktar });
-            // Yine de işlemi yap (0'a indir) — admin bilgisini görsün.
-            app.stok[key] = { ...cur, mevcut: 0 };
-            dusulen.push({ ...s, dusulenMiktar: cur.mevcut });
-          } else {
-            app.stok[key] = { ...cur, mevcut: yeniMevcut };
-            dusulen.push({ ...s, dusulenMiktar: +s.miktar });
-          }
-          // Hareket kaydı
+          app.stok[key] = { ...cur, mevcut: yeniMevcut };
+          yeniStok[key] = app.stok[key];
           await dbRun(
             `INSERT INTO Hareketler (tarih, tur, depo, malzeme, miktar, birim, not_, belge, personel)
              VALUES (?, 'Çıkış', ?, ?, ?, ?, ?, ?, ?)`,
@@ -794,20 +819,19 @@ app.post('/api', async (req, res) => {
              'Talep ' + (talep.no || '') + ' onayı', talep.no || '', '']
           );
         }
-        // AppState yaz
         const yeniVersion = (appRow?.version || 0) + 1;
         await dbRun(
           'UPDATE AppState SET data = ?, version = ? WHERE id = 1',
           [JSON.stringify(app), yeniVersion]
         );
-        // Talep flag
         await dbRun('UPDATE Talepler SET durum = ?, stok_dusuldu = 1 WHERE id = ?', [b.durum, b.id]);
         await dbRun('COMMIT');
         res.json({
           ok: true,
           stokDusuldu: true,
           satirSayisi: satirlar.length,
-          yetersizSatirlar: yetersiz, // boş array ise hepsi tam düşürüldü
+          yeniStok,     // key → { mevcut, min, max } — client S.stok'a uygular
+          yeniVersion,
         });
       } catch (txErr) {
         try { await dbRun('ROLLBACK'); } catch(e) {}

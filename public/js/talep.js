@@ -394,40 +394,62 @@ function _renderTalepListesiCached() {
   try { renderTalepListesi(); } finally { S._talepRenderSkipFetch = false; }
 }
 
-export function talepDurumGuncelle(id, yeniDurum) {
+export async function talepDurumGuncelle(id, yeniDurum) {
   // 'Onaylı' geçişinde server her satır için Çıkış hareketi oluşturup
-  // stoku düşer. Frontend optimistic update yapar, server yanıtına göre
-  // stoku yeniden yükler (apiLoad) — yetersiz stok uyarıları yansır.
+  // stoku düşer. Pre-flight: local stoku server'a flush et ki onay
+  // doğru baseline'a karşı yapılsın. Yanıttaki yeniStok deltası
+  // S.stok'a uygulanır (full apiLoad değil, daha güvenli).
   if (yeniDurum === 'Onaylı' && !confirm(
     'Talep onaylanacak ve içindeki malzemeler stoktan otomatik düşülecek. Devam edilsin mi?'
   )) return;
 
-  talepListesiYukle();
-  const t = S._talepListesi.find(x => x.id === id);
-  if (t) { t.durum = yeniDurum; talepListesiKaydet(); renderTalepListesi(); }
+  // Server'a son local state'i göndermeden onay verme — server eksik
+  // stokla "yetersiz" hatası dönebilir (gerçek değil, sadece eksik).
+  if (yeniDurum === 'Onaylı' && S.API_MOD) {
+    try { await window.apiSaveSync?.(); } catch(e) {
+      window.toast('Stok server\'a kaydedilemedi: ' + e.message, 'error');
+      return;
+    }
+  }
+
   if (!S.API_MOD) {
+    talepListesiYukle();
+    const t = S._talepListesi.find(x => x.id === id);
+    if (t) { t.durum = yeniDurum; talepListesiKaydet(); renderTalepListesi(); }
     window.toast(`Durum → ${yeniDurum} (yerel, sunucu yok)`, 'info');
     return;
   }
-  apiFetch(API_URL+'?action=talep_durum',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,durum:yeniDurum})})
-    .then(r=>r.json()).then(async j=>{
-      if (!j.ok) { window.toast('Durum sunucuya yansıtılamadı: '+(j.error||''), 'error'); return; }
-      if (j.stokDusuldu) {
-        // Stok server-side değişti → yeniden yükle ve tüm sayfaları tazele
-        try { await window.apiLoad?.(); } catch(e) {}
-        window.refreshAll?.();
-        const yetersiz = j.yetersizSatirlar || [];
-        if (yetersiz.length === 0) {
-          window.toast(`Talep onaylandı. ${j.satirSayisi} satır stoktan düşüldü ✓`);
-        } else {
-          const ozet = yetersiz.slice(0, 3).map(x => `${x.ad} (mevcut ${x.mevcut}, istenen ${x.istenen})`).join('; ');
-          window.toast(`Onaylandı; ${yetersiz.length} satırda yetersiz stok vardı: ${ozet}${yetersiz.length>3?'…':''}`, 'error');
-        }
-      } else {
-        window.toast(`Durum → ${yeniDurum} ✓`);
-      }
-    })
-    .catch(e => { console.warn('talep_durum:', e); window.toast('Sunucu bağlantı hatası', 'error'); });
+
+  try {
+    const r = await apiFetch(API_URL+'?action=talep_durum', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, durum: yeniDurum }),
+    });
+    const j = await r.json();
+    if (!j.ok) {
+      window.toast(j.error || 'Durum sunucuya yansıtılamadı', 'error');
+      return; // yerel state'i değiştirme
+    }
+    // Local'i sonradan güncelle (server başarılıysa)
+    talepListesiYukle();
+    const t = S._talepListesi.find(x => x.id === id);
+    if (t) { t.durum = yeniDurum; if (yeniDurum === 'Onaylı') t.stok_dusuldu = 1; talepListesiKaydet(); }
+
+    if (j.stokDusuldu && j.yeniStok) {
+      // Delta'yı in-place uygula — diğer key'lere dokunma.
+      Object.assign(S.stok, j.yeniStok);
+      if (j.yeniVersion) S._serverVersion = j.yeniVersion;
+      window.refreshAll?.();
+      window.toast(`Talep onaylandı. ${j.satirSayisi} satır stoktan düşüldü ✓`);
+    } else {
+      window.toast(`Durum → ${yeniDurum} ✓`);
+    }
+    renderTalepListesi();
+  } catch(e) {
+    console.warn('talep_durum:', e);
+    window.toast('Sunucu bağlantı hatası', 'error');
+  }
 }
 
 export function talepGoruntule(id) {
