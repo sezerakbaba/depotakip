@@ -1,5 +1,5 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
-import { esc, escQ } from './ui-common.js';
+import { esc, dClick, dChange, dInput, dKeydown, setFieldError, clearFieldErrors } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -46,13 +46,21 @@ export function applyTheme() {
   if (el) el.textContent = S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi';
 }
 
+// Hızlı/sürekli değişen ayarlarda (range slider, type-as-you-go) toast spam'i
+// önlemek için 600ms debounce — son durdurmadan sonra tek toast.
+let _ayarToastT = null;
+function _ayarToastDebounced() {
+  clearTimeout(_ayarToastT);
+  _ayarToastT = setTimeout(() => window.toast?.('Ayarlar kaydedildi ✓'), 600);
+}
 export function setAyar(key, val) {
   S.ayarlar[key] = val; ayarlariKaydet();
   if (key === 'kurumAdi') {
     const el = document.getElementById('sidebar-kurum-adi');
     if (el) el.textContent = val || 'Depo Yönetim Sistemi';
+    document.title = (val || 'Depo Yönetim Sistemi') + ' — Depo Takip';
   }
-  window.toast('Ayar kaydedildi ✓');
+  _ayarToastDebounced();
 }
 
 export function setTema(t) {
@@ -94,69 +102,70 @@ export function renderAyarlar() {
 
   const kurumHtml = `<div class="card"><div class="card-header"><i data-lucide="building-2" class="icon-inline"></i> Kurum Bilgisi</div><div class="card-body">
     <div class="ayar-row"><div class="ayar-label">Kurum / Sistem Adı<small>Başlık ve talepname üst bilgisinde görünür</small></div>
-      <input type="text" class="ayar-input-full" maxlength="100" value="${esc(S.ayarlar.kurumAdi||'')}" onchange="setAyar('kurumAdi',this.value.trim())" placeholder="Depo Yönetim Sistemi"></div>
+      <input type="text" class="ayar-input-full" maxlength="100" value="${esc(S.ayarlar.kurumAdi||'')}" ${dChange('setAyarTrim','kurumAdi')} placeholder="Depo Yönetim Sistemi"></div>
   </div></div>`;
 
   const temaHtml = `<div class="card"><div class="card-header"><i data-lucide="palette" class="icon-inline"></i> Görünüm</div><div class="card-body">
     <div class="ayar-row"><div class="ayar-label">Tema<small>Açık / Koyu / Sistem</small></div>
       <div class="btn-group">
-        <button class="btn btn-sm ${S.ayarlar.tema==='light'?'btn-primary':'btn-outline'}" onclick="setTema('light')"><i data-lucide="sun" class="icon-inline"></i> Açık</button>
-        <button class="btn btn-sm ${S.ayarlar.tema==='dark'?'btn-primary':'btn-outline'}" onclick="setTema('dark')"><i data-lucide="moon" class="icon-inline"></i> Koyu</button>
-        <button class="btn btn-sm ${S.ayarlar.tema==='auto'?'btn-primary':'btn-outline'}" onclick="setTema('auto')"><i data-lucide="monitor" class="icon-inline"></i> Otomatik</button>
+        <button class="btn btn-sm ${S.ayarlar.tema==='light'?'btn-primary':'btn-outline'}" ${dClick('setTema','light')}><i data-lucide="sun" class="icon-inline"></i> Açık</button>
+        <button class="btn btn-sm ${S.ayarlar.tema==='dark'?'btn-primary':'btn-outline'}" ${dClick('setTema','dark')}><i data-lucide="moon" class="icon-inline"></i> Koyu</button>
+        <button class="btn btn-sm ${S.ayarlar.tema==='auto'?'btn-primary':'btn-outline'}" ${dClick('setTema','auto')}><i data-lucide="monitor" class="icon-inline"></i> Otomatik</button>
       </div></div>
     <div class="ayar-row"><div class="ayar-label">Yazı Tipi Boyutu<small id="yazitipiBoy-lbl">Şu an: ${S.ayarlar.yazitipiBoy||100}%</small></div>
       <input type="range" min="80" max="130" step="5" value="${S.ayarlar.yazitipiBoy||100}"
-        oninput="document.getElementById('yazitipiBoy-lbl').textContent='Şu an: '+this.value+'%';setAyar('yazitipiBoy',+this.value);document.documentElement.style.fontSize=this.value+'%'"
+        ${dInput('yazitipiBoy')}
         style="width:160px"></div>
     <div class="ayar-row"><div class="ayar-label">Tarih Formatı<small>Listelerde görünen tarih biçimi</small></div>
       <div class="btn-group">
-        <button class="btn btn-sm ${S.ayarlar.tarihFormat==='tr'?'btn-primary':'btn-outline'}" onclick="setAyar('tarihFormat','tr');renderAyarlar()">TR (31.12.2025)</button>
-        <button class="btn btn-sm ${S.ayarlar.tarihFormat==='iso'?'btn-primary':'btn-outline'}" onclick="setAyar('tarihFormat','iso');renderAyarlar()">ISO (2025-12-31)</button>
+        <button class="btn btn-sm ${S.ayarlar.tarihFormat==='tr'?'btn-primary':'btn-outline'}" ${dClick('setTarihFormat','tr')}>TR (31.12.2025)</button>
+        <button class="btn btn-sm ${S.ayarlar.tarihFormat==='iso'?'btn-primary':'btn-outline'}" ${dClick('setTarihFormat','iso')}>ISO (2025-12-31)</button>
       </div></div>
   </div></div>`;
 
   const esikHtml = `<div class="card"><div class="card-header"><i data-lucide="gauge" class="icon-inline"></i> Eşik & Limitler</div><div class="card-body">
     <div class="ayar-row"><div class="ayar-label">SKT Uyarı Eşiği (gün)<small>Son kullanma tarihine bu kadar gün kala uyar</small></div>
-      <input type="number" class="ayar-input" min="1" max="730" value="${S.ayarlar.sktUyariGun}" onchange="setAyar('sktUyariGun',+this.value)"></div>
+      <input type="number" class="ayar-input" min="1" max="730" value="${S.ayarlar.sktUyariGun}" ${dChange('setAyarNum','sktUyariGun')}></div>
     <div class="ayar-row"><div class="ayar-label">SKT Kritik Eşiği (gün)<small>Bu kadar günden az kaldıysa kırmızı göster</small></div>
-      <input type="number" class="ayar-input" min="1" max="365" value="${S.ayarlar.sktKritikGun}" onchange="setAyar('sktKritikGun',+this.value)"></div>
+      <input type="number" class="ayar-input" min="1" max="365" value="${S.ayarlar.sktKritikGun}" ${dChange('setAyarNum','sktKritikGun')}></div>
     <div class="ayar-row"><div class="ayar-label">Dashboard kritik limit<small>Kritik listede en fazla kaç satır gösterilsin</small></div>
-      <input type="number" class="ayar-input" min="1" max="50" value="${S.ayarlar.dashKritikLimit}" onchange="setAyar('dashKritikLimit',+this.value)"></div>
+      <input type="number" class="ayar-input" min="1" max="50" value="${S.ayarlar.dashKritikLimit}" ${dChange('setAyarNum','dashKritikLimit')}></div>
     <div class="ayar-row"><div class="ayar-label">Dashboard son hareketler<small>Ana sayfada kaç hareket gösterilsin</small></div>
-      <input type="number" class="ayar-input" min="1" max="50" value="${S.ayarlar.sonHareketLimit||8}" onchange="setAyar('sonHareketLimit',+this.value)"></div>
+      <input type="number" class="ayar-input" min="1" max="50" value="${S.ayarlar.sonHareketLimit||8}" ${dChange('setAyarNum','sonHareketLimit')}></div>
     <div class="ayar-row"><div class="ayar-label">Stok listesi sayfa boyutu<small>Sayfa başına kaç satır</small></div>
-      <input type="number" class="ayar-input" min="10" max="500" value="${S.ayarlar.stokSayfaBoy||100}" onchange="setAyar('stokSayfaBoy',+this.value)"></div>
+      <input type="number" class="ayar-input" min="10" max="500" value="${S.ayarlar.stokSayfaBoy||100}" ${dChange('setAyarNum','stokSayfaBoy')}></div>
     <div class="ayar-row"><div class="ayar-label">Hareket listesi sayfa boyutu<small>Sayfa başına kaç satır</small></div>
-      <input type="number" class="ayar-input" min="10" max="500" value="${S.ayarlar.harSayfaBoy||50}" onchange="setAyar('harSayfaBoy',+this.value)"></div>
+      <input type="number" class="ayar-input" min="10" max="500" value="${S.ayarlar.harSayfaBoy||50}" ${dChange('setAyarNum','harSayfaBoy')}></div>
     <div class="ayar-row"><div class="ayar-label">Varsayılan depo<small>Hareket ve ekleme formlarında otomatik seçilir</small></div>
-      <select class="ayar-input-sel" onchange="setAyar('varsayilanDepo',this.value)">
+      <select class="ayar-input-sel" ${dChange('setAyarStr','varsayilanDepo')}>
         <option value="">— Seçilmedi —</option>${depOpts}
       </select></div>
     <div class="ayar-row"><div class="ayar-label">Varsayılan min stok<small>Yeni malzeme eklerken ön değer</small></div>
-      <input type="number" class="ayar-input" min="0" value="${S.ayarlar.varsayilanMinStok??1}" onchange="setAyar('varsayilanMinStok',+this.value)"></div>
+      <input type="number" class="ayar-input" min="0" value="${S.ayarlar.varsayilanMinStok??1}" ${dChange('setAyarNum','varsayilanMinStok')}></div>
     <div class="ayar-row"><div class="ayar-label">Varsayılan max stok</div>
-      <input type="number" class="ayar-input" min="0" value="${S.ayarlar.varsayilanMaxStok??10}" onchange="setAyar('varsayilanMaxStok',+this.value)"></div>
+      <input type="number" class="ayar-input" min="0" value="${S.ayarlar.varsayilanMaxStok??10}" ${dChange('setAyarNum','varsayilanMaxStok')}></div>
     <div class="ayar-row"><div class="ayar-label">Kategori seçimi zorunlu<small>Malzeme eklerken kategori boş bırakılamaz</small></div>
-      <input type="checkbox" ${S.ayarlar.katZorunlu?'checked':''} onchange="setAyar('katZorunlu',this.checked)"></div>
+      <input type="checkbox" ${S.ayarlar.katZorunlu?'checked':''} ${dChange('setAyarBool','katZorunlu')}></div>
     <div class="ayar-row"><div class="ayar-label">Hareket notu zorunlu<small>Giriş/çıkış kaydederken not alanı boş bırakılamaz</small></div>
-      <input type="checkbox" ${S.ayarlar.hareketNot?'checked':''} onchange="setAyar('hareketNot',this.checked)"></div>
+      <input type="checkbox" ${S.ayarlar.hareketNot?'checked':''} ${dChange('setAyarBool','hareketNot')}></div>
     <div class="ayar-row"><div class="ayar-label">Kritik stok bildirimi<small>${
       !('Notification' in window) ? 'Tarayıcınız desteklemiyor' :
+      !window.isSecureContext     ? "HTTPS gerektirir (sunucu HTTP'de bildirim alınmaz)" :
       Notification.permission === 'granted' ? 'İzin verildi ✓' :
       Notification.permission === 'denied'  ? 'Tarayıcıda engellendi' : 'İzin gerekiyor'
     }</small></div>
-      <button class="btn btn-sm ${S.ayarlar.bildirimAktif?'btn-primary':'btn-outline'}" onclick="bildirimIzniSor()">${
+      <button class="btn btn-sm ${S.ayarlar.bildirimAktif?'btn-primary':'btn-outline'}" ${!window.isSecureContext?'disabled':''} ${dClick('bildirimIzniSor')}>${
         S.ayarlar.bildirimAktif ? 'Aktif — Kapat' : 'Bildirimleri Aç'
       }</button></div>
   </div></div>`;
 
   const birimHtml = `<div class="card"><div class="card-header"><i data-lucide="ruler" class="icon-inline"></i> Birimler</div><div class="card-body">
     <div class="birim-tag-list">
-      ${S.ayarlar.birimler.map(b=>`<span class="birim-tag">${esc(b)}<button onclick="birimSil('${escQ(b)}')">×</button></span>`).join('')}
+      ${S.ayarlar.birimler.map(b=>`<span class="birim-tag">${esc(b)}<button ${dClick('birimSil',b)} title="Sil"><i data-lucide="x"></i></button></span>`).join('')}
     </div>
     <div class="ayar-add-row">
-      <input type="text" id="yeni-birim-inp" placeholder="Yeni birim..." class="ayar-input-sm" maxlength="20" onkeydown="if(event.key==='Enter')birimEkle()">
-      <button class="btn btn-sm btn-outline" onclick="birimEkle()">+ Ekle</button>
+      <input type="text" id="yeni-birim-inp" placeholder="Yeni birim..." class="ayar-input-sm" maxlength="20" ${dKeydown('birimEkle','Enter')}>
+      <button class="btn btn-sm btn-outline" ${dClick('birimEkle')}><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
     </div>
   </div></div>`;
 
@@ -164,7 +173,7 @@ export function renderAyarlar() {
     ${Object.entries(DEPO_META).map(([ad,m])=>`
       <div class="ayar-row" id="depo-row-${CSS.escape(ad)}">
         <div class="ayar-label"><span class="badge" style="background:${m.color}22;color:${m.color};margin-right:6px">${esc(m.kod)}</span>${esc(ad)}</div>
-        <button class="btn btn-sm btn-outline" onclick="depoYeniAdDlg('${escQ(ad)}')">✎ Düzenle</button>
+        <button class="btn btn-sm btn-outline" ${dClick('depoYeniAdDlg',ad)}><i data-lucide="pencil" class="icon-inline"></i> Düzenle</button>
       </div>`).join('')}
     <div id="depo-yeniad-form"></div>
     <div class="ayar-subsection">
@@ -173,7 +182,7 @@ export function renderAyarlar() {
         <input type="text" id="yd-ad" placeholder="Depo adı" class="ayar-input-md" maxlength="40">
         <input type="text" id="yd-kod" placeholder="Kod (2-3 harf)" class="ayar-input-sm" maxlength="4">
         <input type="color" id="yd-renk" value="#546e7a" class="ayar-color-inp">
-        <button class="btn btn-sm btn-primary" onclick="ekDepoEkle()">+ Ekle</button>
+        <button class="btn btn-sm btn-primary" ${dClick('ekDepoEkle')}><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
       </div>
     </div>
   </div></div>`;
@@ -182,7 +191,7 @@ export function renderAyarlar() {
     ${Object.entries(KAT_COLORS).map(([ad])=>`
       <div class="ayar-row">
         <div class="ayar-label">${window.katBadgeHTML(ad)}</div>
-        <button class="btn btn-sm btn-outline" onclick="katYeniAdDlg('${escQ(ad)}')">✎ Düzenle</button>
+        <button class="btn btn-sm btn-outline" ${dClick('katYeniAdDlg',ad)}><i data-lucide="pencil" class="icon-inline"></i> Düzenle</button>
       </div>`).join('')}
     <div id="kat-yeniad-form"></div>
     <div class="ayar-subsection">
@@ -191,29 +200,29 @@ export function renderAyarlar() {
         <input type="text" id="yk-ad" placeholder="Kategori adı" class="ayar-input-md" maxlength="40">
         <input type="color" id="yk-renk-c" value="#546e7a" class="ayar-color-inp" title="Yazı rengi">
         <input type="color" id="yk-renk-bg" value="#eceff1" class="ayar-color-inp" title="Arkaplan rengi">
-        <button class="btn btn-sm btn-primary" onclick="ekKatEkle()">+ Ekle</button>
+        <button class="btn btn-sm btn-primary" ${dClick('ekKatEkle')}><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
       </div>
     </div>
   </div></div>`;
 
   const talepAyarHtml = `<div class="card"><div class="card-header"><i data-lucide="file-text" class="icon-inline"></i> Talepname Ayarları</div><div class="card-body">
     <div class="ayar-row"><div class="ayar-label">Talep no ön eki<small>Örn. TLN → TLN-0001</small></div>
-      <input type="text" class="ayar-input-sm" maxlength="8" value="${S.ayarlar.talepOnPek||'TLN'}" onchange="setAyar('talepOnPek',this.value.trim().toUpperCase()||'TLN')" style="text-transform:uppercase"></div>
+      <input type="text" class="ayar-input-sm" maxlength="8" value="${S.ayarlar.talepOnPek||'TLN'}" ${dChange('setAyarTalepOnPek')} style="text-transform:uppercase"></div>
     <div class="ayar-row"><div class="ayar-label">Talep eden (varsayılan)<small>Talepname açılınca otomatik dolar</small></div>
-      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Soyad..." value="${esc(S.ayarlar.talepSahibi||'')}" onchange="setAyar('talepSahibi',this.value.trim())"></div>
+      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Soyad..." value="${esc(S.ayarlar.talepSahibi||'')}" ${dChange('setAyarTrim','talepSahibi')}></div>
     <div class="ayar-row"><div class="ayar-label">Onaylayan 1</div>
-      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Unvan..." value="${esc(S.ayarlar.talepOnaylayan1||'')}" onchange="setAyar('talepOnaylayan1',this.value.trim())"></div>
+      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Unvan..." value="${esc(S.ayarlar.talepOnaylayan1||'')}" ${dChange('setAyarTrim','talepOnaylayan1')}></div>
     <div class="ayar-row"><div class="ayar-label">Onaylayan 2</div>
-      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Unvan..." value="${esc(S.ayarlar.talepOnaylayan2||'')}" onchange="setAyar('talepOnaylayan2',this.value.trim())"></div>
+      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Unvan..." value="${esc(S.ayarlar.talepOnaylayan2||'')}" ${dChange('setAyarTrim','talepOnaylayan2')}></div>
     <div class="ayar-row"><div class="ayar-label">Onaylayan Amir (imza 3)</div>
-      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Unvan..." value="${esc(S.ayarlar.talepOnaylayan3||'')}" onchange="setAyar('talepOnaylayan3',this.value.trim())"></div>
+      <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Unvan..." value="${esc(S.ayarlar.talepOnaylayan3||'')}" ${dChange('setAyarTrim','talepOnaylayan3')}></div>
   </div></div>`;
 
   const veriHtml = `<div class="card"><div class="card-header"><i data-lucide="rotate-ccw" class="icon-inline"></i> Sıfırlama</div><div class="card-body">
     <div class="ayar-row"><div class="ayar-label">Stok sütun sırası & görünürlük<small>Sürükle-bırak ile değiştirilen sütun düzenini sıfırla</small></div>
-      <button class="btn btn-sm btn-outline" onclick="S.ayarlar.stokSutunSirasi=[...window._AYARLAR_DEFAULT.stokSutunSirasi];S.ayarlar.stokSutunGizli=[];ayarlariKaydet();window.toast('Sütun düzeni sıfırlandı ✓');">Sıfırla</button></div>
+      <button class="btn btn-sm btn-outline" ${dClick('stokSutunSifirla')}>Sıfırla</button></div>
     <div class="ayar-row"><div class="ayar-label">Tüm ayarları sıfırla<small>Fabrika ayarlarına dön</small></div>
-      <button class="btn btn-sm btn-outline" onclick="if(confirm('Tüm ayarlar sıfırlanacak. Emin misiniz?')){localStorage.removeItem('depoAyarlar');S.ayarlar={...window._AYARLAR_DEFAULT};applyTheme();renderAyarlar();window.toast('Ayarlar sıfırlandı');}">Sıfırla</button></div>
+      <button class="btn btn-sm btn-outline" ${dClick('tumAyarlariSifirla')}>Sıfırla</button></div>
   </div></div>`;
 
   const panels = {
@@ -242,11 +251,11 @@ export function renderAyarlar() {
   const sidebar = `<aside class="ayarlar-nav">
     <div class="ayarlar-search">
       <i data-lucide="search" class="icon-inline"></i>
-      <input type="text" id="ayarlar-arama-inp" placeholder="Ayarlarda ara..." value="${esc(terim)}" oninput="ayarlarAraOlay(this.value)">
-      ${aramaAktif?`<button class="ayarlar-search-clear" onclick="ayarlarAraOlay('')" title="Aramayı temizle">×</button>`:''}
+      <input type="text" id="ayarlar-arama-inp" placeholder="Ayarlarda ara..." value="${esc(terim)}" ${dInput('ayarlarAra')}>
+      ${aramaAktif?`<button class="ayarlar-search-clear" ${dClick('ayarlarAraTemizle')} title="Aramayı temizle"><i data-lucide="x"></i></button>`:''}
     </div>
     <nav class="ayarlar-nav-list">
-      ${tabs.map(t => `<button class="ayar-nav-btn ${!aramaAktif && S.ayarlarAktifTab===t.id?'active':''}" onclick="setAyarlarTab('${t.id}')"><i data-lucide="${t.icon}" class="icon-inline"></i><span>${t.label}</span></button>`).join('')}
+      ${tabs.map(t => `<button class="ayar-nav-btn ${!aramaAktif && S.ayarlarAktifTab===t.id?'active':''}" ${dClick('setAyarlarTab',t.id)}><i data-lucide="${t.icon}" class="icon-inline"></i><span>${t.label}</span></button>`).join('')}
     </nav>
   </aside>`;
 
@@ -268,8 +277,8 @@ export function renderAyarlar() {
 export function birimEkle() {
   const inp = document.getElementById('yeni-birim-inp') || document.getElementById('yeni-birim-ekle');
   const val = (inp?.value||'').trim();
-  if (!val) return;
-  if (S.ayarlar.birimler.includes(val)) { window.toast('Bu birim zaten var','error'); return; }
+  if (!val) { inp?.focus(); return; }
+  if (S.ayarlar.birimler.includes(val)) { window.toast('Bu birim zaten var','error'); inp?.focus(); return; }
   S.ayarlar.birimler.push(val);
   ayarlariKaydet(); window.initBirimSelects(); inp.value=''; renderAyarlar();
   window.toast(val + ' eklendi ✓');
@@ -287,8 +296,11 @@ export function ekDepoEkle() {
   const ad    = (document.getElementById('yd-ad')?.value||'').trim();
   const kod   = (document.getElementById('yd-kod')?.value||'').trim().toUpperCase();
   const color = document.getElementById('yd-renk')?.value||'#546e7a';
-  if (!ad||!kod) { window.toast('Ad ve kod zorunlu','error'); return; }
-  if (DEPO_META[ad]) { window.toast('Bu depo zaten var','error'); return; }
+  let ok = true;
+  if (!ad)  { setFieldError('yd-ad',  'Depo adı zorunlu'); ok = false; }
+  if (!kod) { setFieldError('yd-kod', 'Kod zorunlu');      ok = false; }
+  if (ok && DEPO_META[ad]) { setFieldError('yd-ad', 'Bu isimde depo zaten var'); ok = false; }
+  if (!ok) { document.querySelector('.field--error input')?.focus(); return; }
   if (!S.ayarlar.ekDepo) S.ayarlar.ekDepo=[];
   S.ayarlar.ekDepo.push({ad,kod,color});
   DEPO_META[ad]={kod,cls:'',color}; DEPO_BADGE[ad]='';
@@ -304,8 +316,8 @@ export function depoYeniAdDlg(eskiAd) {
     <input type="text" id="dyn-ad" value="${esc(eskiAd)}" placeholder="Depo adı" class="ayar-input" style="max-width:160px">
     <input type="text" id="dyn-kod" value="${esc(m.kod)}" maxlength="4" placeholder="Kod" class="ayar-input" style="max-width:80px">
     <input type="color" id="dyn-renk" value="${m.color}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer">
-    <button class="btn btn-sm btn-primary" onclick="depoYeniAdKaydet('${escQ(eskiAd)}')">✓ Kaydet</button>
-    <button class="btn btn-sm btn-outline" onclick="renderAyarlar()">✕</button>
+    <button class="btn btn-sm btn-primary" ${dClick('depoYeniAdKaydet',eskiAd)}><i data-lucide="check" class="icon-inline"></i> Kaydet</button>
+    <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')} title="İptal"><i data-lucide="x"></i></button>
   </div>`;
 }
 
@@ -339,8 +351,8 @@ export function ekKatEkle() {
   const ad  = (document.getElementById('yk-ad')?.value||'').trim();
   const c   = document.getElementById('yk-renk-c')?.value||'#546e7a';
   const bg  = document.getElementById('yk-renk-bg')?.value||'#eceff1';
-  if (!ad) { window.toast('Kategori adı zorunlu','error'); return; }
-  if (KAT_COLORS[ad]) { window.toast('Bu kategori zaten var','error'); return; }
+  if (!ad)            { setFieldError('yk-ad', 'Kategori adı zorunlu');     document.getElementById('yk-ad')?.focus(); return; }
+  if (KAT_COLORS[ad]) { setFieldError('yk-ad', 'Bu kategori zaten var');    document.getElementById('yk-ad')?.focus(); return; }
   if (!S.ayarlar.ekKategori) S.ayarlar.ekKategori=[];
   S.ayarlar.ekKategori.push({ad,c,bg});
   KAT_COLORS[ad]={c,bg};
@@ -356,8 +368,8 @@ export function katYeniAdDlg(eskiAd) {
     <input type="text" id="kyn-ad" value="${esc(eskiAd)}" placeholder="Kategori adı" class="ayar-input" style="max-width:160px">
     <input type="color" id="kyn-c" value="${cc.c}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer" title="Yazı rengi">
     <input type="color" id="kyn-bg" value="${cc.bg}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer" title="Arkaplan">
-    <button class="btn btn-sm btn-primary" onclick="katYeniAdKaydet('${escQ(eskiAd)}')">✓ Kaydet</button>
-    <button class="btn btn-sm btn-outline" onclick="renderAyarlar()">✕</button>
+    <button class="btn btn-sm btn-primary" ${dClick('katYeniAdKaydet',eskiAd)}><i data-lucide="check" class="icon-inline"></i> Kaydet</button>
+    <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')} title="İptal"><i data-lucide="x"></i></button>
   </div>`;
 }
 

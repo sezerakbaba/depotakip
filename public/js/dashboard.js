@@ -1,6 +1,6 @@
 import { S, DEPO_META, API_URL } from './state.js';
 import { apiFetch } from './api.js';
-import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, escQ, fmt, timeAgo } from './ui-common.js';
+import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, fmt, timeAgo, dClick } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // DASHBOARD
@@ -24,8 +24,10 @@ export async function renderDashboard() {
   // Stok trend göstergeleri (sync)
   const nt=document.getElementById('s-normal-trend');
   const kt=document.getElementById('s-kritik-trend');
-  if(nt) nt.innerHTML = tümü.length>0 ? '<span class="stat-trend trend-up" style="font-size:10px">%'+Math.round(normalC/tümü.length*100)+' yeterli</span>' : '';
-  if(kt) kt.innerHTML = kritikC>0 ? '<span class="stat-trend trend-down" style="font-size:10px">⚠ '+kritikC+' kritik</span>' : '<span class="stat-trend trend-up" style="font-size:10px">✓ Kritik yok</span>';
+  if(nt) nt.innerHTML = tümü.length>0 ? '<span class="stat-trend trend-up">%'+Math.round(normalC/tümü.length*100)+' yeterli</span>' : '';
+  if(kt) kt.innerHTML = kritikC>0
+    ? '<span class="stat-trend trend-down"><i data-lucide="alert-triangle" class="icon-inline"></i> '+kritikC+' kritik</span>'
+    : '<span class="stat-trend trend-up"><i data-lucide="check" class="icon-inline"></i> Kritik yok</span>';
 
   // Depo kartları — Düzen C kompakt
   const dc = document.getElementById('depo-cards');
@@ -35,21 +37,18 @@ export async function renderDashboard() {
     let dk = 0;
     items.forEach(it => { const s = getStok(dep, it.ad); if (durum(s.mevcut,s.min,s.max)==='Kritik') dk++; });
     const cntHtml = dk > 0
-      ? `<span style="color:var(--red)">⚠ ${dk} kritik</span>`
-      : `<span style="color:var(--green)">✓ ${items.length} kalem</span>`;
+      ? `<span class="depo-card-status status-danger"><i data-lucide="alert-triangle" class="icon-inline"></i> ${dk} kritik</span>`
+      : `<span class="depo-card-status status-ok"><i data-lucide="check" class="icon-inline"></i> ${items.length} kalem</span>`;
     const pctNormal = items.length > 0 ? Math.round((items.length - dk) / items.length * 100) : 100;
     const dotColor  = meta.color || '#aaa';
     dc.innerHTML += `
-      <div class="c-depo-card" onclick="goDetay('${escQ(dep)}')">
-        <div class="c-depo-dot" style="background:${dotColor}"></div>
+      <div class="c-depo-card${dk>0?' has-critical':''}" ${dClick('goDetay',dep)} style="--depo-color:${dotColor}">
         <div class="c-depo-info">
-          <div class="c-depo-name" style="color:${dotColor}">${esc(dep)}</div>
+          <div class="c-depo-name">${esc(dep)}</div>
           <div class="c-depo-cnt">${cntHtml}</div>
-          <div style="height:3px;border-radius:3px;background:${dk>0?'rgba(211,47,47,.2)':'var(--line)'};overflow:hidden;margin-top:6px">
-            <div style="height:100%;width:${pctNormal}%;background:${dotColor};border-radius:3px;transition:width .4s"></div>
-          </div>
+          <div class="c-depo-bar"><div class="c-depo-bar-fill" style="width:${pctNormal}%"></div></div>
         </div>
-        <div class="c-depo-arrow">→</div>
+        <div class="c-depo-arrow"><i data-lucide="chevron-right"></i></div>
       </div>`;
   }
 
@@ -81,17 +80,15 @@ export async function renderDashboard() {
         const s = getStok(i.depo, i.ad);
         const _mm = S.malzemeMeta[i.depo+'||'+i.ad]||{};
         const _sktD = _mm.skt ? window.sktDurum(_mm.skt) : null;
-        const _icon = _sktD ? _sktD.icon : '⚠';
-        const _depEsc = escQ(i.depo);
-        const _adEsc  = escQ(i.ad);
+        const _icon = _sktD ? _sktD.icon : 'alert-triangle';
         return `<div class="dash-kritik-item">
-          <div class="dash-warn">${_icon}</div>
+          <div class="dash-warn"><i data-lucide="${_icon}"></i></div>
           <div style="flex:1;min-width:0">
-            <div class="dash-kritik-ad">${esc(i.ad)}${_sktD?'<span class="skt-badge '+_sktD.cls+'" style="margin-left:6px">'+esc(_sktD.label)+'</span>':''}</div>
+            <div class="dash-kritik-ad">${esc(i.ad)}${_sktD?'<span class="skt-badge '+_sktD.cls+'" style="margin-left:6px"><i data-lucide="'+_sktD.icon+'" class="icon-inline"></i> '+esc(_sktD.label)+'</span>':''}</div>
             <div class="dash-kritik-depo">${esc(i.depo)} · Mevcut: ${s.mevcut} / Min: ${s.min}</div>
           </div>
           <div class="dash-kritik-stok">${s.mevcut}/${s.min}</div>
-          <button onclick="event.stopPropagation();hizliHareket('${_depEsc}','${_adEsc}','Giriş')"
+          <button ${dClick('dashHizliGiris',i.depo,i.ad)}
             style="margin-left:8px;font-size:12px;padding:4px 9px;background:rgba(102,187,106,.12);border:1px solid rgba(102,187,106,.35);border-radius:6px;cursor:pointer;color:var(--green);font-weight:700;flex-shrink:0"
             title="Hızlı Giriş Kaydı">+ Giriş</button>
         </div>`;
@@ -129,10 +126,14 @@ export async function renderDashboard() {
 
     const ht = document.getElementById('s-hareket-trend');
     if (ht) {
-      if (dun===0 && bugun===0) ht.innerHTML = '<span class="stat-trend trend-neu">— değişim yok</span>';
-      else if (bugun>dun) ht.innerHTML = '<span class="stat-trend trend-up">↑ '+bugun+' işlem</span>';
-      else if (bugun<dun) ht.innerHTML = '<span class="stat-trend trend-down">↓ '+bugun+' işlem</span>';
-      else ht.innerHTML = '<span class="stat-trend trend-neu">= '+bugun+' işlem</span>';
+      if (dun===0 && bugun===0)
+        ht.innerHTML = '<span class="stat-trend trend-neu">değişim yok</span>';
+      else if (bugun>dun)
+        ht.innerHTML = '<span class="stat-trend trend-up"><i data-lucide="trending-up" class="icon-inline"></i> '+bugun+' işlem</span>';
+      else if (bugun<dun)
+        ht.innerHTML = '<span class="stat-trend trend-down"><i data-lucide="trending-down" class="icon-inline"></i> '+bugun+' işlem</span>';
+      else
+        ht.innerHTML = '<span class="stat-trend trend-neu">'+bugun+' işlem</span>';
     }
 
     // 7-günlük sparkline
@@ -157,7 +158,7 @@ export async function renderDashboard() {
         ? '<p style="color:var(--muted);font-size:13px;">Henüz hareket kaydı yok.</p>'
         : sonHareketler.slice(0, S.ayarlar.sonHareketLimit).map(h => `
           <div class="hareket-item">
-            <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}">${h.tur==='Giriş'?'⬆':'⬇'}</div>
+            <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
             <div class="hareket-info">
               <div class="hareket-mal">${esc(h.malzeme)}</div>
               <div class="hareket-meta">${depoBadge(h.depo)} · <span title="${esc(fmt(new Date(h.tarih)))}">${timeAgo(new Date(h.tarih))}</span>${h.personel?' · '+esc(h.personel):''}</div>

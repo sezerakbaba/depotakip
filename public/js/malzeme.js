@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, escKey, getKey } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, getKey, dClick, setFieldError, clearFieldErrors } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // MALZEME EKLE / SİL
@@ -20,13 +20,20 @@ export function malzemeEkle() {
   const min    = parseInt(document.getElementById('yeni-min').value)||0;
   const max    = parseInt(document.getElementById('yeni-max').value)||0;
 
-  if (!dep)  { window.toast('Depo seçin!','error'); return; }
-  if (!ad)   { window.toast('Malzeme adı girin!','error'); return; }
-  if (!kategori && S.ayarlar.katZorunlu) { window.toast('Kategori seçimi zorunlu!','error'); return; }
-
-  const mevcut_items = getDepoItems(dep);
-  if (mevcut_items.find(i=>i.ad.toLowerCase()===ad.toLowerCase())) {
-    window.toast('Bu isimde malzeme zaten mevcut!','error'); return;
+  // Alan-bazlı validasyon: tüm hatalar tek seferde gösterilir, ilk
+  // hatalı alana focus geçer.
+  const form = document.getElementById('page-malzeme-ekle');
+  clearFieldErrors(form);
+  let ok = true;
+  if (!dep)                                  { setFieldError('yeni-depo', 'Depo seçin');               ok = false; }
+  if (!ad)                                   { setFieldError('yeni-ad',   'Malzeme adı zorunlu');     ok = false; }
+  if (!kategori && S.ayarlar.katZorunlu)     { setFieldError('yeni-kategori', 'Kategori seçimi zorunlu'); ok = false; }
+  if (ok && getDepoItems(dep).find(i => i.ad.toLowerCase() === ad.toLowerCase())) {
+    setFieldError('yeni-ad', 'Bu isimde malzeme zaten mevcut'); ok = false;
+  }
+  if (!ok) {
+    form?.querySelector('.field--error input, .field--error select, .field--error textarea')?.focus();
+    return;
   }
 
   const k = getKey(dep, ad);
@@ -72,9 +79,9 @@ export function renderMalzemeEkleList() {
     const s   = getStok(item.depo, item.ad);
     const d   = durum(s.mevcut, s.min, s.max);
     const mm  = S.malzemeMeta[getKey(item.depo,item.ad)]||{};
-    const key = escKey(item.depo, item.ad);
+    const key = getKey(item.depo, item.ad);
     const sktHtml = mm.skt ? '<br>'+window.sktBadge(mm.skt) : '';
-    const ozelStar = item.ozel ? '<span style="font-size:10px;color:var(--teal);margin-left:5px">★</span>' : '';
+    const ozelStar = item.ozel ? '<i data-lucide="star" class="icon-inline ozel-star" title="Özel ekleme"></i>' : '';
     const birimTxt = mm.birim || item.birim || '—';
     const katHtml  = item.kategori ? window.katBadgeHTML(item.kategori) : '<span style="color:var(--muted)">—</span>';
     rows += `<tr>
@@ -85,9 +92,8 @@ export function renderMalzemeEkleList() {
       <td class="td-mono" style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
       <td>${durumBadge(d)}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-sm btn-outline" onclick="openStokModal('${key}','${escQ(item.depo)}','${escQ(item.ad)}')" style="margin-right:4px">✎</button>
-        <button class="btn btn-sm" onclick="malzemeSil('${escQ(item.depo)}','${escQ(item.ad)}')"
-          style="background:var(--red-bg);color:var(--red);border:1px solid rgba(239,83,80,.3);padding:4px 10px;font-size:11px">🗑</button>
+        <button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,item.depo,item.ad)} style="margin-right:4px" title="Düzenle"><i data-lucide="pencil"></i></button>
+        <button class="btn btn-sm btn-danger-soft btn-icon" ${dClick('malzemeSil',item.depo,item.ad)} title="Sil"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   });

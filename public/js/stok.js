@@ -1,5 +1,5 @@
 import { S, STOK_SUTUNLAR, KAT_COLORS, KAYNAK, API_URL } from './state.js';
-import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, escKey, escQ, getKey } from './ui-common.js';
+import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, getKey, dClick, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -9,14 +9,6 @@ import { apiFetch } from './api.js';
 export function katBadgeHTML(kat){
   const cc=KAT_COLORS[kat]||{c:'#546e7a',bg:'#eceff1'};
   return '<span style="display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;background:'+cc.bg+';color:'+cc.c+'">'+esc(kat)+'</span>';
-}
-export function setKatFilter(el,val){
-  document.querySelectorAll('.filter-chip[data-kat]').forEach(c=>c.classList.remove('active'));
-  if(el&&el.classList)el.classList.add('active');
-  S.stokKatFilter=val;S.stokSayfa=0;
-  const sel=document.getElementById('stok-kat-select');
-  if(sel)sel.value=val;
-  renderStok();
 }
 export function setKatFilterSel(val){
   S.stokKatFilter=val;S.stokSayfa=0;
@@ -46,15 +38,6 @@ export function setDepoFilter(el, val, color) {
   }
   S.stokDepoFilter=val;S.stokSayfa=0;
   renderStok();
-}
-
-export function resetStokSort() {
-  S.stokSortKey = null;
-  S.stokSortDir = 1;
-  ['ad','depo','kategori','mevcut','min','max','durum'].forEach(k => {
-    const el = document.getElementById('sort-'+k);
-    if (el) el.textContent = '';
-  });
 }
 
 export function stokSort(key) {
@@ -124,16 +107,16 @@ export function renderStok(){
   if (kpiEl) {
     const kpiAktif = (cls) => S.stokDurumFilter===cls?' kpi-aktif':'';
     kpiEl.innerHTML = `
-      <div class="kpi-kart" onclick="S.stokDurumFilter='';S.stokSayfa=0;renderStok()">
+      <div class="kpi-kart" ${dClick('stokDurumKpi','')}>
         <div class="kpi-sayi">${kpiToplam}</div><div class="kpi-lbl">Toplam</div>
       </div>
-      <div class="kpi-kart kpi-kritik${kpiAktif('Kritik')}" onclick="S.stokDurumFilter=S.stokDurumFilter==='Kritik'?'':'Kritik';S.stokSayfa=0;renderStok()">
+      <div class="kpi-kart kpi-kritik${kpiAktif('Kritik')}" ${dClick('stokDurumKpi','Kritik')}>
         <div class="kpi-sayi">${kpiKritik}</div><div class="kpi-lbl"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik</div>
       </div>
-      <div class="kpi-kart kpi-normal${kpiAktif('Normal')}" onclick="S.stokDurumFilter=S.stokDurumFilter==='Normal'?'':'Normal';S.stokSayfa=0;renderStok()">
+      <div class="kpi-kart kpi-normal${kpiAktif('Normal')}" ${dClick('stokDurumKpi','Normal')}>
         <div class="kpi-sayi">${kpiNormal}</div><div class="kpi-lbl"><i data-lucide="check-circle" class="icon-inline"></i> Normal</div>
       </div>
-      <div class="kpi-kart kpi-fazla${kpiAktif('Fazla')}" onclick="S.stokDurumFilter=S.stokDurumFilter==='Fazla'?'':'Fazla';S.stokSayfa=0;renderStok()">
+      <div class="kpi-kart kpi-fazla${kpiAktif('Fazla')}" ${dClick('stokDurumKpi','Fazla')}>
         <div class="kpi-sayi">${kpiFazla}</div><div class="kpi-lbl"><i data-lucide="trending-up" class="icon-inline"></i> Fazla</div>
       </div>`;
     if (window.lucide) lucide.createIcons({ nodes: [kpiEl] });
@@ -143,12 +126,12 @@ export function renderStok(){
   const afEl = document.getElementById('stok-aktif-filtreler');
   if (afEl) {
     const chips = [];
-    if (S.stokDepoFilter !== 'Tümü') chips.push(`<span class="af-chip">Depo: <strong>${esc(S.stokDepoFilter)}</strong><button onclick="S.stokDepoFilter='Tümü';document.querySelectorAll('.filter-chip[data-depo]').forEach(c=>{c.classList.remove('active');c.style.cssText=''});document.querySelector('.filter-chip[data-depo=\\'Tümü\\']')?.classList.add('active');S.stokSayfa=0;renderStok()">×</button></span>`);
-    if (S.stokKatFilter !== 'Tümü') chips.push(`<span class="af-chip">Kategori: <strong>${esc(S.stokKatFilter)}</strong><button onclick="S.stokKatFilter='Tümü';const sel=document.getElementById('stok-kat-select');if(sel)sel.value='Tümü';S.stokSayfa=0;renderStok()">×</button></span>`);
-    if (S.stokDurumFilter) chips.push(`<span class="af-chip">Durum: <strong>${esc(S.stokDurumFilter)}</strong><button onclick="S.stokDurumFilter='';S.stokSayfa=0;renderStok()">×</button></span>`);
-    if (q) chips.push(`<span class="af-chip">Arama: <strong>${esc(q)}</strong><button onclick="const si=document.getElementById('stok-search');if(si){si.value='';document.getElementById('stok-search-clear').style.display='none';}S.stokSayfa=0;renderStok()">×</button></span>`);
+    if (S.stokDepoFilter !== 'Tümü') chips.push(`<span class="af-chip">Depo: <strong>${esc(S.stokDepoFilter)}</strong><button ${dClick('stokDepoChipTemizle')}>×</button></span>`);
+    if (S.stokKatFilter !== 'Tümü') chips.push(`<span class="af-chip">Kategori: <strong>${esc(S.stokKatFilter)}</strong><button ${dClick('stokKatChipTemizle')}>×</button></span>`);
+    if (S.stokDurumFilter) chips.push(`<span class="af-chip">Durum: <strong>${esc(S.stokDurumFilter)}</strong><button ${dClick('stokDurumChipTemizle')}>×</button></span>`);
+    if (q) chips.push(`<span class="af-chip">Arama: <strong>${esc(q)}</strong><button ${dClick('stokAramaTemizle')}>×</button></span>`);
     if (chips.length > 0) {
-      afEl.innerHTML = chips.join('') + `<button class="af-temizle" onclick="S.stokDepoFilter='Tümü';S.stokKatFilter='Tümü';S.stokDurumFilter='';const si=document.getElementById('stok-search');if(si){si.value='';document.getElementById('stok-search-clear').style.display='none';}document.querySelectorAll('.filter-chip').forEach(c=>{c.classList.remove('active');c.style.cssText=''});document.querySelector('.filter-chip[data-depo=\\'Tümü\\']')?.classList.add('active');const sel=document.getElementById('stok-kat-select');if(sel)sel.value='Tümü';S.stokSayfa=0;renderStok()"><i data-lucide='x' class='icon-inline'></i> Tümünü Temizle</button>`;
+      afEl.innerHTML = chips.join('') + `<button class="af-temizle" ${dClick('stokTumFiltreleriTemizle')}><i data-lucide='x' class='icon-inline'></i> Tümünü Temizle</button>`;
       afEl.style.display = 'flex';
       if (window.lucide) lucide.createIcons({ nodes: [afEl] });
     } else {
@@ -183,7 +166,7 @@ export function renderStok(){
           const isSortable = ['malzeme','depo','kategori','mevcut','min','max','durum'].includes(col.key);
           const sortKey = col.key === 'malzeme' ? 'ad' : col.key;
           if (isSortable) {
-            return `<th class="sortable stok-th-drag" draggable="true" data-col="${col.key}" onclick="stokSort('${sortKey}')">${col.label}${sortIconFor(sortKey)}</th>`;
+            return `<th class="sortable stok-th-drag" draggable="true" data-col="${col.key}" ${dClick('stokSort',sortKey)}>${col.label}${sortIconFor(sortKey)}</th>`;
           }
           return `<th class="stok-th-drag" draggable="true" data-col="${col.key}">${col.label}</th>`;
         }).join('')
@@ -207,7 +190,7 @@ export function renderStok(){
     const pct=s.max>0?Math.min(100,Math.round((s.mevcut/s.max)*100)):0;
     const minPct=s.max>0?Math.min(100,Math.round((s.min/s.max)*100)):0;
     const fc=d==='Kritik'?'fill-kritik':d==='Fazla'?'fill-fazla':'fill-normal';
-    const key=escKey(item.depo,item.ad);
+    const key=getKey(item.depo,item.ad);
     const katCell=item.kategori?katBadgeHTML(item.kategori):'<span style="font-size:11px;color:var(--muted)">—</span>';
     const birCell=item.birim?esc(item.birim):'<span style="color:var(--muted)">—</span>';
     const rowCls = d==='Kritik' ? 'row-kritik' : d==='Fazla' ? 'row-fazla' : '';
@@ -221,7 +204,7 @@ export function renderStok(){
         case 'malzeme': {
           const meta = S.malzemeMeta[getKey(item.depo,item.ad)]||{};
           dynamicCells += '<td class="td-name" data-col="malzeme" data-label="Malzeme">'
-            +'<div>'+vurgula(item.ad)+(item.ozel?'<span style="font-size:10px;color:var(--teal);margin-left:6px">★</span>':'')+'</div>'
+            +'<div>'+vurgula(item.ad)+(item.ozel?' <i data-lucide="star" class="icon-inline ozel-star" title="Özel ekleme"></i>':'')+'</div>'
             +(meta.marka?'<div><span class="marka-badge">'+esc(meta.marka)+'</span></div>':'')
             +(meta.skt?'<div>'+window.sktBadge(meta.skt)+'</div>':'')
             +'</td>';
@@ -255,17 +238,15 @@ export function renderStok(){
       }
     });
 
-    const _depQ = escQ(item.depo);
-    const _adQ  = escQ(item.ad);
-    const logBtn = `<button class="islem-btn islem-btn-log" onclick="openMalHareket('${_depQ}','${_adQ}')" title="Hareket geçmişi"><i data-lucide="history"></i></button>`;
+    const logBtn = `<button class="islem-btn islem-btn-log" ${dClick('openMalHareket',item.depo,item.ad)} title="Hareket geçmişi"><i data-lucide="history"></i></button>`;
     rows+='<tr class="'+rowCls+'">'
       +'<td class="td-mono" data-label="#">'+idx+'</td>'
       +dynamicCells
       +`<td data-col="islem" data-label="İşlem"><div class="islem-grup">`
       +logBtn
-      +`<button class="islem-btn islem-btn-in" onclick="hizliHareket('${_depQ}','${_adQ}','Giriş')" title="Hızlı Giriş"><i data-lucide="plus-circle"></i></button>`
-      +`<button class="islem-btn islem-btn-out" onclick="hizliHareket('${_depQ}','${_adQ}','Çıkış')" title="Hızlı Çıkış"><i data-lucide="minus-circle"></i></button>`
-      +`<button class="islem-btn islem-btn-edit" onclick="openStokModal('${key}','${_depQ}','${_adQ}')" title="Düzenle"><i data-lucide="pencil"></i></button>`
+      +`<button class="islem-btn islem-btn-in" ${dClick('hizliHareket',item.depo,item.ad,'Giriş')} title="Hızlı Giriş"><i data-lucide="plus-circle"></i></button>`
+      +`<button class="islem-btn islem-btn-out" ${dClick('hizliHareket',item.depo,item.ad,'Çıkış')} title="Hızlı Çıkış"><i data-lucide="minus-circle"></i></button>`
+      +`<button class="islem-btn islem-btn-edit" ${dClick('openStokModal',key,item.depo,item.ad)} title="Düzenle"><i data-lucide="pencil"></i></button>`
       +`</div></td>`
       +'</tr>';
   });
@@ -275,7 +256,7 @@ export function renderStok(){
       <div class="empty-icon"><i data-lucide="search-x"></i></div>
       <div class="empty-title">Sonuç bulunamadı</div>
       <div class="empty-desc">Arama veya filtre kriterlerinizi değiştirin.</div>
-      <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="S.stokDepoFilter='Tümü';S.stokKatFilter='Tümü';S.stokDurumFilter='';const si=document.getElementById('stok-search');if(si){si.value='';document.getElementById('stok-search-clear').style.display='none';}S.stokSayfa=0;renderStok()"><i data-lucide='x' class='icon-inline'></i> Filtreleri Temizle</button>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" ${dClick('stokTumFiltreleriTemizle')}><i data-lucide='x' class='icon-inline'></i> Filtreleri Temizle</button>
     </div>
   </td></tr>`;
   tbl.innerHTML = rows || emptyState;
@@ -289,15 +270,15 @@ export function renderStok(){
       const goster = 2; // aktif sayfanın her iki yanında gösterilecek sayfa sayısı
       let btns = `<span style="font-size:11px;color:var(--muted)">${toplamKalem} kalem</span>`;
       btns += `<div style="display:flex;gap:4px;align-items:center">`;
-      btns += `<button class="sayfa-btn" onclick="S.stokSayfa--;renderStok()" ${S.stokSayfa===0?'disabled':''}>‹</button>`;
+      btns += `<button class="sayfa-btn" ${dClick('stokSayfaPrev')} ${S.stokSayfa===0?'disabled':''}>‹</button>`;
       for (let p = 0; p < toplamSayfa; p++) {
         if (p === 0 || p === toplamSayfa-1 || Math.abs(p - S.stokSayfa) <= goster) {
-          btns += `<button class="sayfa-btn ${p===S.stokSayfa?'aktif':''}" onclick="S.stokSayfa=${p};renderStok()">${p+1}</button>`;
+          btns += `<button class="sayfa-btn ${p===S.stokSayfa?'aktif':''}" ${dClick('stokSayfaGit',p)}>${p+1}</button>`;
         } else if (Math.abs(p - S.stokSayfa) === goster+1) {
           btns += `<span style="color:var(--muted);font-size:12px;padding:0 2px">…</span>`;
         }
       }
-      btns += `<button class="sayfa-btn" onclick="S.stokSayfa++;renderStok()" ${S.stokSayfa===toplamSayfa-1?'disabled':''}>›</button>`;
+      btns += `<button class="sayfa-btn" ${dClick('stokSayfaNext')} ${S.stokSayfa===toplamSayfa-1?'disabled':''}>›</button>`;
       btns += `</div>`;
       spEl.innerHTML = btns;
     }
@@ -379,7 +360,7 @@ export function renderStokSutunMenu() {
   menu.innerHTML = STOK_SUTUNLAR.map(s => `
     <label class="sutun-menu-item">
       <input type="checkbox" ${gizli.includes(s.key) ? '' : 'checked'}
-        onchange="toggleStokSutun('${s.key}',this.checked)">
+        ${dChange('toggleStokSutun',s.key)}>
       ${s.label}
     </label>
   `).join('');
@@ -416,14 +397,14 @@ export function openStokModal(_key, dep, mal) {
     +'<div class="form-group"><label>Min Stok</label><input type="number" id="m-min" value="'+s.min+'" min="0"></div>'
     +'<div class="form-group"><label>Max Stok</label><input type="number" id="m-max" value="'+s.max+'" min="0"></div>'
     +'<div class="form-group"><label>Birim</label>'
-    +'<select id="m-birim" onchange="handleDiger(this,\'m-birim-diger\')"><option value="">— Seçin —</option>'+_bo+'</select>'
+    +'<select id="m-birim" '+dChange('handleDiger','m-birim-diger')+'><option value="">— Seçin —</option>'+_bo+'</select>'
     +'<div id="m-birim-diger-wrap" style="display:'+(_birDiğerVal?'block':'none')+';margin-top:5px">'
     +'<input type="text" id="m-birim-diger" value="'+_birDiğerVal+'" placeholder="Birim girin..." style="font-size:12px"></div></div>'
     +'<div class="form-group"><label>Kategori</label>'
-    +'<select id="m-kategori" onchange="handleDiger(this,\'m-kategori-diger\')"><option value="">— Seçin —</option>'+_ko+'</select>'
+    +'<select id="m-kategori" '+dChange('handleDiger','m-kategori-diger')+'><option value="">— Seçin —</option>'+_ko+'</select>'
     +'<div id="m-kategori-diger-wrap" style="display:'+(_katDiğerVal?'block':'none')+';margin-top:5px">'
     +'<input type="text" id="m-kategori-diger" value="'+_katDiğerVal+'" placeholder="Kategori girin..." style="font-size:12px"></div></div>'
-    +(dep==='Kimyasal Deposu'?'<div class="form-group" style="grid-column:1/-1"><label>☠ Son Kullanma Tarihi</label><input type="date" id="m-skt" value="'+(mm.skt||'')+'" style="font-family:IBM Plex Mono,monospace"></div>':'')
+    +(dep==='Kimyasal Deposu'?'<div class="form-group" style="grid-column:1/-1"><label><i data-lucide="shield-alert" class="icon-inline"></i> Son Kullanma Tarihi</label><input type="date" id="m-skt" value="'+(mm.skt||'')+'" style="font-family:IBM Plex Mono,monospace"></div>':'')
     +'</div>';
   document.getElementById('modal-stok').classList.add('open');
 }
@@ -434,7 +415,13 @@ export function saveStok() {
   const mevcut = parseInt(document.getElementById('m-mevcut').value)||0;
   const min    = parseInt(document.getElementById('m-min').value)||0;
   const max    = parseInt(document.getElementById('m-max').value)||0;
-  if (!yeniAd) { window.toast('Malzeme adı boş olamaz!','error'); return; }
+  const modal = document.getElementById('modal-stok');
+  clearFieldErrors(modal);
+  if (!yeniAd) {
+    setFieldError('m-ad', 'Malzeme adı boş olamaz');
+    document.getElementById('m-ad')?.focus();
+    return;
+  }
   const eskiAd = S.editKey.mal;
   const dep    = S.editKey.dep;
   const eskiKey= getKey(dep, eskiAd);
@@ -469,39 +456,18 @@ export function saveStok() {
     }).catch(e => console.warn('Hareket malzeme güncelleme:', e));
   }
   S.editKey.mal = yeniAd;
-  closeModal('modal-stok');window.refreshAll();
+  window.closeModal('modal-stok');window.refreshAll();
   window.toast(yeniKey!==eskiKey ? '"'+yeniAd+'" olarak güncellendi.' : 'Stok güncellendi.');
-}
-
-export function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-export function filterMalzemeList() {
-  const dep = document.getElementById('h-depo').value;
-  const sel = document.getElementById('h-malzeme');
-  if (!dep) { sel.innerHTML='<option>-- Önce depo seçin --</option>'; return; }
-  sel.innerHTML = getDepoItems(dep).map(i=>{
-    const s = getStok(dep, i.ad);
-    const d = durum(s.mevcut, s.min, s.max);
-    const flag = d==='Kritik' ? ' ⚠ kritik' : d==='Fazla' ? ' ↑ fazla' : '';
-    const mm = S.malzemeMeta[getKey(dep,i.ad)]||{};
-    const bir = mm.birim ? ` [${mm.birim}]` : '';
-    return `<option value="${i.ad}">${i.ad}${bir} — ${s.mevcut} mevcut${flag}</option>`;
-  }).join('') || '<option>Bu depoda malzeme yok</option>';
-  // Seçili malzemenin stok bilgisini göster
-  window.updateHareketStokBilgi();
 }
 
 // Expose on window for inline handlers
 window.katBadgeHTML = katBadgeHTML;
-window.setKatFilter = setKatFilter;
 window.setKatFilterSel = setKatFilterSel;
 window.setDurumFilter = setDurumFilter;
 window.setDepoFilter = setDepoFilter;
 window.stokSort = stokSort;
 window.openStokModal = openStokModal;
 window.saveStok = saveStok;
-window.closeModal = closeModal;
-window.filterMalzemeList = filterMalzemeList;
 window.renderStokSutunMenu = renderStokSutunMenu;
 window.toggleStokSutun = toggleStokSutun;
 window.renderStok = renderStok;

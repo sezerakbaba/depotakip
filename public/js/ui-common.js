@@ -16,8 +16,9 @@ export function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-export function escKey(dep, mal) { return (dep+'||'+mal).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-// onclick="fn('${escQ(x)}')" gibi inline handler'larda güvenli (önce JS-string, sonra HTML-attr kaçışı)
+// HTML attribute içinde JS string + attribute escape (sadece <option
+// value="${escQ(...)}"> gibi nadir kullanım için kalır; inline onclick
+// pattern'i artık yok — data-action + JSON args ile temin ediliyor).
 export function escQ(s) { return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r?\n/g,'\\n'); }
 
 // FIX: Varsayılan min=0, max=0 → stok girilmeden hiçbir şey kritik değil
@@ -60,8 +61,8 @@ export function durum(mevcut, min, max) {
 
 export function durumBadge(d) {
   const map  = {Kritik:'badge-kritik', Normal:'badge-normal', Fazla:'badge-fazla'};
-  const icon = {Kritik:'⚠', Normal:'✓', Fazla:'↑'};
-  return `<span class="badge ${map[d]}">${icon[d]} ${d}</span>`;
+  const icon = {Kritik:'alert-triangle', Normal:'check', Fazla:'trending-up'};
+  return `<span class="badge ${map[d]}"><i data-lucide="${icon[d]}" class="icon-inline"></i> ${d}</span>`;
 }
 
 export function depoBadge(dep) {
@@ -85,14 +86,29 @@ export function fmt(d) {
 
 export function toast(msg, type='success') {
   const t = document.getElementById('toast');
-  t.textContent = (type==='success'?'✓  ':type==='info'?'ℹ  ':'✕  ') + msg;
+  if (!t) return;
+  const ico = {success:'check-circle', info:'info', error:'x-circle'}[type] || 'check-circle';
+  t.innerHTML = `<i data-lucide="${ico}" class="icon-inline"></i> <span>${esc(msg)}</span>`;
   t.className = 'show ' + type;
+  if (window.lucide) lucide.createIcons({ nodes: [t] });
   setTimeout(()=> t.className='', 2800);
+}
+
+// Notification API yalnızca güvenli context'lerde (HTTPS + localhost)
+// kullanılabilir; HTTP origin'de izin istemi kabul edilmez. window.
+// isSecureContext browser-native bayrağı bu durumu özetler.
+export function notificationDestekleniyor() {
+  return 'Notification' in window && window.isSecureContext;
+}
+export function notificationDurumu() {
+  if (!('Notification' in window))  return 'unsupported';
+  if (!window.isSecureContext)      return 'insecure';
+  return Notification.permission; // 'default' | 'granted' | 'denied'
 }
 
 export function checkKritikNotification() {
   if (!S.ayarlar.bildirimAktif) return;
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!notificationDestekleniyor() || Notification.permission !== 'granted') return;
   const now = Date.now();
   if (now - S._sonBildirimZamani < 5 * 60 * 1000) return; // en fazla 5 dakikada bir
   const kritikler = getAllItems().filter(i => durum(getStok(i.depo, i.ad).mevcut, getStok(i.depo, i.ad).min, getStok(i.depo, i.ad).max) === 'Kritik');
@@ -106,6 +122,10 @@ export function checkKritikNotification() {
 
 export async function bildirimIzniSor() {
   if (!('Notification' in window)) { toast('Tarayıcınız bildirimleri desteklemiyor.', 'error'); return; }
+  if (!window.isSecureContext) {
+    toast('Bildirimler yalnızca HTTPS bağlantısında çalışır. Sunucu HTTPS kurulduğunda aktifleşir.', 'error');
+    return;
+  }
   if (S.ayarlar.bildirimAktif) { window.setAyar('bildirimAktif', false); toast('Bildirimler kapatıldı.'); window.renderAyarlar(); return; }
   if (Notification.permission === 'denied') { toast('Bildirimler tarayıcı tarafından engellendi. Tarayıcı ayarlarından izin verin.', 'error'); return; }
   const perm = await Notification.requestPermission();
@@ -132,6 +152,75 @@ export function updateClock() {
   const now = new Date();
   const cl = document.getElementById('topbar-clock');
   if (cl) cl.textContent = now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// ── Form alanı hata UI'ı ──────────────────────────────────────────
+// setFieldError(id, msg)   → alanın .field/.form-group wrapper'ına
+//   .field--error ekler, altına .field__error küçük yazısı koyar,
+//   aria-invalid=true set eder.
+// clearFieldErrors(scope?) → verilen scope (varsayılan: document)
+//   içindeki tüm hata izlerini temizler.
+// Kullanım örneği: malzemeEkle() validasyonu.
+export function setFieldError(id, msg) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  const field = inp.closest('.field, .form-group') || inp.parentElement;
+  if (!field) return;
+  field.classList.add('field--error');
+  let err = field.querySelector(':scope > .field__error');
+  if (!err) {
+    err = document.createElement('small');
+    err.className = 'field__error';
+    field.appendChild(err);
+  }
+  err.textContent = msg;
+  inp.setAttribute('aria-invalid', 'true');
+}
+export function clearFieldErrors(scope) {
+  const root = scope || document;
+  root.querySelectorAll('.field--error').forEach(f => {
+    f.classList.remove('field--error');
+    f.querySelector(':scope > .field__error')?.remove();
+  });
+  root.querySelectorAll('[aria-invalid="true"]').forEach(el => el.removeAttribute('aria-invalid'));
+}
+// Bir alanı tek tıklamayla "temizle" (kullanıcı yazmaya başlayınca hata gitsin)
+function _wireClearOnInput(scope = document) {
+  scope.addEventListener('input', e => {
+    const f = e.target.closest('.field, .form-group');
+    if (f?.classList.contains('field--error')) {
+      f.classList.remove('field--error');
+      f.querySelector(':scope > .field__error')?.remove();
+      e.target.removeAttribute?.('aria-invalid');
+    }
+  }, true);
+}
+_wireClearOnInput();
+
+// ── data-* delegation helpers ─────────────────────────────────────
+// Inline onclick/onchange/oninput/onkeydown yerine HTML template'lerde
+// kullanılır. main.js'teki delegation dispatcher'ları bunları okur.
+function _jsonAttr(args) {
+  // JSON'u çift-tırnaklı HTML attribute içine güvenle yerleştir
+  return JSON.stringify(args).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+export function dClick(name, ...args) {
+  if (!args.length) return `data-action="${name}"`;
+  return `data-action="${name}" data-args="${_jsonAttr(args)}"`;
+}
+export function dChange(name, ...args) {
+  if (!args.length) return `data-change="${name}"`;
+  return `data-change="${name}" data-args="${_jsonAttr(args)}"`;
+}
+export function dInput(name, ...args) {
+  if (!args.length) return `data-input="${name}"`;
+  return `data-input="${name}" data-args="${_jsonAttr(args)}"`;
+}
+// key opsiyonel filtre (örn. 'Enter'); null → tüm tuşlar
+export function dKeydown(name, key, ...args) {
+  const keyAttr = key ? ` data-key="${key}"` : '';
+  if (!args.length) return `data-keydown="${name}"${keyAttr}`;
+  return `data-keydown="${name}"${keyAttr} data-args="${_jsonAttr(args)}"`;
 }
 
 // Expose on window for inline handlers

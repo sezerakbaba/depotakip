@@ -6,89 +6,105 @@
 <script src="vendor/chart.umd.min.js"></script>
 <script src="vendor/lucide.min.js"></script>
 
+  <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<button id="hamburger" onclick="toggleSidebar()" aria-label="Menü"><i data-lucide="menu"></i></button>
-<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div id="sidebar-overlay" data-action="toggleSidebar"></div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <div id="sidebar">
   <div class="sidebar-logo">
     <div class="sidebar-logo-icon"><i data-lucide="warehouse"></i></div>
-    <div class="sidebar-logo-text">
-      <div class="logo-badge">DYS · Depo</div>
-      <h1 id="sidebar-kurum-adi">Depo Yönetim Sistemi</h1>
-    </div>
+    <h1 id="sidebar-kurum-adi" class="sidebar-logo-text">Depo Yönetim Sistemi</h1>
   </div>
   <nav>
     <div class="nav-label">Ana Menü</div>
-    <div class="nav-item active" data-tip="Dashboard" onclick="navigate('dashboard')">
+    <div class="nav-item active" data-tip="Dashboard" data-action="navigate" data-arg="dashboard">
       <span class="icon"><i data-lucide="layout-dashboard"></i></span> <span class="nav-text">Dashboard</span>
     </div>
-    <div class="nav-item" data-tip="Stok Listesi" onclick="navigate('stok')">
+    <div class="nav-item" data-tip="Stok Listesi" data-action="navigate" data-arg="stok">
       <span class="icon"><i data-lucide="package"></i></span> <span class="nav-text">Stok Listesi</span>
     </div>
-    <div class="nav-item" data-tip="Giriş / Çıkış" onclick="navigate('hareket')">
+    <div class="nav-item" data-tip="Giriş / Çıkış" data-action="navigate" data-arg="hareket">
       <span class="icon"><i data-lucide="arrow-left-right"></i></span> <span class="nav-text">Giriş / Çıkış</span>
     </div>
     <div class="nav-label">Raporlar</div>
-    <div class="nav-item" data-tip="İstatistikler" onclick="navigate('istatistik')">
+    <div class="nav-item" data-tip="İstatistikler" data-action="navigate" data-arg="istatistik">
       <span class="icon"><i data-lucide="bar-chart-2"></i></span> <span class="nav-text">İstatistikler</span>
     </div>
-    <div class="nav-item" data-tip="Kritik Stok" onclick="navigate('kritik')">
+    <div class="nav-item" data-tip="Kritik Stok" data-action="navigate" data-arg="kritik">
       <span class="icon"><i data-lucide="alert-triangle"></i></span> <span class="nav-text">Kritik Stok</span>
     </div>
-    <div class="nav-item" data-tip="Talepname" onclick="navigate('talep')">
+    <div class="nav-item" data-tip="Talepname" data-action="navigate" data-arg="talep">
       <span class="icon"><i data-lucide="file-text"></i></span> <span class="nav-text">Talepname</span>
     </div>
-    <div class="nav-item" data-tip="Talep Listesi" onclick="navigate('talep-listesi')">
+    <div class="nav-item" data-tip="Talep Listesi" data-action="navigate" data-arg="talep-listesi">
       <span class="icon"><i data-lucide="list"></i></span> <span class="nav-text">Talep Listesi</span>
     </div>
     <div class="nav-label">Yönetim</div>
-    <div class="nav-item" data-tip="Malzeme Ekle/Sil" onclick="navigate('malzeme-ekle')">
+    <div class="nav-item" data-tip="Malzeme Ekle/Sil" data-action="navigate" data-arg="malzeme-ekle">
       <span class="icon"><i data-lucide="plus-square"></i></span> <span class="nav-text">Malzeme Ekle/Sil</span>
     </div>
-    <div class="nav-item" data-tip="Veri Yönetimi" onclick="navigate('veri-yonet')">
+    <div class="nav-item" data-tip="Veri Yönetimi" data-action="navigate" data-arg="veri-yonet">
       <span class="icon"><i data-lucide="database"></i></span> <span class="nav-text">Veri Yönetimi</span>
     </div>
-    <div class="nav-item" data-tip="Ayarlar" onclick="navigate('ayarlar')">
+    <div class="nav-item" data-tip="Ayarlar" data-action="navigate" data-arg="ayarlar">
       <span class="icon"><i data-lucide="settings"></i></span> <span class="nav-text">Ayarlar</span>
     </div>
   </nav>
   <div class="sidebar-footer">
-    <strong>v3.1</strong><br>
+    <strong>v3.1</strong>
     <span id="api-status"></span>
-    <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);font-size:10px;color:var(--teal2);font-weight:600;letter-spacing:.4px">sezerakbaba</div>
   </div>
 </div>
 
 
+<!-- Token / Giriş Modal -->
+<div class="modal-overlay" id="modal-login" style="z-index:9999">
+  <div class="modal modal--sm">
+    <div class="modal-header">
+      <div class="modal-title"><i data-lucide="lock" class="icon-inline"></i> Sunucu Erişimi</div>
+    </div>
+    <div style="padding:6px 0 14px;color:var(--muted);font-size:13px">
+      Sunucu erişim tokeninizi girin. Token <code>.app-token</code> dosyasında saklıdır (sunucu yöneticisinden alın).
+    </div>
+    <form id="login-form" style="display:flex;flex-direction:column;gap:10px">
+      <input type="password" id="login-token" placeholder="Token" autocomplete="off"
+        style="font-family:var(--mono);padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);font-size:13px" required>
+      <div id="login-err" style="display:none;color:var(--red);font-size:12px"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+        <button type="submit" class="btn btn-primary">Giriş</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Malzeme Seçici Modal -->
 <div class="modal-overlay" id="modal-mal-sec">
-  <div class="modal" style="max-width:520px;width:95%;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
-    <div class="modal-header" style="padding:18px 20px 14px;flex-shrink:0">
+  <div class="modal modal--md modal--scroll">
+    <div class="modal-header">
       <div class="modal-title"><i data-lucide="package" class="icon-inline"></i> Malzeme Seç</div>
-      <button class="modal-close" onclick="closeModal('modal-mal-sec')">×</button>
+      <button class="modal-close" data-action="closeModal" data-arg="modal-mal-sec" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
-    <div style="padding:0 20px 12px;flex-shrink:0">
+    <div class="modal-toolbar">
       <div class="search-wrap" style="width:100%">
         <span class="search-icon"><i data-lucide="search"></i></span>
-        <input type="text" id="mal-sec-ara" placeholder="Malzeme veya depo ara..." oninput="_talepMalModalRender()" autocomplete="off">
+        <input type="text" id="mal-sec-ara" placeholder="Malzeme veya depo ara..." data-input="_talepMalModalRender" autocomplete="off">
       </div>
     </div>
-    <div id="mal-sec-depo-chips" style="display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 12px;flex-shrink:0"></div>
-    <div id="mal-sec-liste" style="flex:1;overflow-y:auto;min-height:0;border-top:1px solid var(--line)"></div>
+    <div id="mal-sec-depo-chips" class="modal-toolbar modal-chips"></div>
+    <div id="mal-sec-liste" class="modal-scroll-body"></div>
   </div>
 </div>
 
 <!-- Malzeme Hareket Geçmişi Modal -->
 <div class="modal-overlay" id="modal-mal-hareket">
-  <div class="modal" style="max-width:560px;width:95%">
+  <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="modal-mal-har-title">Hareket Geçmişi</div>
-      <button class="modal-close" onclick="closeModal('modal-mal-hareket')">×</button>
+      <button class="modal-close" data-action="closeModal" data-arg="modal-mal-hareket" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
     <div id="modal-mal-har-ozet" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 0 14px"></div>
     <div id="modal-mal-har-liste" style="max-height:340px;overflow-y:auto"></div>
@@ -97,12 +113,22 @@
 
 <!-- ═══ MAIN ═══ -->
 <div id="main">
-  <div id="content">
-    <div id="clock-widget">
-      <span id="topbar-clock"></span>
-      <span class="clock-sep"></span>
-      <span id="topbar-date"></span>
+  <!-- Topbar: sticky, sayfa başlığı + tema + saat -->
+  <header id="topbar">
+    <button id="hamburger" data-action="toggleSidebar" aria-label="Menü"><i data-lucide="menu"></i></button>
+    <h2 id="topbar-title">Dashboard</h2>
+    <div id="topbar-actions">
+      <button id="theme-toggle" class="topbar-btn" data-action="cycleTema" title="Tema değiştir" aria-label="Tema değiştir">
+        <i data-lucide="sun-moon"></i>
+      </button>
+      <div id="clock-widget">
+        <span id="topbar-clock"></span>
+        <span class="clock-sep"></span>
+        <span id="topbar-date"></span>
+      </div>
     </div>
+  </header>
+  <div id="content">
 
     <!-- ── DASHBOARD ── -->
     <div class="page active" id="page-dashboard">
@@ -179,10 +205,10 @@
           <span class="stok-page-title"><i data-lucide="package" class="icon-inline"></i> Stok Listesi</span>
           <div class="search-wrap">
             <span class="search-icon"><i data-lucide="search"></i></span>
-            <input type="text" placeholder="Malzeme ara..." id="stok-search" oninput="document.getElementById('stok-search-clear').style.display=this.value?'flex':'none';clearTimeout(window._stokST);window._stokST=setTimeout(()=>{stokSayfa=0;renderStok()},220)">
-            <button id="stok-search-clear" class="search-clear" onclick="document.getElementById('stok-search').value='';this.style.display='none';stokSayfa=0;renderStok()" style="display:none" title="Temizle">×</button>
+            <input type="text" placeholder="Malzeme ara..." id="stok-search" data-input="stokSearch">
+            <button id="stok-search-clear" class="search-clear" data-action="stokSearchClear" style="display:none" title="Temizle">×</button>
           </div>
-          <div class="filter-chip" data-durum="Kritik" onclick="setDurumFilter(this,'Kritik')"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik</div>
+          <div class="filter-chip" data-durum="Kritik" data-action="setDurumFilter" data-arg="Kritik"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik</div>
         </div>
         <div class="toolbar toolbar-sub" style="flex-wrap:wrap;gap:8px">
           <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;align-self:center">Depo</span>
@@ -190,12 +216,12 @@
           <div style="width:1px;background:var(--line);align-self:stretch;margin:0 4px"></div>
           <div class="kat-select-wrap">
             <label for="stok-kat-select">Kategori</label>
-            <select id="stok-kat-select" onchange="setKatFilterSel(this.value)">
+            <select id="stok-kat-select" data-change="setKatFilterSel">
               <option value="Tümü">Tümü</option>
             </select>
           </div>
           <div class="sutun-menu-wrap" style="position:relative;display:inline-block">
-            <button id="stok-sutun-btn" class="btn btn-sm btn-outline" onclick="document.getElementById('stok-sutun-menu').classList.toggle('open')" title="Sütunları Düzenle"><i data-lucide="settings-2" class="icon-inline"></i> Sütunlar</button>
+            <button id="stok-sutun-btn" class="btn btn-sm btn-outline" data-action="toggleStokSutunMenu" title="Sütunları Düzenle"><i data-lucide="settings-2" class="icon-inline"></i> Sütunlar</button>
             <div id="stok-sutun-menu" class="sutun-menu-dropdown"></div>
           </div>
         </div>
@@ -234,8 +260,8 @@
                 <label>Malzeme Ekle</label>
                 <div class="h-mal-wrap">
                   <input type="text" id="h-mal-search" placeholder="Malzeme ara..." autocomplete="off"
-                    oninput="_harMalAra(this.value)">
-                  <button class="h-mal-clear" id="h-mal-clear" onclick="_harMalTemizle()" style="display:none">×</button>
+                    data-input="_harMalAra">
+                  <button class="h-mal-clear" id="h-mal-clear" data-action="_harMalTemizle" style="display:none">×</button>
                   <div class="h-mal-dropdown" id="h-mal-dropdown"></div>
                 </div>
                 <input type="hidden" id="h-depo" value="">
@@ -247,11 +273,11 @@
                 <div id="h-stok-bilgi" style="display:none;align-items:center;gap:10px;background:var(--bg);border-radius:8px;padding:10px 14px;flex-wrap:wrap;margin-bottom:8px"></div>
                 <div class="h-ekle-row">
                   <select id="h-tur" class="h-ekle-tur">
-                    <option value="Giriş">↑ Giriş</option>
-                    <option value="Çıkış">↓ Çıkış</option>
+                    <option value="Giriş">Giriş</option>
+                    <option value="Çıkış">Çıkış</option>
                   </select>
                   <input type="number" id="h-miktar" class="h-ekle-mik" min="1" placeholder="Miktar">
-                  <button class="btn btn-primary h-ekle-btn" onclick="_harEkle()"><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
+                  <button class="btn btn-primary h-ekle-btn" data-action="_harEkle"><i data-lucide="plus" class="icon-inline"></i> Ekle</button>
                 </div>
               </div>
 
@@ -275,9 +301,9 @@
                 <textarea id="h-not" placeholder="Açıklama..."></textarea>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="btn btn-primary" style="flex:1" onclick="kaydetHareket()"><i data-lucide="save" class="icon-inline"></i> Kaydet</button>
-                <button class="btn btn-outline" onclick="clearHareketForm()"><i data-lucide="rotate-ccw" class="icon-inline"></i> Temizle</button>
-                <button id="not-zorunlu-btn" class="btn btn-outline" onclick="toggleNotZorunlu()" style="font-size:11px" title="Not zorunlu yap"><i data-lucide="file-pen" class="icon-inline"></i></button>
+                <button class="btn btn-primary" style="flex:1" data-action="kaydetHareket"><i data-lucide="save" class="icon-inline"></i> Kaydet</button>
+                <button class="btn btn-outline" data-action="clearHareketForm"><i data-lucide="rotate-ccw" class="icon-inline"></i> Temizle</button>
+                <button id="not-zorunlu-btn" class="btn btn-outline" data-action="toggleNotZorunlu" style="font-size:11px" title="Not zorunlu yap"><i data-lucide="file-pen" class="icon-inline"></i></button>
               </div>
 
             </div>
@@ -293,24 +319,24 @@
             <div class="toolbar toolbar-search">
               <div class="search-wrap" style="max-width:220px">
                 <span class="search-icon"><i data-lucide="search"></i></span>
-                <input type="text" placeholder="Malzeme, depo ara..." id="har-search" oninput="clearTimeout(window._harST);window._harST=setTimeout(()=>{harSayfa=0;renderHareketList()},220)">
+                <input type="text" placeholder="Malzeme, depo ara..." id="har-search" data-input="harSearch">
               </div>
-              <select id="har-depo-filter" class="har-filter-sel" onchange="harDepoFilter=this.value;harSayfa=0;renderHareketList()">
+              <select id="har-depo-filter" class="har-filter-sel" data-change="harDepoFilter">
                 <option value="">Tüm Depolar</option>
               </select>
-              <input type="text" id="har-personel-filter" class="har-filter-date" placeholder="Personel..." oninput="harPersonelFilter=this.value;harSayfa=0;renderHareketList()" title="Personele göre filtrele" style="width:120px">
-              <input type="date" id="har-tarih-bas" class="har-filter-date" onchange="harTarihBas=this.value;document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()" title="Başlangıç tarihi">
-              <input type="date" id="har-tarih-bit" class="har-filter-date" onchange="harTarihBit=this.value;document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()" title="Bitiş tarihi">
-              <button class="btn btn-sm btn-outline" onclick="exportHareketExcel()" title="Filtrelenmiş listeyi Excel'e aktar" style="margin-left:auto"><i data-lucide="download" class="icon-inline"></i> Excel</button>
+              <input type="text" id="har-personel-filter" class="har-filter-date" placeholder="Personel..." data-input="harPersonelFilter" title="Personele göre filtrele" style="width:120px">
+              <input type="date" id="har-tarih-bas" class="har-filter-date" data-change="harTarihBas" title="Başlangıç tarihi">
+              <input type="date" id="har-tarih-bit" class="har-filter-date" data-change="harTarihBit" title="Bitiş tarihi">
+              <button class="btn btn-sm btn-outline" data-action="exportHareketExcel" title="Filtrelenmiş listeyi Excel'e aktar" style="margin-left:auto"><i data-lucide="download" class="icon-inline"></i> Excel</button>
             </div>
             <div class="toolbar toolbar-chips">
-              <div class="filter-chip active" data-htur="Tümü" onclick="setHarFilter(this,'Tümü')">Tümü</div>
-              <div class="filter-chip" data-htur="Giriş" onclick="setHarFilter(this,'Giriş')"><i data-lucide="arrow-up" class="icon-inline"></i> Giriş</div>
-              <div class="filter-chip" data-htur="Çıkış" onclick="setHarFilter(this,'Çıkış')"><i data-lucide="arrow-down" class="icon-inline"></i> Çıkış</div>
-              <div class="har-tarih-chip" data-mod="bugun" onclick="setHarTarihShortcut('bugun')">Bugün</div>
-              <div class="har-tarih-chip" data-mod="hafta" onclick="setHarTarihShortcut('hafta')">Bu Hafta</div>
-              <div class="har-tarih-chip" data-mod="ay" onclick="setHarTarihShortcut('ay')">Bu Ay</div>
-              <button class="har-temizle-btn" onclick="harTarihBas='';harTarihBit='';harDepoFilter='';harPersonelFilter='';document.getElementById('har-tarih-bas').value='';document.getElementById('har-tarih-bit').value='';document.getElementById('har-depo-filter').value='';document.getElementById('har-personel-filter').value='';document.querySelectorAll('.har-tarih-chip').forEach(c=>c.classList.remove('active'));harSayfa=0;renderHareketList()"><i data-lucide="x" class="icon-inline"></i> Temizle</button>
+              <div class="filter-chip active" data-htur="Tümü" data-action="setHarFilter" data-arg="Tümü">Tümü</div>
+              <div class="filter-chip" data-htur="Giriş" data-action="setHarFilter" data-arg="Giriş"><i data-lucide="arrow-up" class="icon-inline"></i> Giriş</div>
+              <div class="filter-chip" data-htur="Çıkış" data-action="setHarFilter" data-arg="Çıkış"><i data-lucide="arrow-down" class="icon-inline"></i> Çıkış</div>
+              <div class="har-tarih-chip" data-mod="bugun" data-action="setHarTarihShortcut" data-arg="bugun">Bugün</div>
+              <div class="har-tarih-chip" data-mod="hafta" data-action="setHarTarihShortcut" data-arg="hafta">Bu Hafta</div>
+              <div class="har-tarih-chip" data-mod="ay" data-action="setHarTarihShortcut" data-arg="ay">Bu Ay</div>
+              <button class="har-temizle-btn" data-action="harFiltreTemizle"><i data-lucide="x" class="icon-inline"></i> Temizle</button>
             </div>
             <div id="hareket-list">
               <div class="empty-state">
@@ -367,7 +393,7 @@
       </div>
       <!-- SKT Özet Paneli (Kimyasal Deposu) -->
       <div id="skt-ozet-wrap" class="card" style="margin-bottom:16px">
-        <div class="card-header"><i data-lucide="skull" class="icon-inline"></i> Kimyasal Deposu — Son Kullanma Tarihleri</div>
+        <div class="card-header"><i data-lucide="shield-alert" class="icon-inline"></i> Kimyasal Deposu — Son Kullanma Tarihleri</div>
         <div class="card-body">
           <div class="skt-ozet-grid">
             <div class="skt-ozet-kart">
@@ -390,8 +416,8 @@
         <div class="card-header" style="padding-bottom:0">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0">
             <span><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik Stok Listesi</span>
-            <button class="btn btn-sm btn-outline" onclick="navigate('hareket')">+ Hareket Ekle</button>
-            <button id="kritik-talep-btn" class="btn btn-sm btn-primary" onclick="kritikTalepAktar()" style="display:none"><i data-lucide="clipboard-list" class="icon-inline"></i> Talepnameye Aktar</button>
+            <button class="btn btn-sm btn-outline" data-action="navigate" data-arg="hareket"><i data-lucide="plus" class="icon-inline"></i> Hareket Ekle</button>
+            <button id="kritik-talep-btn" class="btn btn-sm btn-primary" data-action="kritikTalepAktar" style="display:none"><i data-lucide="clipboard-list" class="icon-inline"></i> Talepnameye Aktar</button>
           </div>
         </div>
         <div class="card-body">
@@ -412,176 +438,122 @@
 
     <!-- ── TALEPNAME ── -->
     <div class="page" id="page-talep">
-      <div class="ts-studio">
+      <!-- Aksiyon toolbar (baskıda gizli) -->
+      <div class="talep-toolbar no-print">
+        <div class="talep-toolbar-meta">
+          <span class="talep-toolbar-no">No: <strong id="talep-no-display">—</strong></span>
+          <span class="talep-toolbar-tarih" id="talep-tarih-display"></span>
+          <span id="talep-durum-badge"></span>
+        </div>
+        <div class="talep-toolbar-actions">
+          <button class="btn btn-sm btn-ghost" data-action="talepAyarlaraKaydet" title="İmza ve personel isimlerini ayarlara kaydet">
+            <i data-lucide="bookmark" class="icon-inline"></i> Ayarlara Kaydet
+          </button>
+          <button class="btn btn-sm btn-ghost" data-action="talepSifirla">
+            <i data-lucide="file-plus" class="icon-inline"></i> Yeni Talep
+          </button>
+          <button class="btn btn-sm btn-ghost" data-action="print">
+            <i data-lucide="printer" class="icon-inline"></i> Yazdır
+          </button>
+          <button class="btn btn-sm btn-outline" data-action="talepKaydet" data-arg="Taslak">
+            <i data-lucide="save" class="icon-inline"></i> Taslak Kaydet
+          </button>
+          <button class="btn btn-sm btn-primary" data-action="talepOnayaGonder">
+            <i data-lucide="send" class="icon-inline"></i> Onaya Gönder
+          </button>
+        </div>
+      </div>
 
-        <!-- ── SOL: Kontrol Paneli (baskıda gizli) ── -->
-        <aside class="ts-panel no-print">
-          <div class="ts-panel-brand">
-            <div class="ts-panel-icon"><i data-lucide="file-text"></i></div>
-            <div>
-              <div class="ts-panel-title">Talepname</div>
-              <div class="ts-panel-sub">Satın Alma Talebi</div>
+      <!-- Belge -->
+      <div class="card talep-paper" id="talep-card">
+        <!-- Antet -->
+        <header class="talep-header">
+          <div class="talep-header-left">
+            <div class="talep-kurum" id="talep-form-kurum"></div>
+            <h2 class="talep-baslik">MALZEME TALEP FORMU</h2>
+          </div>
+          <div class="talep-header-right">
+            <div class="talep-no-block">
+              <span class="talep-no-label">Talep No</span>
+              <span class="talep-no-val" id="talep-no-display-doc">—</span>
+            </div>
+            <div class="talep-tarih-doc" id="talep-tarih-display-doc"></div>
+          </div>
+        </header>
+
+        <!-- Talep Bilgileri -->
+        <section class="talep-section">
+          <div class="talep-section-eyebrow">Talep Bilgileri</div>
+          <div class="talep-field-grid">
+            <div class="field">
+              <label class="field-lbl">Talep Eden Birim</label>
+              <input type="text" id="t-birim" class="field-inp" placeholder="Birim adı">
+            </div>
+            <div class="field">
+              <label class="field-lbl">Sorumlu Personel</label>
+              <input type="text" id="t-personel" class="field-inp" placeholder="Ad Soyad">
+            </div>
+            <div class="field">
+              <label class="field-lbl">Aciliyet</label>
+              <select id="t-aciliyet" class="field-inp" data-change="talepAciliyetGuncelle">
+                <option>Normal</option>
+                <option>Acil</option>
+                <option>Çok Acil</option>
+              </select>
+            </div>
+            <div class="field field--full">
+              <label class="field-lbl">Gerekçe</label>
+              <input type="text" id="t-gerekce" class="field-inp" placeholder="Talep gerekçesi...">
             </div>
           </div>
+        </section>
 
-          <div class="ts-panel-block">
-            <div class="ts-block-label">Durum</div>
-            <span id="talep-durum-badge"></span>
-          </div>
-
-          <div class="ts-panel-block">
-            <div class="ts-block-label">Talep No</div>
-            <div class="ts-ref-no" id="talep-no-display">—</div>
-            <div class="ts-ref-date" id="talep-tarih-display"></div>
-          </div>
-
-          <div class="ts-panel-actions">
-            <button class="ts-btn ts-btn-primary" onclick="talepOnayaGonder()">
-              <i data-lucide="send" class="icon-inline"></i> Onaya Gönder
-            </button>
-            <button class="ts-btn ts-btn-teal" onclick="talepKaydet('Taslak')">
-              <i data-lucide="save" class="icon-inline"></i> Taslak Kaydet
-            </button>
-            <div class="ts-panel-sep"></div>
-            <button class="ts-btn ts-btn-ghost" onclick="window.print()">
-              <i data-lucide="printer" class="icon-inline"></i> Yazdır
-            </button>
-            <button class="ts-btn ts-btn-ghost" onclick="talepSifirla()">
-              <i data-lucide="file-plus" class="icon-inline"></i> Yeni Talep
-            </button>
-            <button class="ts-btn ts-btn-ghost" onclick="talepAyarlaraKaydet()" title="İsimleri ayarlara kaydet">
-              <i data-lucide="bookmark" class="icon-inline"></i> Ayarlara Kaydet
+        <!-- Malzeme Listesi -->
+        <section class="talep-section">
+          <div class="talep-section-head">
+            <div class="talep-section-eyebrow">Malzeme Listesi</div>
+            <button class="btn btn-sm btn-outline no-print" data-action="talepSatirEkle">
+              <i data-lucide="plus" class="icon-inline"></i> Satır Ekle
             </button>
           </div>
-
-          <div class="ts-panel-hint">
-            <i data-lucide="lightbulb" class="icon-inline"></i>
-            Malzeme eklemek için tablodaki <strong>Malzeme Seç</strong> butonunu kullanın.
+          <div class="talep-table-scroll">
+            <table class="talep-table" id="talep-satirlar">
+              <thead>
+                <tr>
+                  <th style="width:32px">#</th>
+                  <th>Malzeme</th>
+                  <th style="width:110px">Depo</th>
+                  <th style="width:65px">Birim</th>
+                  <th style="width:75px;text-align:center">Mevcut</th>
+                  <th style="width:100px">Talep Miktarı</th>
+                  <th style="width:32px" class="no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="talep-tbody"></tbody>
+            </table>
           </div>
+        </section>
 
-          <div class="ts-panel-footer">
-            <i data-lucide="shield-check" class="icon-inline"></i>
-            Depo Yönetim Sistemi
+        <!-- İmza Bölümü -->
+        <section class="talep-section talep-sig-section">
+          <div class="talep-sig-row">
+            <div class="talep-sig-box">
+              <div class="talep-sig-space"></div>
+              <div class="talep-sig-label">Talebi Hazırlayan</div>
+              <input type="text" id="imza1" class="talep-sig-inp" placeholder="Ad Soyad">
+            </div>
+            <div class="talep-sig-box">
+              <div class="talep-sig-space"></div>
+              <div class="talep-sig-label">Depo Sorumlusu</div>
+              <input type="text" id="imza2" class="talep-sig-inp" placeholder="Ad Soyad">
+            </div>
+            <div class="talep-sig-box">
+              <div class="talep-sig-space"></div>
+              <div class="talep-sig-label">Onaylayan Amir</div>
+              <input type="text" id="imza3" class="talep-sig-inp" placeholder="Ad Soyad">
+            </div>
           </div>
-        </aside>
-
-        <!-- ── SAĞ: Belge Kağıdı ── -->
-        <div class="ts-canvas">
-          <div class="ts-paper" id="talep-card">
-
-            <!-- Renkli üst bant -->
-            <div class="ts-paper-stripe"></div>
-
-            <!-- Antet -->
-            <header class="ts-paper-header">
-              <div class="ts-header-left">
-                <div class="talep-kurum" id="talep-form-kurum"></div>
-                <div class="talep-baslik">MALZEME TALEP FORMU</div>
-              </div>
-              <div class="ts-header-right">
-                <div class="ts-stamp" id="ts-stamp">
-                  <svg class="ts-stamp-ring" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" fill="none" stroke-width="2.5" stroke-dasharray="4 3"/>
-                    <circle cx="40" cy="40" r="26" fill="none" stroke-width="1.5"/>
-                  </svg>
-                  <div class="ts-stamp-text" id="ts-stamp-text">TASLAK</div>
-                </div>
-                <div class="ts-no-block">
-                  <div class="ts-no-label">No</div>
-                  <div class="ts-no-val" id="talep-no-display-doc">—</div>
-                  <div class="ts-no-date" id="talep-tarih-display-doc"></div>
-                </div>
-              </div>
-            </header>
-
-            <!-- Talep Bilgileri -->
-            <section class="ts-section">
-              <div class="ts-section-eyebrow">Talep Bilgileri</div>
-              <div class="ts-field-grid">
-                <div class="ts-field">
-                  <label class="ts-field-lbl">Talep Eden Birim</label>
-                  <input type="text" id="t-birim" class="ts-field-inp" placeholder="Birim adı">
-                </div>
-                <div class="ts-field">
-                  <label class="ts-field-lbl">Sorumlu Personel</label>
-                  <input type="text" id="t-personel" class="ts-field-inp" placeholder="Ad Soyad">
-                </div>
-                <div class="ts-field">
-                  <label class="ts-field-lbl">Aciliyet</label>
-                  <select id="t-aciliyet" class="ts-field-inp" onchange="talepAciliyetGuncelle(this)">
-                    <option>Normal</option>
-                    <option>Acil</option>
-                    <option>Çok Acil</option>
-                  </select>
-                </div>
-                <div class="ts-field ts-field-full">
-                  <label class="ts-field-lbl">Gerekçe</label>
-                  <input type="text" id="t-gerekce" class="ts-field-inp" placeholder="Talep gerekçesi...">
-                </div>
-              </div>
-            </section>
-
-            <div class="ts-rule"></div>
-
-            <!-- Malzeme Listesi -->
-            <section class="ts-section ts-table-section">
-              <div class="ts-table-head no-print">
-                <div class="ts-section-eyebrow" style="margin-bottom:0">
-                  <i data-lucide="package" class="icon-inline"></i> Malzeme Listesi
-                </div>
-                <button class="ts-add-btn" onclick="talepSatirEkle()">
-                  <i data-lucide="plus" class="icon-inline"></i> Satır Ekle
-                </button>
-              </div>
-              <div class="ts-table-scroll">
-                <table class="talep-table" id="talep-satirlar">
-                  <thead>
-                    <tr>
-                      <th style="width:32px">#</th>
-                      <th>Malzeme</th>
-                      <th style="width:110px">Depo</th>
-                      <th style="width:65px">Birim</th>
-                      <th style="width:75px;text-align:center">Mevcut</th>
-                      <th style="width:100px">Talep Miktarı</th>
-                      <th style="width:38px" class="no-print"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="talep-tbody"></tbody>
-                </table>
-              </div>
-            </section>
-
-            <div class="ts-rule"></div>
-
-            <!-- İmza Bölümü -->
-            <section class="ts-section ts-sig-section">
-              <div class="imza-row">
-                <div class="imza-box ts-sig-box">
-                  <div class="ts-sig-space"></div>
-                  <div class="imza-label">Talebi Hazırlayan</div>
-                  <input type="text" id="imza1" class="ts-sig-inp" placeholder="Ad Soyad">
-                </div>
-                <div class="imza-box ts-sig-box">
-                  <div class="ts-sig-space"></div>
-                  <div class="imza-label">Depo Sorumlusu</div>
-                  <input type="text" id="imza2" class="ts-sig-inp" placeholder="Ad Soyad">
-                </div>
-                <div class="imza-box ts-sig-box">
-                  <div class="ts-sig-space"></div>
-                  <div class="imza-label">Onaylayan Amir</div>
-                  <input type="text" id="imza3" class="ts-sig-inp" placeholder="Ad Soyad">
-                </div>
-              </div>
-            </section>
-
-            <!-- Belge Altbilgisi -->
-            <footer class="ts-paper-foot">
-              <span>Veteriner Kontrol Enstitüsü · Depo Yönetim Sistemi · v3.1</span>
-            </footer>
-
-          </div>
-        </div>
-
+        </section>
       </div>
     </div>
 
@@ -592,18 +564,18 @@
           <div class="page-header-title"><i data-lucide="list" class="icon-inline"></i> Talep Listesi</div>
           <div class="page-header-sub">Kaydedilmiş tüm talepler</div>
         </div>
-        <button class="btn btn-primary no-print" onclick="navigate('talep')"><i data-lucide="plus" class="icon-inline"></i> Yeni Talep</button>
+        <button class="btn btn-primary no-print" data-action="navigate" data-arg="talep"><i data-lucide="plus" class="icon-inline"></i> Yeni Talep</button>
       </div>
       <div class="card" style="margin-bottom:14px">
         <div class="card-body" style="padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <select id="tl-durum-filter" onchange="renderTalepListesi()" style="padding:7px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--white);color:var(--ink2)">
+          <select id="tl-durum-filter" data-change="renderTalepListesi" style="padding:7px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--white);color:var(--ink2)">
             <option value="">Tüm Durumlar</option>
             <option value="Taslak">Taslak</option>
             <option value="Onay Bekliyor">Onay Bekliyor</option>
             <option value="Onaylı">Onaylı</option>
             <option value="Reddedildi">Reddedildi</option>
           </select>
-          <button class="btn btn-sm btn-outline" onclick="renderTalepListesi()"><i data-lucide="refresh-cw" class="icon-inline"></i> Yenile</button>
+          <button class="btn btn-sm btn-outline" data-action="renderTalepListesi"><i data-lucide="refresh-cw" class="icon-inline"></i> Yenile</button>
         </div>
       </div>
       <div id="talep-listesi-icerik">
@@ -613,7 +585,7 @@
 
     <!-- ── DEPO DETAY (dinamik) ── -->
     <div class="page" id="page-depo-detay">
-      <div class="back-btn" onclick="navigate('dashboard')">← Dashboard'a Dön</div>
+      <div class="back-btn" data-action="navigate" data-arg="dashboard">← Dashboard'a Dön</div>
       <div id="detay-content"></div>
     </div>
 
@@ -631,19 +603,19 @@
           <div class="card-header">Yeni Malzeme Ekle</div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
             <div class="form-group"><label>Depo</label>
-              <select id="yeni-depo" onchange="toggleYeniSKT(this.value)"><option value="">-- Seçin --</option>
+              <select id="yeni-depo" data-change="toggleYeniSKT"><option value="">-- Seçin --</option>
               </select></div>
             <div class="form-group"><label>Malzeme Adı</label>
               <input type="text" id="yeni-ad" placeholder="Tam malzeme adı">
               <input type="text" id="yeni-marka" placeholder="Marka (opsiyonel)" style="margin-top:5px;font-size:11px;color:var(--muted);border-color:var(--line)"></div>
             <div class="form-group"><label>Birim</label>
-              <select id="yeni-birim" onchange="handleDiger(this,'yeni-birim-diger')"><option value="">— Seçin —</option>
+              <select id="yeni-birim" data-change="handleDiger" data-args='["yeni-birim-diger"]'><option value="">— Seçin —</option>
               </select>
               <div id="yeni-birim-diger-wrap" style="display:none;margin-top:5px">
                 <input type="text" id="yeni-birim-diger" placeholder="Birim girin..." style="font-size:12px">
               </div></div>
             <div class="form-group"><label>Kategori</label>
-              <select id="yeni-kategori" onchange="handleDiger(this,'yeni-kategori-diger')"><option value="">— Seçin —</option>
+              <select id="yeni-kategori" data-change="handleDiger" data-args='["yeni-kategori-diger"]'><option value="">— Seçin —</option>
               </select>
               <div id="yeni-kategori-diger-wrap" style="display:none;margin-top:5px">
                 <input type="text" id="yeni-kategori-diger" placeholder="Kategori girin..." style="font-size:12px">
@@ -657,11 +629,11 @@
                 <input type="number" id="yeni-max" min="0" value="10"></div>
             </div>
             <div id="yeni-skt-wrap" style="display:none">
-              <div class="form-group"><label><i data-lucide="skull" class="icon-inline"></i> Son Kullanma Tarihi</label>
+              <div class="form-group"><label><i data-lucide="shield-alert" class="icon-inline"></i> Son Kullanma Tarihi</label>
                 <input type="date" id="yeni-skt" style="font-family:'IBM Plex Mono',monospace">
               </div>
             </div>
-            <button class="btn btn-primary" onclick="malzemeEkle()"><i data-lucide="plus-circle" class="icon-inline"></i> Ekle</button>
+            <button class="btn btn-primary" data-action="malzemeEkle"><i data-lucide="plus-circle" class="icon-inline"></i> Ekle</button>
           </div>
         </div>
         <div class="card">
@@ -670,9 +642,9 @@
             <div style="display:flex;gap:8px;align-items:center">
               <div class="search-wrap" style="max-width:200px">
                 <span class="search-icon"><i data-lucide="search"></i></span>
-                <input type="text" placeholder="Ara..." id="ekle-search" oninput="renderMalzemeEkleList()">
+                <input type="text" placeholder="Ara..." id="ekle-search" data-input="renderMalzemeEkleList">
               </div>
-              <select id="ekle-depo-filter" onchange="renderMalzemeEkleList()" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px">
+              <select id="ekle-depo-filter" data-change="renderMalzemeEkleList" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px">
                 <option value="">Tüm Depolar</option>
               </select>
             </div>
@@ -703,8 +675,8 @@
             <div style="font-size:13px;font-weight:600" id="api-durum-text">Sunucu kontrol ediliyor...</div>
             <div style="font-size:11px;color:var(--muted)" id="api-durum-sub"></div>
           </div>
-          <button class="btn btn-sm btn-primary" onclick="apiBackupOlustur()"><i data-lucide="save" class="icon-inline"></i> Yedek Al</button>
-          <button class="btn btn-sm btn-outline" onclick="renderBackupList()"><i data-lucide="refresh-cw" class="icon-inline"></i> Yenile</button>
+          <button class="btn btn-sm btn-primary" data-action="apiBackupOlustur"><i data-lucide="save" class="icon-inline"></i> Yedek Al</button>
+          <button class="btn btn-sm btn-outline" data-action="renderBackupList"><i data-lucide="refresh-cw" class="icon-inline"></i> Yenile</button>
         </div>
       </div>
 
@@ -726,20 +698,20 @@
               <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Hareket kaydı</span><strong id="export-hareket">—</strong></div>
               <div style="display:flex;justify-content:space-between"><span>Özel eklemeler</span><strong id="export-ozel">—</strong></div>
             </div>
-            <button class="btn btn-primary" onclick="veriDisaAktar()"><i data-lucide="download" class="icon-inline"></i> JSON İndir</button>
-            <button class="btn btn-outline" onclick="veriExcelAktar()"><i data-lucide="table-2" class="icon-inline"></i> Excel Raporu</button>
+            <button class="btn btn-primary" data-action="veriDisaAktar"><i data-lucide="download" class="icon-inline"></i> JSON İndir</button>
+            <button class="btn btn-outline" data-action="veriExcelAktar"><i data-lucide="table-2" class="icon-inline"></i> Excel Raporu</button>
           </div>
         </div>
         <div class="card">
           <div class="card-header"><i data-lucide="download" class="icon-inline"></i> İçe Aktar (JSON)</div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
             <p class="hint-text">Daha önce dışa aktarılan dosyayı yükleyin. <strong style="color:var(--red)">Mevcut veriler silinir.</strong></p>
-            <div style="border:2px dashed var(--line);border-radius:8px;padding:28px;text-align:center;cursor:pointer" onclick="document.getElementById('json-file-input').click()">
+            <div style="border:2px dashed var(--line);border-radius:8px;padding:28px;text-align:center;cursor:pointer" data-action="clickFileInput" data-arg="json-file-input">
               <div style="font-size:28px;margin-bottom:8px"><i data-lucide="folder-open"></i></div>
               <div style="font-size:13px;color:var(--muted)">Dosya seçmek için tıklayın (.json)</div>
             </div>
-            <input type="file" id="json-file-input" accept=".json" style="display:none" onchange="veriIceAktar(this)">
-            <button class="btn btn-danger" onclick="veriSifirla()"><i data-lucide="trash-2" class="icon-inline"></i> Tüm Verileri Sıfırla</button>
+            <input type="file" id="json-file-input" accept=".json" style="display:none" data-change="veriIceAktar">
+            <button class="btn btn-danger" data-action="veriSifirla"><i data-lucide="trash-2" class="icon-inline"></i> Tüm Verileri Sıfırla</button>
           </div>
         </div>
       </div>
@@ -764,12 +736,12 @@
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Stok Güncelle</div>
-      <button class="modal-close" onclick="closeModal('modal-stok')">×</button>
+      <button class="modal-close" data-action="closeModal" data-arg="modal-stok" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
     <div id="modal-stok-icerik"></div>
     <div style="display:flex;gap:10px;margin-top:20px">
-      <button class="btn btn-primary" style="flex:1" onclick="saveStok()">Kaydet</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-stok')">İptal</button>
+      <button class="btn btn-primary" style="flex:1" data-action="saveStok">Kaydet</button>
+      <button class="btn btn-outline" data-action="closeModal" data-arg="modal-stok">İptal</button>
     </div>
   </div>
 </div>

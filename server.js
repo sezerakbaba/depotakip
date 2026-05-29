@@ -48,13 +48,36 @@ function requireToken(req, res, next) {
 }
 
 // ── Güvenlik middleware'leri ─────────────────────────────────────────────
+// CSP politikası: inline JS Aşama 1+2'de temizlendi → script-src 'self'.
+// Inline style hâlâ HTML'de var (~50 yer) → style-src 'self' 'unsafe-inline'.
+// S9 (inline style purge) sonrası 'unsafe-inline' style kaldırılır.
+// Chart.js canvas + lucide.min.js + IBM Plex fontları zaten /vendor/'dan
+// servis edildiği için 'self' yeterli. data: URI'lar (favicons, SVG
+// kritik bildirim ikonu) için img-src 'self' data:.
+//
+// CSP_ENFORCE=false (varsayılan) → Report-Only mode; ihlal raporu
+// console'a düşer ama bloklanmaz. CSP_ENFORCE=true ise enforce edilir.
+const CSP_DIRECTIVES = {
+  defaultSrc: ["'self'"],
+  scriptSrc:  ["'self'"],
+  styleSrc:   ["'self'", "'unsafe-inline'"], // S9'da kaldırılacak
+  fontSrc:    ["'self'"],
+  imgSrc:     ["'self'", 'data:'],
+  connectSrc: ["'self'"],
+  objectSrc:  ["'none'"],
+  baseUri:    ["'self'"],
+  formAction: ["'self'"],
+  frameAncestors: ["'none'"],
+};
+const cspEnforce = process.env.CSP_ENFORCE === 'true';
 app.use(helmet({
-  // Self-host edilmiş vendor (Chart.js, lucide, fontlar) + inline onclick/style
-  // kullanıyoruz; CSP'yi şimdilik kapalı tutuyoruz, ayrı PR'da inline handler
-  // refactor'ü sonrası açılacak.
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: CSP_DIRECTIVES,
+    reportOnly: !cspEnforce,
+  },
   crossOriginEmbedderPolicy: false,
 }));
+console.log(`🛡  CSP ${cspEnforce ? 'ENFORCE' : 'REPORT-ONLY'} aktif`);
 
 // Yanlış token brute-force'una karşı: dakikada 30 başarısız istek/IP.
 // Başarılı isteklerde sayacı sıfırla ki normal kullanım engellenmesin.
@@ -244,6 +267,8 @@ app.get('/api', async (req, res) => {
   if (action === 'load') {
     db.get('SELECT data, version FROM AppState WHERE id = 1', (err, row) => {
       if (err) return res.json({ ok: false, error: err.message });
+      // Row silinmişse boş state ile dön — bir sonraki save UPSERT yapacak
+      if (!row) return res.json({ ok: true, data: {}, version: 0, yeni: true });
       try {
         const data = JSON.parse(row.data);
         res.json({ ok: true, data, version: row.version || 0, yeni: Object.keys(data).length === 0 });
@@ -384,18 +409,25 @@ app.get('/api', async (req, res) => {
       const tur     = req.query.tur     || '';
       const tarihMin = req.query.tarih_min || '';
       const tarihMax = req.query.tarih_max || '';
+      const personel = req.query.personel || '';
       const q       = req.query.q        || '';
 
       const where = [];
       const params = [];
+      // LIKE wildcard escape helper
+      const escLike = s => '%' + String(s).replace(/[\\%_]/g, ch => '\\' + ch) + '%';
       if (depo)     { where.push('depo = ?');    params.push(depo); }
       if (malzeme)  { where.push('malzeme = ?'); params.push(malzeme); }
       if (tur && (tur === 'Giriş' || tur === 'Çıkış')) { where.push('tur = ?'); params.push(tur); }
       if (tarihMin) { where.push("substr(tarih,1,10) >= ?"); params.push(tarihMin); }
       if (tarihMax) { where.push("substr(tarih,1,10) <= ?"); params.push(tarihMax); }
+      if (personel) {
+        where.push("personel LIKE ? ESCAPE '\\'");
+        params.push(escLike(personel));
+      }
       if (q) {
         // LIKE wildcard'larını escape et — kullanıcı literal '%' ya da '_' arayabilsin
-        const like = '%' + q.replace(/[\\%_]/g, ch => '\\' + ch) + '%';
+        const like = escLike(q);
         where.push("(malzeme LIKE ? ESCAPE '\\' OR depo LIKE ? ESCAPE '\\' OR personel LIKE ? ESCAPE '\\' OR belge LIKE ? ESCAPE '\\')");
         params.push(like, like, like, like);
       }
@@ -471,19 +503,25 @@ app.post('/api', async (req, res) => {
       db.run('BEGIN IMMEDIATE TRANSACTION');
       db.get('SELECT version FROM AppState WHERE id = 1', (err, row) => {
         if (err) { db.run('ROLLBACK'); return res.json({ ok: false, error: err.message }); }
-        const serverVersion = row.version || 0;
+        const serverVersion = row ? (row.version || 0) : 0;
         if (clientVersion !== null && clientVersion !== serverVersion) {
           db.run('ROLLBACK');
           return res.status(409).json({ ok: false, error: 'Çakışma: veriler başka yerden değişti', version: serverVersion });
         }
         const newVersion = serverVersion + 1;
-        db.run('UPDATE AppState SET data = ?, version = ? WHERE id = 1', [payload, newVersion], err2 => {
-          if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
-          db.run('COMMIT', err3 => {
-            if (err3) return res.json({ ok: false, error: err3.message });
-            res.json({ ok: true, version: newVersion });
-          });
-        });
+        // UPSERT — id=1 row'u silinmiş olsa bile yazımı garanti et
+        db.run(
+          `INSERT INTO AppState (id, data, version) VALUES (1, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET data = excluded.data, version = excluded.version`,
+          [payload, newVersion],
+          err2 => {
+            if (err2) { db.run('ROLLBACK'); return res.json({ ok: false, error: err2.message }); }
+            db.run('COMMIT', err3 => {
+              if (err3) return res.json({ ok: false, error: err3.message });
+              res.json({ ok: true, version: newVersion });
+            });
+          }
+        );
       });
     });
 

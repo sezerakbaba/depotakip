@@ -1,0 +1,101 @@
+/* ═════════════════════════════════════════════════════════════════
+   tokens.css — Semantic design tokens
+   ─────────────────────────────────────────────────────────────────
+   Legacy renk değişkenleri (--teal, --red, --blue ...) style.css'te
+   tema bazlı tanımlanıyor. Bu dosya onları semantik isimlere haritalar.
+   Yeni komponentler aşağıdaki semantik token'ları kullanmalı.
+   ═════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Surface ─────────────────────────────────────────────────── */
+  --surface-0:        var(--bg);          /* sayfa zemini */
+  --surface-1:        var(--white);       /* kart, modal */
+  --surface-2:        #0d1f35;            /* sidebar (her temada koyu) */
+  --surface-overlay:  rgba(15, 25, 35, .45);
+
+  /* ── Border ──────────────────────────────────────────────────── */
+  --border:           var(--line);
+  --border-strong:    color-mix(in srgb, var(--line) 60%, var(--ink2));
+
+  /* ── Text ────────────────────────────────────────────────────── */
+  --text-primary:     var(--ink);
+  --text-secondary:   var(--ink2);
+  --text-muted:       var(--muted);
+  --text-on-accent:   #ffffff;
+  --text-on-surface-2:#e8edf2;
+
+  /* ── Accent (kurumsal tek renk) ──────────────────────────────── */
+  --accent:           var(--teal);
+  --accent-hover:     var(--teal2);
+  --accent-bg:        var(--teal-bg);
+
+  /* ── Status ──────────────────────────────────────────────────── */
+  --success:          var(--green);
+  --success-bg:       var(--grn-bg);
+  --warning:          var(--amber);
+  --warning-bg:       var(--amb-bg);
+  --danger:           var(--red);
+  --danger-bg:        var(--red-bg);
+  --info:             var(--blue);
+  --info-bg:          var(--blu-bg);
+
+  /* ── Typography ──────────────────────────────────────────────── */
+  --font-sans:        "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:        "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+
+  --fs-xs:            11px;
+  --fs-sm:            12px;
+  --fs-md:            13px;
+  --fs-base:          14px;
+  --fs-lg:            16px;
+  --fs-xl:            20px;
+  --fs-2xl:           28px;
+
+  --fw-normal:        400;
+  --fw-medium:        500;
+  --fw-semibold:      600;
+  --fw-bold:          700;
+
+  --lh-tight:         1.25;
+  --lh-normal:        1.5;
+
+  /* ── Spacing (8-pt grid; -1 ve -3 yardımcı) ──────────────────── */
+  --s-0:              0;
+  --s-1:              4px;
+  --s-2:              8px;
+  --s-3:              12px;
+  --s-4:              16px;
+  --s-5:              20px;
+  --s-6:              24px;
+  --s-8:              32px;
+  --s-10:             40px;
+  --s-12:             48px;
+
+  /* ── Radius ──────────────────────────────────────────────────── */
+  --r-xs:             4px;
+  --r-sm:             6px;
+  --r-md:             10px;
+  --r-lg:             14px;
+  --r-pill:           999px;
+
+  /* ── Elevation ───────────────────────────────────────────────── */
+  --el-1:             0 1px 2px rgba(15, 25, 35, .05);
+  --el-2:             0 2px 12px rgba(15, 25, 35, .08);
+  --el-3:             0 8px 32px rgba(15, 25, 35, .16);
+
+  /* ── Motion ──────────────────────────────────────────────────── */
+  --motion-fast:      120ms ease;
+  --motion-base:      200ms ease;
+  --motion-slow:      320ms ease;
+
+  /* ── Focus ring ──────────────────────────────────────────────── */
+  --ring:             0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent);
+}
+
+html[data-theme="dark"] {
+  --surface-overlay:  rgba(0, 0, 0, .6);
+  --border-strong:    color-mix(in srgb, var(--line) 60%, var(--text-secondary));
+  --el-1:             0 1px 2px rgba(0, 0, 0, .35);
+  --el-2:             0 2px 12px rgba(0, 0, 0, .45);
+  --el-3:             0 8px 32px rgba(0, 0, 0, .55);
+}

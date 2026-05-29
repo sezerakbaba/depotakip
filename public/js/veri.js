@@ -1,5 +1,5 @@
 import { S, API_URL } from './state.js';
-import { getAllItems, getStok, durum, esc, escQ, getKey } from './ui-common.js';
+import { getAllItems, getStok, durum, esc, getKey, dClick } from './ui-common.js';
 import { apiFetch, apiBackupList, apiBackupLoad, apiHareketList } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -23,7 +23,7 @@ export async function renderBackupList() {
         <div style="font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace">${esc(y.tarih)}</div>
         <div style="font-size:10px;color:var(--muted)">${esc(y.dosya)} · ${esc(y.boyut)}</div>
       </div>
-      <button class="btn btn-sm btn-outline" onclick="apiBackupLoad('${escQ(y.dosya)}')">↩ Yükle</button>
+      <button class="btn btn-sm btn-outline" ${dClick('apiBackupLoad',y.dosya)}><i data-lucide="rotate-ccw" class="icon-inline"></i> Yükle</button>
     </div>`).join('');
 }
 
@@ -68,6 +68,7 @@ export async function exportHareketExcel() {
       tur,
       tarih_min: S.harTarihBas || '',
       tarih_max: S.harTarihBit || '',
+      personel: S.harPersonelFilter || '',
       q,
     });
     const filtered = result.hareketler;

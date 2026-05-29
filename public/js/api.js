@@ -5,30 +5,73 @@ import { S, API_URL } from './state.js';
 // ═══════════════════════════════════════════════════════════════════
 
 export function getToken() {
-  let t = localStorage.getItem('depoToken');
-  if (!t) {
-    t = (window.prompt('Sunucu erişim tokenini girin:') || '').trim();
-    if (t) localStorage.setItem('depoToken', t);
-  }
-  return t;
+  return localStorage.getItem('depoToken') || '';
 }
 
-export async function apiFetch(url, options = {}) {
-  const token = getToken();
+// Login modal'ı göster — Promise döndürür, user submit ettiğinde resolve olur.
+// İlk çağrıda init eder, sonraki çağrılarda mevcut promise'ı reuse eder.
+let _loginPromise = null;
+export function showLogin(hata = '') {
+  if (_loginPromise) return _loginPromise;
+  _loginPromise = new Promise(resolve => {
+    const modal = document.getElementById('modal-login');
+    const form  = document.getElementById('login-form');
+    const input = document.getElementById('login-token');
+    const errEl = document.getElementById('login-err');
+    if (!modal || !form || !input) {
+      // Modal yoksa eski davranışa düş
+      const t = (window.prompt('Sunucu erişim tokenini girin:') || '').trim();
+      if (t) localStorage.setItem('depoToken', t);
+      _loginPromise = null;
+      return resolve(t);
+    }
+    if (hata) { errEl.textContent = hata; errEl.style.display = 'block'; }
+    else      { errEl.style.display = 'none'; }
+    modal.classList.add('open');
+    setTimeout(() => input.focus(), 50);
+    const onSubmit = e => {
+      e.preventDefault();
+      const t = input.value.trim();
+      if (!t) return;
+      localStorage.setItem('depoToken', t);
+      modal.classList.remove('open');
+      form.removeEventListener('submit', onSubmit);
+      input.value = '';
+      _loginPromise = null;
+      resolve(t);
+    };
+    form.addEventListener('submit', onSubmit);
+  });
+  return _loginPromise;
+}
+
+export async function ensureToken() {
+  return getToken() || await showLogin();
+}
+
+export async function apiFetch(url, options = {}, _retry = true) {
+  const token = await ensureToken();
   const headers = { ...(options.headers || {}), Authorization: 'Bearer ' + token };
   const r = await fetch(url, { ...options, headers });
   if (r.status === 401) {
     localStorage.removeItem('depoToken');
-    window.toast('Geçersiz token — sayfayı yenileyin', 'error');
+    if (_retry) {
+      // Token geçersiz — modal'ı tekrar göster ve isteği bir kez retry et
+      await showLogin('Geçersiz token, tekrar deneyin');
+      return apiFetch(url, options, false);
+    }
+    window.toast('Geçersiz token', 'error');
     throw new Error('401 Unauthorized');
   }
   return r;
 }
 
-// API erişilebilir mi? (sayfa yüklenince test et)
+// API erişilebilir mi? (sayfa yüklenince test et).
+// Token modal'da kullanıcı bekleyebileceği için timeout'u modal sonrası başlat.
 export async function apiPing() {
   try {
-    const r = await apiFetch(API_URL + '?action=load', {signal: AbortSignal.timeout(3000)});
+    await ensureToken();
+    const r = await apiFetch(API_URL + '?action=load', { signal: AbortSignal.timeout(3000) });
     if (r.ok) { S.API_MOD = true; return true; }
   } catch(e) {}
   return false;
@@ -153,6 +196,7 @@ export async function apiHareketList(params = {}) {
     tur      : params.tur      ?? '',
     tarih_min: params.tarih_min ?? '',
     tarih_max: params.tarih_max ?? '',
+    personel : params.personel ?? '',
     q        : params.q        ?? '',
   });
   const r = await apiFetch(API_URL + '?' + qs);
