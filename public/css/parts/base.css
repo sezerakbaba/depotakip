@@ -1,0 +1,106 @@
+/* base.css — legacy token :root, açık/koyu tema, reset, utility, a11y focus
+   Kaynak: style.css 1-104. S7 modülerizasyonu — SIRA korunur. */
+:root {
+  --ink:    #0f1923;
+  --ink2:   #2d3f50;
+  --muted:  #8a9bb0;
+  --line:   #dde4ec;
+  --bg:     #f4f7fb;
+  --white:  #ffffff;
+  --teal:   #00897b;
+  --teal2:  #00bfa5;
+  --red:    #d32f2f;
+  --red-bg: #fff5f5;
+  --amber:  #e65100;
+  --amb-bg: #fff8f0;
+  --green:  #1b5e20;
+  --grn-bg: #c8e6c9;
+  --blue:   #1565c0;
+  --blu-bg: #eff6ff;
+
+  --td:  #0277bd; --td-bg:  #e3f2fd;
+  --od:  #2e7d32; --od-bg:  #e8f5e9;
+  --ay:  #6a1b9a; --ay-bg:  #f3e5f5;
+  --kd:  #bf360c; --kd-bg:  #fbe9e7;
+  --kgd: #b71c1c; --kgd-bg: #ffebee;
+
+  --teal-bg:  #e0f2f1;
+
+  --sidebar-w: 240px;
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(15,25,35,.08);
+  --shadow-md: 0 4px 20px rgba(15,25,35,.12);
+  --shadow-lg: 0 8px 32px rgba(15,25,35,.16);
+  --gradient-primary: linear-gradient(135deg, #00897b 0%, #00bfa5 100%);
+  --gradient-sidebar: linear-gradient(180deg, #0b1120 0%, #0d1f35 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink:    #e8edf2; --ink2: #b0bec5; --muted: #607d8b;
+    --line:   #2a3a4a; --bg: #0d1b2a; --white: #162030;
+    --teal:   #00897b; --teal2: #00bfa5; --teal-bg: #0a1e1c;
+    --red:    #ef5350; --red-bg: #1a0a0a;
+    --amber:  #ff7043; --amb-bg: #1a0f00;
+    --green:  #66bb6a; --grn-bg: #0a1f0a;
+    --blue:   #42a5f5; --blu-bg: #0a1628;
+    --td-bg:  #0a1e30; --od-bg: #0a1a0a;
+    --ay-bg:  #160a22; --kd-bg: #1a0a05; --kgd-bg: #1a0505;
+    --shadow: 0 2px 12px rgba(0,0,0,.4);
+  }
+}
+html[data-theme="dark"] {
+  --ink:    #e8edf2; --ink2: #b0bec5; --muted: #607d8b;
+  --line:   #2a3a4a; --bg: #0d1b2a; --white: #162030;
+  --teal:   #00897b; --teal2: #00bfa5; --teal-bg: #0a1e1c;
+  --red:    #ef5350; --red-bg: #1a0a0a;
+  --amber:  #ff7043; --amb-bg: #1a0f00;
+  --green:  #66bb6a; --grn-bg: #0a1f0a;
+  --blue:   #42a5f5; --blu-bg: #0a1628;
+  --td-bg:  #0a1e30; --od-bg: #0a1a0a;
+  --ay-bg:  #160a22; --kd-bg: #1a0a05; --kgd-bg: #1a0505;
+  --shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+html[data-theme="light"] {
+  --ink:    #0f1923; --ink2: #2d3f50; --muted: #8a9bb0;
+  --line:   #dde4ec; --bg: #f4f7fb; --white: #ffffff;
+  --teal:   #00897b; --teal2: #00bfa5; --teal-bg: #e0f2f1;
+  --red:    #d32f2f; --red-bg: #fff5f5;
+  --amber:  #e65100; --amb-bg: #fff8f0;
+  --green:  #1b5e20; --grn-bg: #c8e6c9;
+  --blue:   #1565c0; --blu-bg: #eff6ff;
+  --td-bg:  #e3f2fd; --od-bg: #e8f5e9;
+  --ay-bg:  #f3e5f5; --kd-bg: #fbe9e7; --kgd-bg: #ffebee;
+  --shadow: 0 2px 12px rgba(15,25,35,.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Utility class'lar (S9: inline style yerine) ───────────────── */
+.is-hidden        { display: none !important; }
+.flex-1           { flex: 1; }
+.stack            { display: flex; flex-direction: column; gap: var(--s-2); }
+.stack-md         { display: flex; flex-direction: column; gap: var(--s-3); }
+.stack-lg         { display: flex; flex-direction: column; gap: var(--s-4); }
+.row-between      { display: flex; align-items: center; justify-content: space-between; }
+.text-muted       { color: var(--text-muted); }
+.text-danger      { color: var(--danger); }
+.text-sm          { font-size: var(--fs-sm); }
+.text-xs          { font-size: var(--fs-xs); }
+.text-md-muted    { font-size: var(--fs-md); color: var(--text-muted); }
+
+/* ── Erişilebilirlik: klavye odak halkası ────────────────────────
+   Mouse tıklamasında outline yok; klavyeyle gezilen her interaktif
+   öğe accent ringi alır. */
+:focus { outline: none; }
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #00897b);
+  border-radius: var(--r-sm, 6px);
+}
+/* role="button" verilen non-button elementlerin Space basıldığında
+   sayfayı kaydırmasını engelle (preventDefault JS'te yapılıyor ama
+   görsel olarak da etkin görünsün) */
+[role="button"] { user-select: none; }
+[role="button"]:focus-visible { box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #00897b); }
+

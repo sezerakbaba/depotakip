@@ -1,0 +1,601 @@
+/* components.css — card, empty, hamburger, kategori dd, sticky form, charts, table, badge, input, form-error, button, stok bar, search/filter, toast, modal
+   Kaynak: style.css 353-951. S7 modülerizasyonu — SIRA korunur. */
+/* ── Cards ── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+  transition: box-shadow .2s, transform .2s;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+.card-header {
+  padding: 15px 20px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -.1px;
+  color: var(--ink2);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.card-header svg { width: 15px; height: 15px; stroke-width: 2; flex-shrink: 0; }
+.card-body { padding: 16px 20px; }
+
+/* trend badges (hareket sayfasında kullanılıyor) */
+.trend-up   { background: var(--teal-bg); color: var(--teal); }
+.trend-down { background: var(--red-bg);  color: var(--red); }
+.trend-neu  { background: var(--bg);      color: var(--muted); }
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 48px 24px; text-align: center; gap: 12px;
+}
+.empty-state .empty-icon { opacity: .4; }
+.empty-state .empty-title { font-size: 14px; font-weight: 600; color: var(--ink2); }
+.empty-state .empty-desc  { font-size: 12px; color: var(--muted); max-width: 260px; line-height: 1.6; }
+
+/* ── Hamburger (sadece mobile'da görünür) ── */
+#hamburger {
+  display: none;
+  width: 32px; height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  align-items: center; justify-content: center;
+  transition: background var(--motion-fast);
+  flex-shrink: 0;
+}
+#hamburger:hover { background: var(--surface-0); color: var(--text-primary); }
+#hamburger svg { width: 18px; height: 18px; color: currentColor; stroke-width: 2; }
+#sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(2px);
+  z-index: 99;
+  transition: opacity .25s;
+}
+
+/* ── Kategori dropdown ── */
+.kat-select-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.kat-select-wrap label {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+}
+#stok-kat-select {
+  padding: 7px 32px 7px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  font-size: 12px; font-weight: 500;
+  background: var(--white); color: var(--ink2);
+  cursor: pointer; outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a9bb0'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color .15s;
+}
+#stok-kat-select:focus { border-color: var(--teal); }
+
+/* ── Hareket sticky form ── */
+.hareket-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.hareket-form-sticky {
+  position: sticky;
+  top: 72px;
+}
+
+@media (max-width: 900px) {
+  .hareket-layout { grid-template-columns: 1fr; }
+  .hareket-form-sticky { position: static; }
+}
+
+@media (max-width: 768px) {
+  #hamburger { display: flex; }
+  #sidebar {
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 200;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-overlay.open { display: block; }
+  /* Mobil sidebar açılınca tam menü görünsün */
+  .sidebar-logo-text, .nav-item .nav-text, .sidebar-footer { display: revert; }
+  .nav-item { justify-content: flex-start; padding: 9px 10px 9px 14px; }
+  .nav-item .icon { font-size: 15px; }
+  .nav-item::after { display: none !important; } /* tooltip kapalı */
+  #main { margin-left: 0 !important; }
+  #content { padding: 14px; }
+  .c-kpi-row  { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .c-depo-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .c-main-grid { grid-template-columns: 1fr; }
+  .hareket-layout { grid-template-columns: 1fr; }
+  #clock-widget { display: none; }
+}
+
+@media (max-width: 480px) {
+  .c-kpi-row  { grid-template-columns: 1fr; }
+  .c-depo-row { grid-template-columns: 1fr; }
+  #content { padding: 10px; }
+  .card-body { padding: 14px; }
+}
+
+
+/* ── Charts row ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.chart-container { position: relative; height: 220px; }
+
+/* ── Tables ── */
+.table-wrapper { border-radius: var(--radius); border: 1px solid var(--line); overflow-x: auto; }
+/* Stok tablosu: table-wrapper kendi scroll container'ı, thead top:0 ile sticky çalışır */
+#page-stok .table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 60vh; /* JS tarafından dinamik güncellenir */
+  min-height: 200px;
+  border: none;
+  border-radius: 0;
+}
+.stok-toolbar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 35;
+  background: var(--bg);
+  padding: 4px 0 6px;
+}
+.stok-toolbar-sticky .toolbar { margin-bottom: 6px; }
+.stok-toolbar-sticky .toolbar:last-child { margin-bottom: 0; }
+.stok-page-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: -.3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#stok-table { table-layout: auto; width: 100%; }
+thead tr { background: var(--bg); }
+thead th {
+  padding: 12px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+  position: sticky; top: 0; z-index: 30;
+  background-color: var(--bg);
+  opacity: 1;
+  min-height: 40px;
+  box-shadow: 0 1px 0 var(--line);
+}
+/* Sütun genişlikleri — table-layout:auto modunda min-width garantili */
+/* Malzeme hariç tüm sütunlar ortalı */
+#stok-table th[data-col="malzeme"],
+#stok-table td[data-col="malzeme"]  { min-width: 180px; white-space: normal; text-align: left; }
+#stok-table th[data-col="depo"],
+#stok-table td[data-col="depo"]     { min-width: 90px;  width: 110px; white-space: nowrap; text-align: center; }
+#stok-table th[data-col="kategori"],
+#stok-table td[data-col="kategori"] { min-width: 80px;  width: 110px; white-space: nowrap; text-align: center; }
+#stok-table th[data-col="mevcut"],
+#stok-table td[data-col="mevcut"]   { min-width: 60px;  width: 80px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="birim"],
+#stok-table td[data-col="birim"]    { min-width: 50px;  width: 70px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="min"],
+#stok-table td[data-col="min"]      { min-width: 50px;  width: 70px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="max"],
+#stok-table td[data-col="max"]      { min-width: 50px;  width: 70px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="durum"],
+#stok-table td[data-col="durum"]    { min-width: 75px;  width: 95px;  text-align: center; white-space: nowrap; }
+#stok-table th[data-col="doluluk"],
+#stok-table td[data-col="doluluk"]  { min-width: 100px; width: 120px; text-align: center; white-space: nowrap; }
+#stok-table th[data-col="islem"],
+#stok-table td[data-col="islem"]    { min-width: 110px; width: 120px; text-align: center; white-space: nowrap; }
+
+/* Sabit sütunlar */
+#stok-table th:first-child,
+#stok-table td:first-child { width: 40px; text-align: center; color: var(--muted); font-size: 11px; }
+
+
+
+tbody tr {
+  border-bottom: 1px solid var(--line);
+  transition: background .1s;
+}
+/* Zebra striping */
+/* Zebra striping kaldırıldı — kurumsal sade görünüm */
+tbody tr:hover { background: var(--surface-0) !important; }
+
+/* Kritik/fazla satır: arka plan rengi yerine sol kenar şeridi (sade) */
+tbody tr.row-kritik {
+  box-shadow: inset 3px 0 0 var(--danger);
+}
+tbody tr.row-kritik:hover { background: var(--surface-0) !important; }
+
+tbody tr.row-fazla {
+  box-shadow: inset 3px 0 0 var(--warning);
+}
+
+tbody td {
+  padding: 9px 12px;
+  color: var(--ink2);
+  vertical-align: middle;
+}
+/* td hizalamaları data-col seçicilerde tanımlandı — nth-child kuralları kaldırıldı */
+
+.td-name { font-weight: 600; color: var(--ink); white-space: normal; word-break: break-word; }
+.td-mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+/* ── Badges (kurumsal sade) ───────────────────────────────────────
+   Tek base + 4 durum varyantı (success/warning/danger/info) +
+   neutral. Depo kod badge'leri renkleri kendi inline style ile getirir
+   (DEPO_META.color); .badge--code mono + kompakt. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.badge-normal,  .badge--success { background: var(--success-bg); color: var(--success); }
+.badge-kritik,  .badge--danger  { background: var(--danger-bg);  color: var(--danger);  }
+.badge-fazla,   .badge--warning { background: var(--warning-bg); color: var(--warning); }
+.badge--info    { background: var(--info-bg); color: var(--info); }
+.badge--neutral { background: var(--surface-0); color: var(--text-secondary); }
+
+/* Depo kodu (eski .badge-td/od/ay/kd/kgd legacy alias olarak kalır,
+   yeni kod inline style + .badge--code kullanmalı) */
+.badge--code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .5px;
+  padding: 2px var(--s-2);
+}
+.badge-td  { background: var(--td-bg);  color: var(--td);  }
+.badge-od  { background: var(--od-bg);  color: var(--od);  }
+.badge-ay  { background: var(--ay-bg);  color: var(--ay);  }
+.badge-kd  { background: var(--kd-bg);  color: var(--kd);  }
+.badge-kgd { background: var(--kgd-bg); color: var(--kgd); }
+
+/* ── Input / Form ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.form-group, .field { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full, .field.full { grid-column: 1 / -1; }
+
+/* ── Form alanı hata UI'ı (S5) ───────────────────────────────────
+   setFieldError(id, msg) → wrapper'a .field--error ekler, altına
+   .field__error küçük yazısı koyar. clearFieldErrors() ile sıfırlanır
+   (kullanıcı yazmaya başlayınca otomatik temizlenir). */
+.field--error > input,
+.field--error > select,
+.field--error > textarea {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--danger) 40%, transparent);
+}
+.field__error {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--danger);
+  margin-top: 2px;
+  font-weight: var(--fw-medium);
+}
+.field__hint {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+label { font-size: 12px; font-weight: 600; color: var(--ink2); text-transform: uppercase; letter-spacing: .5px; }
+input, select, textarea {
+  padding: 10px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--white);
+  outline: none;
+  transition: border-color .15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--teal); }
+textarea { resize: vertical; min-height: 70px; }
+
+/* ── Buttons (kurumsal sade) ──────────────────────────────────────
+   3 ana varyant: primary / outline / ghost
+   2 boyut:      varsayılan (32h) / sm (24h)
+   Modifier:     danger / success / icon-only / *-soft (translucent)
+   Glow ve translateY hover'lar kurumsal disipline geçildi: subtle
+   border ve background değişimi yeterli. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-3);
+  height: 32px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  transition: background var(--motion-fast), color var(--motion-fast),
+              border-color var(--motion-fast), box-shadow var(--motion-fast);
+  white-space: nowrap;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn-outline:hover {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+.btn-ghost:hover { background: var(--surface-0); color: var(--text-primary); }
+
+/* Destructive primary (solid red) */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.btn-danger:hover { filter: brightness(.92); }
+
+/* Soft / inline destructive — daha az sert (örn. "Reddet") */
+.btn-danger-soft {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.btn-danger-soft:hover { background: color-mix(in srgb, var(--danger) 18%, transparent); }
+
+/* Soft success — onay aksiyonları */
+.btn-success {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+.btn-success:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
+
+/* Boyut */
+.btn-sm { height: 24px; padding: 0 var(--s-3); font-size: var(--fs-sm); }
+
+/* Sadece ikon (kare) */
+.btn-icon { width: 32px; padding: 0; }
+.btn-icon.btn-sm { width: 24px; }
+
+/* ── Button group ──────────────────────────────────────────────── */
+.btn-group { display: inline-flex; }
+.btn-group .btn { border-radius: 0; }
+.btn-group .btn + .btn { border-left-width: 0; }
+.btn-group .btn:first-child { border-radius: var(--r-sm) 0 0 var(--r-sm); }
+.btn-group .btn:last-child  { border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+
+/* ── Stok bar ── */
+.stok-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.stok-bar { flex: 1; height: 6px; background: var(--line); border-radius: 4px; overflow: visible; position: relative; }
+.stok-bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+.fill-normal { background: var(--teal); }
+.fill-kritik { background: var(--red); box-shadow: 0 0 6px rgba(239,83,80,.4); }
+.fill-fazla  { background: var(--amber); }
+.stok-num { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); min-width: 24px; text-align: right; }
+.stok-bar-tick {
+  position: absolute; top: -3px; width: 2px; height: 12px;
+  background: var(--muted); border-radius: 1px; opacity: .55;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* ── Search + Filter bar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-wrap { position: relative; flex: 0 0 40%; min-width: 120px; max-width: 500px; }
+.search-wrap input { padding-left: 36px; padding-right: 28px; width: 100%; }
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: none; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--muted); color: #fff;
+  border: none; cursor: pointer; font-size: 12px; line-height: 1;
+  opacity: .7;
+}
+.search-clear:hover { opacity: 1; }
+.search-wrap .search-icon {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+}
+.filter-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--line);
+  background: var(--white);
+  color: var(--ink2);
+  transition: all .18s cubic-bezier(.4,0,.2,1);
+  user-select: none;
+}
+.filter-chip:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,137,123,.15);
+}
+.filter-chip.active {
+  border-color: var(--teal);
+  background: var(--gradient-primary);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,137,123,.3);
+}
+.filter-chip.active[data-color] { border-color: var(--chip-color); background: var(--chip-color); }
+#stok-depo-chips { display: contents; }
+
+/* ── Toast ── */
+#toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: var(--ink);
+  color: #fff;
+  padding: 13px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(100px) scale(.95);
+  opacity: 0;
+  transition: all .35s cubic-bezier(.34,1.56,.64,1);
+  z-index: 999;
+  box-shadow: 0 8px 32px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.15);
+  backdrop-filter: blur(8px);
+  min-width: 220px;
+}
+#toast.show { transform: translateY(0) scale(1); opacity: 1; }
+#toast.success { border-left: 4px solid var(--teal2); background: color-mix(in srgb, var(--ink) 92%, var(--teal)); }
+#toast.error   { border-left: 4px solid var(--red);   background: color-mix(in srgb, var(--ink) 92%, var(--red)); }
+#toast.info    { border-left: 4px solid var(--blue);  background: color-mix(in srgb, var(--ink) 92%, var(--blue)); }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,25,35,.55);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+  backdrop-filter: blur(3px);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface-1);
+  border-radius: var(--r-lg);
+  padding: var(--s-6);
+  width: 560px;
+  max-width: 95vw;
+  box-shadow: var(--el-3);
+  transform: scale(.96) translateY(6px);
+  transition: transform var(--motion-base), opacity var(--motion-base);
+  opacity: 0;
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); opacity: 1; }
+/* Boyut varyantları */
+.modal--sm { width: 420px; }
+.modal--md { width: 520px; }
+.modal--lg { width: 720px; }
+/* Scroll: header sabit, içerik kaydırılır (malzeme seçici tipi) */
+.modal--scroll {
+  max-height: 90vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal--scroll > .modal-header { padding: var(--s-5) var(--s-5) var(--s-3); margin: 0; flex-shrink: 0; }
+.modal-toolbar { padding: 0 var(--s-5) var(--s-3); flex-shrink: 0; }
+.modal-toolbar.modal-chips { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.modal-scroll-body { flex: 1; overflow-y: auto; min-height: 0; border-top: 1px solid var(--border); }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-5);
+}
+.modal-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+.modal-close {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.modal-close:hover { background: var(--surface-0); color: var(--text-primary); }
+.modal-close svg { width: 16px; height: 16px; stroke-width: 2; }
+
+/* ── Detay back ── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 18px;
+  transition: color .15s;
+}
+.back-btn:hover { color: var(--teal); }
+

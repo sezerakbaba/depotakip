@@ -1,0 +1,251 @@
+/* page-stok.css — mobil stok kart, stok işlem btn, sıralama ikon, arama vurgu, stok KPI, aktif filtre, sütun sürükle/görünürlük, Aşama A yardımcı
+   Kaynak: style.css 2066-2314. S7 modülerizasyonu — SIRA korunur. */
+/* ── Mobil: Stok Tablosu Kart Görünümü ── */
+@media (max-width: 600px) {
+  /* Mobilde sticky toolbar kapalı */
+  .stok-toolbar-sticky { position: static; }
+  /* Tablo yatay scroll yerine kart görünümüne geçer */
+  #stok-table { display: block; min-width: unset; width: 100%; }
+  #stok-table thead { display: none; }
+  #stok-table tbody { display: block; }
+  #stok-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 14px;
+    background: var(--white) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    padding: 12px !important;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+  }
+  #stok-table tbody td {
+    display: block;
+    padding: 2px 0 !important;
+    border: none !important;
+    text-align: left !important;
+    font-size: 12px;
+  }
+  #stok-table tbody td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 2px;
+  }
+
+  /* Sıra no gizle */
+  #stok-table tbody td:first-child { display: none; }
+
+  /* Malzeme tam satır kaplar */
+  #stok-table tbody td[data-col="malzeme"] { grid-column: 1 / -1; font-size: 13px; }
+
+  /* Durum + Doluluk yanyana */
+  #stok-table tbody td[data-col="durum"],
+  #stok-table tbody td[data-col="doluluk"] { grid-column: span 1; }
+
+  /* İşlem tam satır kaplar */
+  #stok-table tbody td[data-col="islem"] {
+    grid-column: 1 / -1;
+    padding-top: 8px !important;
+    border-top: 1px solid var(--line) !important;
+    margin-top: 4px;
+  }
+  /* İşlem ::before etiketini gizle */
+  #stok-table tbody td[data-col="islem"]::before { display: none; }
+
+  /* Stok sayfalama mobilde alt alta */
+  #stok-sayfalama { flex-direction: column; gap: 8px; align-items: center; }
+
+  /* Sütunlar butonu sola hizala */
+  .sutun-menu-wrap { margin-left: 0 !important; }
+  .sutun-menu-dropdown { right: auto; left: 0; }
+
+  /* Mobilde kart görünümü: table-wrapper yükseklik kısıtlaması yok */
+  #page-stok .table-wrapper { max-height: none; overflow: visible; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — 480px (Küçük telefon)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  /* Stat kartları 2 kolonda kalır ama daha kompakt */
+  .stats-grid { gap: 8px; }
+  .stat-card  { padding: 14px; }
+  .stat-value { font-size: 22px; }
+  .stat-icon  { font-size: 20px; top: 12px; right: 12px; }
+
+  /* Depo kartları: 2→1 kolon */
+  .depo-grid { grid-template-columns: 1fr; }
+  .depo-card { padding: 14px; }
+  .depo-card .depo-count { font-size: 20px; }
+
+  /* İmza satırı: 2→1 kolon */
+  .imza-row { grid-template-columns: 1fr; gap: 12px; }
+
+  /* Dashboard KPI kartları */
+  .c-kpi-val { font-size: 22px !important; }
+  .har-ozet-sayi { font-size: 18px; }
+  .skt-ozet-sayi { font-size: 18px; }
+
+  /* Toolbar daha sıkışık */
+  .toolbar { gap: 6px; margin-bottom: 10px; }
+  .search-wrap { min-width: 120px; }
+
+  /* Sayfa başlığı kompakt */
+  .page-header { margin-bottom: 14px; }
+  .page-header-title { font-size: 14px; }
+
+  /* Talepname 480px altı */
+  .talep-kurum  { display: none; }
+  .talep-baslik { font-size: var(--fs-lg); }
+  .talep-paper  { padding: var(--s-3); }
+}
+
+/* ── Stok İşlem Butonları ── */
+#stok-table td[data-col="islem"] { white-space: nowrap; text-align: center; }
+.islem-grup { display: inline-flex; align-items: center; gap: 3px; }
+.islem-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+  padding: 4px 6px; border-radius: 6px;
+  cursor: pointer; border: 1px solid transparent;
+  line-height: 1; transition: background .12s, filter .12s;
+}
+.islem-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.islem-btn-log {
+  background: var(--bg); border-color: var(--line); color: var(--muted);
+}
+.islem-badge {
+  font-size: 10px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+}
+.islem-btn-in   { background: rgba(102,187,106,.12); border-color: rgba(102,187,106,.35); color: var(--green); }
+.islem-btn-out  { background: rgba(239,83,80,.08);  border-color: rgba(239,83,80,.3);  color: var(--red); }
+.islem-btn-edit { background: transparent; border-color: var(--line); color: var(--muted); }
+.islem-btn:hover { filter: brightness(.88); }
+
+/* ── Sıralama ikonları ── */
+.sort-icon { display: inline-block; width: 12px; height: 12px; vertical-align: middle; margin-left: 3px; }
+.sort-icon-aktif { color: var(--teal); }
+.sort-icon-pasif { color: var(--line); opacity: .6; }
+thead th.sortable:hover .sort-icon-pasif { opacity: 1; color: var(--muted); }
+
+/* ── Arama vurgulama ── */
+mark.stok-vurgu {
+  background: rgba(255, 213, 79, 0.45); color: inherit;
+  border-radius: 2px; padding: 0 1px;
+}
+
+/* ── KPI kartları ── */
+.stok-kpi-bar {
+  display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+}
+/* Stok KPI çubuğu — sade kart şeridi, sadece "Kritik" renkli */
+.kpi-kart {
+  flex: 1; min-width: 100px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+  text-align: center;
+}
+.kpi-kart:hover { background: var(--surface-0); }
+.kpi-kart.kpi-aktif { border-color: var(--accent); background: var(--accent-bg); }
+.kpi-sayi {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: 1; margin-bottom: var(--s-1);
+  color: var(--text-primary);
+}
+.kpi-lbl {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.kpi-lbl svg { width: 12px; height: 12px; }
+.kpi-kritik .kpi-sayi { color: var(--danger); }
+.kpi-kritik.kpi-aktif { border-color: var(--danger); background: var(--danger-bg); }
+
+/* ── Aktif filtre şeridi (nötr — eski teal arka plan kaldırıldı) ── */
+.stok-aktif-filtreler {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2);
+  margin-bottom: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+}
+.af-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px 3px 10px; border-radius: 20px;
+  background: var(--white); border: 1px solid var(--line);
+  color: var(--ink2); font-size: 12px;
+}
+.af-chip strong { font-weight: 700; color: var(--ink); }
+.af-chip button {
+  border: none; background: none; cursor: pointer;
+  color: var(--muted); font-size: 14px; line-height: 1; padding: 0 2px;
+}
+.af-chip button:hover { color: var(--red); }
+.af-temizle {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 4px;
+  border: none; background: none; cursor: pointer;
+  font-size: 11px; font-weight: 600; color: var(--muted); padding: 3px 6px;
+  border-radius: 6px;
+}
+.af-temizle svg { width: 12px; height: 12px; }
+.af-temizle:hover { color: var(--red); background: color-mix(in srgb, var(--red) 8%, transparent); }
+
+/* ── Stok Sütun Sürükleme ── */
+.stok-th-drag { cursor: grab; user-select: none; }
+.stok-th-drag.dragging { opacity: 0.4; }
+.stok-th-drag.drag-over { background: var(--accent-bg, var(--blu-bg)) !important; outline: 2px dashed var(--accent, var(--blue)); }
+
+/* ── Sütun Görünürlük Menüsü ── */
+.sutun-menu-wrap { position: relative; display: inline-block; }
+.sutun-menu-dropdown {
+  display: none; position: absolute; top: 100%; right: 0; z-index: 200;
+  background: var(--white); border: 1px solid var(--border, var(--line)); border-radius: 8px;
+  padding: 8px; min-width: 160px; box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+.sutun-menu-dropdown.open { display: block; }
+.sutun-menu-item {
+  display: flex; align-items: center; gap: 8px; padding: 4px 8px;
+  cursor: pointer; border-radius: 4px; font-size: .85rem; white-space: nowrap;
+}
+.sutun-menu-item:hover { background: var(--hover, var(--bg)); }
+.sutun-menu-item input[type=checkbox] { cursor: pointer; }
+/* ── Aşama A: ikon temizliği ardından eklenen yardımcı sınıflar ── */
+
+/* Lucide ikonların buton/badge içinde hizalanması */
+.btn svg, .badge svg, .skt-badge svg, .filter-chip svg, .nav-item svg,
+.har-sil-btn svg, .talep-mal-temizle svg, .ayarlar-search-clear svg,
+.btn-icon-ghost svg {
+  width: 14px; height: 14px;
+  stroke-width: 2;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.hareket-dot svg { width: 14px; height: 14px; stroke-width: 2.25; }
+.dash-warn svg   { width: 18px; height: 18px; stroke-width: 2.25; }
+
+/* Özel-malzeme yıldızı (★ emoji yerine Lucide) */
+.ozel-star {
+  color: var(--accent);
+  margin-left: 6px;
+}
+.ozel-star svg { fill: var(--accent); }
+
+/* Buton varyantları kanonik tanımı yukarıda (Aşama B). Bu blok eski
+   duplicate tanımları içeriyordu; B'de tek yere taşındı. */
+

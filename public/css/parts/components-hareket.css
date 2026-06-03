@@ -1,0 +1,257 @@
+/* components-hareket.css — SKT badge/panel, hareket özet/mod/filtre/chip/sil/arama/ekle/sayfalama/sıralama/toolbar/saat
+   Kaynak: style.css 1603-1857. S7 modülerizasyonu — SIRA korunur. */
+/* ── SKT Badge ── */
+/* SKT badge'leri — durum semantic token'lara map */
+.skt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  font-family: var(--font-mono);
+  letter-spacing: .3px;
+  margin-top: 2px;
+  cursor: default;
+  white-space: nowrap;
+}
+.skt-gecmis { background: var(--danger-bg);  color: var(--danger); }
+.skt-kritik { background: var(--warning-bg); color: var(--warning); }
+.skt-uyari  { background: var(--info-bg);    color: var(--info); }
+.skt-ok     { background: var(--success-bg); color: var(--success); }
+
+/* SKT Özet Paneli */
+.skt-ozet-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
+.skt-ozet-kart {
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  text-align: center;
+}
+.skt-ozet-sayi {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  font-family: var(--font-mono);
+  line-height: 1;
+  margin-bottom: var(--s-1);
+}
+.skt-ozet-lbl  { font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+
+/* Hareket özet satırı (sade — tek tasarım, sadece sayı tonu farkı) */
+.har-ozet-row { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--s-3); }
+.har-ozet-kart {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+/* Hareket özet rakam renkleri — sadece anlam belirten yerlerde */
+.har-sayi-giris  { color: var(--success); }
+.har-sayi-cikis  { color: var(--danger); }
+.har-sayi-toplam { color: var(--text-primary); }
+.har-sayi-aktif  { font-size: var(--fs-md) !important; color: var(--text-primary); }
+
+/* Hareket mod butonu */
+.har-mod-btn { font-size: 11px; }
+.har-mod-btn.active { background: var(--teal) !important; color: #fff !important; border-color: var(--teal) !important; }
+
+/* Hareket filtre elemanları */
+.har-filter-sel,
+.har-filter-date {
+  padding: 7px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--white);
+  color: var(--ink2);
+  outline: none;
+  transition: border-color .15s;
+}
+.har-filter-sel:focus,
+.har-filter-date:focus { border-color: var(--teal); }
+.har-filter-date::placeholder { color: var(--muted); }
+
+/* Hareket tarih shortcut chip — filter-chip ile aynı stilde */
+.har-tarih-chip {
+  padding: 6px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink2);
+  cursor: pointer;
+  background: var(--white);
+  transition: all .18s cubic-bezier(.4,0,.2,1);
+  white-space: nowrap;
+  user-select: none;
+}
+.har-tarih-chip:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,137,123,.15); }
+.har-tarih-chip.active { background: var(--gradient-primary); color: #fff; border-color: var(--teal); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,137,123,.3); }
+
+/* Hareket temizle butonu */
+.har-temizle-btn {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 500;
+  padding: 6px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  background: var(--white);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s cubic-bezier(.4,0,.2,1);
+}
+.har-temizle-btn:hover { border-color: var(--red); color: var(--red); transform: translateY(-1px); }
+
+/* Hareket sil butonu */
+.har-sil-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color .15s;
+}
+.har-sil-btn:hover { color: var(--red); }
+
+/* ── Hareket malzeme arama bileşeni ── */
+.h-mal-wrap {
+  position: relative;
+}
+.h-mal-wrap input[type="text"] {
+  width: 100%;
+  padding-right: 30px;
+}
+.h-mal-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  display: none;
+  align-items: center;
+}
+.h-mal-clear:hover { color: var(--ink); }
+.h-mal-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  z-index: 100;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.h-mal-dropdown.open { display: block; }
+.h-mal-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+  transition: background .1s;
+}
+.h-mal-item:last-child { border-bottom: none; }
+.h-mal-item:hover { background: var(--bg); }
+.h-mal-item-ad   { font-size: 13px; font-weight: 600; color: var(--ink); }
+.h-mal-item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+.h-mal-mevcut    { font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+.h-mal-empty     { padding: 10px 12px; font-size: 12px; color: var(--muted); }
+
+/* ── Hareket ekle satırı ── */
+.h-ekle-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.h-ekle-tur  { flex: 0 0 100px; padding: 7px 10px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 13px; background: var(--white); color: var(--ink); }
+.h-ekle-mik  { flex: 1; min-width: 0; }
+.h-ekle-btn  { flex-shrink: 0; white-space: nowrap; }
+
+/* ── Eklenmiş malzemeler listesi ── */
+.h-eklenenler-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.h-eklenen-badge {
+  background: var(--teal);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.h-eklenen-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: var(--bg);
+  border-radius: 7px;
+  margin-bottom: 4px;
+  border: 1px solid var(--line);
+}
+.h-eklenen-item:last-child { margin-bottom: 0; }
+.h-eklenen-info { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.h-eklenen-ad   { font-size: 12px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+.h-eklenen-sag  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.h-eklenen-tur  { font-size: 13px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+
+/* Not zorunlu label */
+.har-not-lbl-aktif { color: var(--teal); }
+
+/* Not zorunlu buton aktif */
+#not-zorunlu-btn.active { background: rgba(0,191,165,.15); }
+
+.har-ozet-sayi { font-size:22px; font-weight:700; font-family:'IBM Plex Mono',monospace; line-height:1; }
+.har-ozet-lbl  { font-size:10px; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.5px; }
+@media(max-width:600px){ .har-ozet-row{ grid-template-columns:1fr 1fr; } }
+
+/* Sayfalama */
+.sayfa-btn { padding:5px 10px; border:1px solid var(--line); border-radius:6px; background:var(--white); color:var(--ink2); cursor:pointer; font-size:12px; font-family:'IBM Plex Mono',monospace; }
+.sayfa-btn:hover { background:var(--bg); }
+.sayfa-btn.aktif { background:var(--teal); color:#fff; border-color:var(--teal); font-weight:700; }
+.sayfa-btn:disabled { opacity:.4; cursor:default; }
+.sayfa-info { font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; padding:0 4px; }
+
+/* ── Sütun sıralama ── */
+thead th.sortable { cursor: pointer; user-select: none; }
+thead th.sortable:hover { color: var(--teal); background: color-mix(in srgb, var(--teal) 5%, var(--bg)); }
+.sort-arr { font-size: 12px; opacity: .3; margin-left: 4px; font-style: normal; transition: opacity .15s, color .15s; }
+.sort-arr:not(:empty) { opacity: 1; color: var(--teal); }
+
+/* ── Toolbar varyantları ── */
+.toolbar-sub    { margin-top: 8px; gap: 10px; }
+.toolbar-search { margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+.toolbar-chips  { margin-bottom: 12px; gap: 4px; }
+
+/* ── Canlı saat ── */
+#topbar-clock {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal2);
+  letter-spacing: .5px;
+}
+

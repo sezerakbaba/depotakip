@@ -1,0 +1,63 @@
+/* icons.css — lucide ikon boyutları/hizalama
+   Kaynak: style.css 105-165. S7 modülerizasyonu — SIRA korunur. */
+/* ── Lucide Icons ── */
+/* Sidebar logo icon */
+.sidebar-logo-icon svg {
+  width: 18px; height: 18px;
+  color: #fff;
+  stroke-width: 1.75;
+}
+
+/* Nav item icons */
+.nav-item .icon svg {
+  width: 15px; height: 15px;
+  stroke-width: 1.75;
+  vertical-align: middle;
+}
+
+/* Inline icons inside buttons, headers, labels (icon-inline class) */
+.icon-inline {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 2px;
+  position: relative;
+  top: -1px;
+}
+.icon-inline svg {
+  width: 14px; height: 14px;
+  stroke-width: 2;
+}
+
+/* Empty state large icons */
+.empty-icon, .empty-icon svg {
+  width: 40px; height: 40px;
+  stroke-width: 1.25;
+  opacity: .4;
+  color: var(--muted);
+  display: flex;
+}
+
+/* KPI card icons */
+.c-kpi-icon svg {
+  width: 22px; height: 22px;
+  stroke-width: 1.75;
+}
+
+/* Search icon in search-wrap */
+.search-wrap .search-icon svg {
+  width: 14px; height: 14px;
+  stroke-width: 2;
+  color: var(--muted);
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden; /* Main handles scroll */
+}
+

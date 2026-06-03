@@ -296,7 +296,7 @@ Tarayıcıda doğrulandı (localhost = secure → buton aktif, izin reddedilince
 
 ## 3.3 Teknik borç
 
-### [ ] S7. CSS modülerizasyonu
+### [x] S7. CSS modülerizasyonu
 `style.css` 2300+ satır tek dosya. Şu yapıya böl:
 ```
 css/tokens.css        (mevcut)
@@ -310,6 +310,25 @@ css/print.css
 Şimdilik `@import` ile tek `<link>` arkasında.
 
 **Bağımlılık:** S1 (regresyon riski yüksek; test edilmiş baz şart).
+
+**Sonuç (2026-06-03):** `style.css` (2313 satır) → `css/parts/` altında
+11 dosyaya bölündü; `style.css` artık yalnızca **kaynak sırasında**
+`@import` eden bir toplayıcı (`index.html` link'i değişmedi).
+
+**Önemli tasarım kararı:** Spec'teki `components/` + `pages/` semantik
+klasörleri yerine **kaynak-sıralı bitişik parçalar** kullanıldı. Sebep:
+mevcut `style.css`'te bileşen ve sayfa kuralları iç içe (ör. SKT badge,
+grid yardımcıları sayfa bloklarından *sonra* geliyor). Semantik gruplayıp
+kategori sırasında import etmek **cascade'i değiştirir** → regresyon. Bitişik
+parçaları orijinal sırada import etmek cascade'i **birebir** korur.
+
+Parçalar (hepsi brace-dengeli, kapsama tam):
+`base · icons · layout · components(599) · page-talep · page-dashboard ·
+log-print · layout-extra · components-hareket · page-ayarlar · page-stok`.
+
+Doğrulama: 11 parça da 200 dönüyor, console 0 hata, Dashboard 1280px'de
+bölünme öncesiyle piksel-aynı (KPI overlap yok), depo-detay tam stilli.
+CSP `style-src 'self'` `@import`'leri (same-origin) engellemiyor.
 
 ### [ ] S8. Build pipeline + lint
 - `esbuild` ile JS modüllerini concat + minify

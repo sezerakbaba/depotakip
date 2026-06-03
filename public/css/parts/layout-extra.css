@@ -1,0 +1,61 @@
+/* layout-extra.css — sayfa başlık bloğu, grid/flex yardımcı, card-header varyant, malzeme seçici modal
+   Kaynak: style.css 1544-1602. S7 modülerizasyonu — SIRA korunur. */
+/* ── Sayfa başlık bloğu (tüm sayfalarda tutarlı) ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-3);
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+/* Topbar zaten sayfa başlığını gösteriyor; sadece alt yazı + aksiyon kalır */
+.page-header-title { display: none; }
+.page-header-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 0;
+}
+/* Alt yazısı olmayan page-header'ları collapse et (action buton sağa hizalı kalsın) */
+.page-header:not(:has(.page-header-sub)) { margin-bottom: 0; }
+
+/* ── Grid yardımcıları ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-form { display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
+
+@media (max-width: 900px) {
+  .grid-form { grid-template-columns: 1fr; }
+  .grid-3    { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .grid-2    { grid-template-columns: 1fr; }
+  .grid-3    { grid-template-columns: 1fr; }
+}
+
+/* ── Flex yardımcıları ── */
+.flex-col-14 { display: flex; flex-direction: column; gap: 14px; }
+.flex-row-10 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* ── Card-header varyantları ── */
+.card-header-row {
+  justify-content: space-between;
+}
+.hint-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+/* Malzeme Seçici Modal */
+.mal-sec-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-bottom: 1px solid var(--line);
+  cursor: pointer; transition: background .12s; gap: 10px;
+}
+.mal-sec-item:last-child { border-bottom: none; }
+.mal-sec-item:hover { background: var(--bg); }
+.mal-sec-item:active { background: color-mix(in srgb, var(--teal) 8%, var(--white)); }
+.mal-sec-ad { font-size: 13px; font-weight: 500; color: var(--ink2); flex: 1; min-width: 0; }
+.mal-sec-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.mal-sec-stok { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+.mal-sec-stok.krit { color: var(--red); font-weight: 600; }
+.mal-sec-empty { padding: 28px; text-align: center; color: var(--muted); font-size: 13px; }
+.text-sm { font-size: 12px; color: var(--ink2); }
+
