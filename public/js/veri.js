@@ -52,7 +52,9 @@ export async function exportHareketExcel() {
     window.toast('Excel kütüphanesi yükleniyor...');
     await new Promise((res, rej) => {
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      // Self-host: CDN, CSP script-src 'self' (S3) tarafından bloklanır
+      // ve offline çalışmaz. /vendor'dan lazy-load (ilk Excel'de ~880KB).
+      s.src = 'vendor/xlsx.full.min.js';
       s.onload = res; s.onerror = () => rej(new Error('SheetJS yüklenemedi'));
       document.head.appendChild(s);
     }).catch(e => { window.toast('Excel kütüphanesi yüklenemedi: ' + e.message, 'error'); throw e; });
@@ -92,7 +94,9 @@ export async function veriExcelAktar() {
     window.toast('Excel kütüphanesi yükleniyor...');
     await new Promise((res, rej) => {
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      // Self-host: CDN, CSP script-src 'self' (S3) tarafından bloklanır
+      // ve offline çalışmaz. /vendor'dan lazy-load (ilk Excel'de ~880KB).
+      s.src = 'vendor/xlsx.full.min.js';
       s.onload = res; s.onerror = () => rej(new Error('SheetJS yüklenemedi'));
       document.head.appendChild(s);
     }).catch(e => { window.toast('Excel kütüphanesi yüklenemedi: ' + e.message, 'error'); throw e; });

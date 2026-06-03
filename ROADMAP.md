@@ -330,13 +330,34 @@ Doğrulama: 11 parça da 200 dönüyor, console 0 hata, Dashboard 1280px'de
 bölünme öncesiyle piksel-aynı (KPI overlap yok), depo-detay tam stilli.
 CSP `style-src 'self'` `@import`'leri (same-origin) engellemiyor.
 
-### [ ] S8. Build pipeline + lint
+### [x] S8. Build pipeline + lint
 - `esbuild` ile JS modüllerini concat + minify
 - `postcss` ile CSS concat + autoprefixer
 - ESLint + Prettier config
 - En azından smoke test (`node server.js` + `curl /` 200 döner)
 
 **Bağımlılık:** S7 (CSS modülarize sonrası concat anlamlı).
+
+**Sonuç (2026-06-04):** Tam pipeline kuruldu (`build.mjs`, `eslint.config.mjs`,
+`.prettierrc.json`, `test/smoke.mjs`):
+- `npm run build` → `public/dist/app.min.js` (esbuild IIFE bundle, 165KB,
+  sourcemap) + `app.min.css` (postcss-import concat + autoprefixer +
+  cssnano, 56KB). `dist/` gitignore'da.
+- `npm run lint` → ESLint flat config (3 grup: tarayıcı modülü / CJS
+  sunucu / ESM betik). **0 hata**, 28 uyarı (kullanılmayan değişken —
+  bloke etmiyor). `npm run format` Prettier.
+- `npm test` → smoke: sunucu + GET / · css · parts · js · /api 401/200.
+
+**Tasarım kararı:** Build **opt-in**. `index.html` geliştirmede kaynağı
+yükler (build-free workflow korunur); `dist/` bundle üretilip tarayıcıda
+çalıştığı doğrulandı (window.navigate/openStokModal mevcut, KPI 341,
+CSS uygulandı, console temiz) sonra `index.html` kaynağa geri alındı.
+
+**Lint'in yakaladığı gerçek bug (düzeltildi):** Excel export (`veri.js`)
+XLSX'i `cdn.jsdelivr.net`'ten lazy-load ediyordu → S3 CSP enforce
+(`script-src 'self'`) bunu **blokluyordu** + offline çalışmıyordu.
+XLSX `public/vendor/xlsx.full.min.js`'e indirildi, lazy-load `/vendor`'a
+çevrildi (same-origin, CSP-OK, offline çalışır).
 
 ### [ ] S9. Inline style purge (son tur)
 HTML'de hâlâ ~50 `style="..."` attribute'ü var. Hepsini class'a çek.
