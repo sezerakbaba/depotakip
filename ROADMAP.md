@@ -197,13 +197,20 @@ Sonra `/ultrareview` ile cloud review başlat, feedback'i issue'lara böl.
 
 ## 3.2 Yüksek değerli takipler
 
-### [ ] S3. CSP'yi aç
+### [x] S3. CSP'yi aç
 `helmet.contentSecurityPolicy` config: önce report-only, browser console
 raporlarına göre kalan inline'ları temizle, sonra enforce.
 `script-src 'self'` (inline JS gitti), `style-src 'self' 'unsafe-inline'`
 (inline style'lar S9'a kadar kalır).
 
 **Bağımlılık:** S1 (test edilmiş).
+
+**Sonuç (2026-06-03):** CSP artık varsayılan **ENFORCE** (`server.js`:
+`cspEnforce = process.env.CSP_ENFORCE !== 'false'`). Escape hatch:
+`CSP_ENFORCE=false` ile report-only'ye dönülebilir. Tarayıcıda enforce
+modda doğrulandı — Dashboard + İstatistikler (Chart.js grafikleri,
+lucide ikonlar, IBM Plex fontlar, `/api` connect-src) sorunsuz çalıştı,
+console'da **0 CSP ihlali**. `style-src 'unsafe-inline'` S9'a kadar kalıyor.
 
 ### [ ] S4. Personel filter + ölü kod
 - `hareket.js` `apiHareketList`'e `personel` parametresi ekle, `server.js`
