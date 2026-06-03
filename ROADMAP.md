@@ -168,7 +168,7 @@ Her madde ayrı bir Claude Code oturumunda yapılacak. Oturum başında:
 
 ## 3.0 Acil — Test + bugfix
 
-### [ ] S1. Tarayıcı test + bugfix
+### [x] S1. Tarayıcı test + bugfix
 Dashboard, Stok, Hareket, Talepname (en kritik), Veri Yönet, Ayarlar +
 3 modal + tema toggle + klavye gezinme + Ctrl+P print preview.
 Console hataları + ekran görüntüleri ile dön. Bugfix commit'leri.
@@ -177,7 +177,7 @@ Console hataları + ekran görüntüleri ile dön. Bugfix commit'leri.
 
 ## 3.1 PR ve süreç
 
-### [ ] S2. PR güncelleme + ultrareview
+### [x] S2. PR güncelleme + ultrareview
 PR #2 başlığı ve gövdesini ~12 commit'i yansıtacak şekilde güncelle.
 Sonra `/ultrareview` ile cloud review başlat, feedback'i issue'lara böl.
 
@@ -185,7 +185,7 @@ Sonra `/ultrareview` ile cloud review başlat, feedback'i issue'lara böl.
 
 ## 3.2 Yüksek değerli takipler
 
-### [ ] S3. CSP'yi aç
+### [x] S3. CSP'yi aç (report-only; enforce için S9 sonrası)
 `helmet.contentSecurityPolicy` config: önce report-only, browser console
 raporlarına göre kalan inline'ları temizle, sonra enforce.
 `script-src 'self'` (inline JS gitti), `style-src 'self' 'unsafe-inline'`
@@ -193,7 +193,7 @@ raporlarına göre kalan inline'ları temizle, sonra enforce.
 
 **Bağımlılık:** S1 (test edilmiş).
 
-### [ ] S4. Personel filter + ölü kod
+### [x] S4. Personel filter + ölü kod
 - `hareket.js` `apiHareketList`'e `personel` parametresi ekle, `server.js`
   `hareket_list` endpoint'inde `WHERE personel LIKE ?`.
 - `escKey`/`escQ` kullanım yerlerini gözden geçir — inline handler yok,
@@ -203,7 +203,7 @@ raporlarına göre kalan inline'ları temizle, sonra enforce.
 
 **Bağımlılık:** Yok.
 
-### [ ] S5. Form alanı hata UI'ı
+### [x] S5. Form alanı hata UI'ı  (+ S5b: diğer formlara migrate)
 Şu an form hataları toast ile gösteriliyor; alan-bazlı UI yok. `.field`
 pattern'ine `.field--error` + `.field-hint` + `aria-invalid` ekle,
 `setFieldError(id, msg)` helper'ı. Talep, stok modal, ayarlar, malzeme
@@ -211,7 +211,7 @@ ekle formlarında uygula.
 
 **Bağımlılık:** Yok.
 
-### [ ] S6. Notification HTTPS fallback
+### [x] S6. Notification HTTPS fallback
 `Notification` API HTTP origin'de izin alamıyor. `location.protocol`
 kontrolü ekle, HTTP'de "bu özellik HTTPS gerektiriyor" mesajıyla gri'le.
 
@@ -219,7 +219,7 @@ kontrolü ekle, HTTP'de "bu özellik HTTPS gerektiriyor" mesajıyla gri'le.
 
 ## 3.3 Teknik borç
 
-### [ ] S7. CSS modülerizasyonu
+### [x] S7. CSS modülerizasyonu (a/b/c/d/e — style.css 2 277 → 1 115)
 `style.css` 2300+ satır tek dosya. Şu yapıya böl:
 ```
 css/tokens.css        (mevcut)
@@ -250,7 +250,7 @@ Kazanç: CSP'den `style-src 'unsafe-inline'` kaldırılabilir.
 
 ## 3.4 Gelecek özellikler
 
-### [ ] S10. Topbar global arama (Ctrl+K)
+### [x] S10. Topbar global arama (Ctrl+K)
 Stok + depo + talep no araması, klavye odaklı. Modal'da liste + ok
 tuşlarıyla seçim + Enter ile gitme.
 
@@ -262,7 +262,7 @@ helper. EN için temel çeviri. Ayarlar'a dil seçimi.
 
 **Bağımlılık:** Yok (ama büyük scope — 2-3 oturum).
 
-### [ ] S12. Talep duplicate prevention
+### [x] S12. Talep duplicate prevention (+ tarih ISO, Taslak iptal, onay→stok düşüşü)
 LocalStorage + server iki tarafı senkronize ediyor, id çakışabilir.
 Server canonical olsun, local sadece cache.
 
@@ -286,3 +286,87 @@ S1 (test+bugfix) ──┬─→ S2 (PR + review)
 ```
 
 **Kritik yol:** S1 → S2. Sonrası paralel.
+
+---
+
+# 4. Aşama — Kalan iş (PR #2 sonrası)
+
+PR #2'de 34 commit ile S1-S7, S10, S12 + Aşama 1+2 + 9 tasarım görevi
+tamamlandı. **Kalan görevler:**
+
+## [ ] S8 — Build pipeline + lint
+**Amaç:** Production-grade tooling.
+
+- `esbuild` ile JS modüllerini concat + minify (`public/js/main.js` →
+  `public/dist/app.js`).
+- `postcss` ile CSS concat + autoprefixer + cssnano (`public/css/*.css`
+  → `public/dist/app.css`).
+- ESLint + Prettier config (zaten data-action delegation kanıtlandı,
+  ileri katmanlı kurallar eklenebilir).
+- `package.json` script'leri: `build`, `lint`, `format`, `dev`.
+- En azından smoke test (`node server.js` + `curl /` 200).
+- CI yok (kurumsal LAN), ama `pre-commit` hook'u eklenebilir.
+
+**Risk:** Orta — script tag'leri tek bundle'a çekilince path/cache
+sorunları olabilir.
+
+**Bağımlılık:** Yok.
+
+## [ ] S9 — Inline style purge (son tur)
+**Amaç:** `style-src 'unsafe-inline'` kaldırılabilsin → CSP enforce.
+
+- HTML'de hâlâ ~85 `style="..."` attribute'ü var. Çoğu kısa utility
+  (display:none, flex:1) — sınıflara çekilebilir. Bir kısmı dinamik
+  (width: ${pct}%) — JS tarafında `el.style.setProperty('--w', pct)` +
+  CSS `width: calc(var(--w) * 1%)` ile dönüştürülebilir.
+- Tamamlanınca: `server.js` CSP `styleSrc` array'inden `'unsafe-inline'`
+  kaldırılır.
+- Aşama A'daki M1 (search.js .text-danger) zaten yapıldı; pilot.
+
+**Risk:** Düşük (kosmetik), orta (dinamik width/height inline).
+
+**Bağımlılık:** Yok.
+
+## [ ] S11 — i18n şeması
+**Amaç:** Türkçe dışı dil desteği + maintainability.
+
+- `public/js/i18n/` klasörü: `tr.json`, `en.json`.
+- `t(key, params)` helper — `${t('talep.kaydet')}` gibi kullanım.
+- HTML attr'larında `data-i18n="key"` desteği (init'te DOM walk).
+- Ayarlar'da dil seçimi.
+- Tahmini: 800+ string, 2-3 oturum iş.
+
+**Risk:** Düşük teknik, yüksek mekanik iş.
+
+**Bağımlılık:** S7 (CSS split) ideal, ama bağımsız da çalışır.
+
+## [ ] Review kalan minörler (M3-M6)
+
+- **M3** — search.js subHtml escape tutarlılığı (titleHtml `_highlight`,
+  subHtml karışık). Tek pattern'e çek.
+- **M4** — modal `aria-labelledby` ID: `Math.random()` → `crypto.randomUUID()`.
+- **M5** — DB migration: `UPDATE Talepler SET durum = 'Onay Bekliyor'
+  WHERE durum = 'Taslak'` script (kullanıcı yedek alıp manuel çalıştırır).
+- **M6** — CSS bundling (S8 kapsamında).
+
+**Bağımlılık:** Hiçbiri kritik değil; S8/S11 PR'larına eklenebilir.
+
+## [ ] (yeni öneri) — Hareket onaylama akışı
+Mevcut: hareket kaydet → direkt etkili. İhtiyaç olursa:
+- Onay zinciri (hareket için de talep gibi).
+- Stok düşüşü hemen değil, onaydan sonra.
+- Audit log + iptal etme.
+
+**Bağımlılık:** Mevcut talep zinciri pattern'i.
+
+## Önerilen yeni sıra (PR #2 merge sonrası)
+
+```
+PR #2 merge → main güncel
+    │
+    ├─→ S8 (build/lint) → S9 (inline purge) → CSP enforce
+    │
+    ├─→ S11 (i18n, opsiyonel — Türkçe yeterliyse atla)
+    │
+    └─→ Review minörleri (M3-M6, S8 ile beraber)
+```
