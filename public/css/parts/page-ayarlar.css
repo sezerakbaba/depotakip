@@ -1,0 +1,210 @@
+/* page-ayarlar.css — ayarlar sayfası + input varyant + birim etiketleri
+   Kaynak: style.css 1858-2065. S7 modülerizasyonu — SIRA korunur. */
+/* ── Ayarlar Sayfası ── */
+.ayarlar-grid { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
+.ayarlar-nav {
+  position: sticky; top: 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.ayarlar-search {
+  position: relative;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+.ayarlar-search i { color: var(--muted); width: 14px; height: 14px; flex-shrink: 0; }
+.ayarlar-search input {
+  border: none; background: transparent; outline: none;
+  flex: 1; font-size: 13px; color: var(--ink); min-width: 0;
+  padding: 2px 0;
+}
+.ayarlar-search-clear {
+  border: none; background: transparent; cursor: pointer;
+  color: var(--muted); font-size: 16px; line-height: 1; padding: 0 4px;
+}
+.ayarlar-search-clear:hover { color: var(--red); }
+.ayarlar-nav-list { display: flex; flex-direction: column; gap: 2px; }
+.ayar-nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; text-align: left;
+  padding: 9px 12px;
+  background: transparent; border: none;
+  border-radius: 8px;
+  font-size: 13px; color: var(--ink2); cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.ayar-nav-btn i { width: 16px; height: 16px; flex-shrink: 0; }
+.ayar-nav-btn:hover { background: var(--bg); color: var(--ink); }
+.ayar-nav-btn.active {
+  background: var(--teal);
+  color: #fff;
+  font-weight: 600;
+}
+.ayar-nav-btn.active i { color: #fff; }
+.ayarlar-panel { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+@media (max-width: 900px) {
+  .ayarlar-grid { grid-template-columns: 1fr; }
+  .ayarlar-nav { position: static; }
+  .ayarlar-nav-list { flex-direction: row; flex-wrap: wrap; }
+  .ayar-nav-btn { width: auto; }
+}
+.ayar-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0; border-bottom: 1px solid var(--line); gap: 12px;
+}
+.ayar-row:last-child { border-bottom: none; }
+.ayar-label { font-size: 13px; color: var(--ink2); }
+.ayar-label small { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
+/* input varyantları */
+.ayar-input      { width: 80px; text-align: center; padding: 7px 10px; }
+.ayar-input-sm   { width: 90px; padding: 7px 10px; }
+.ayar-input-md   { width: 200px; padding: 7px 10px; }
+.ayar-input-full { width: 100%; max-width: 480px; padding: 7px 10px; }
+.ayar-input-sel  { min-width: 130px; padding: 7px 10px; }
+/* alt bölüm */
+.ayar-subsection { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.ayar-section-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--ink2); }
+.ayar-add-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+/* birim etiketleri */
+.birim-tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.birim-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--bg); border: 1px solid var(--line);
+  font-size: 12px; color: var(--ink2);
+}
+.birim-tag button {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 15px; line-height: 1; padding: 0;
+}
+.birim-tag button:hover { color: var(--red); }
+.ayar-color-inp {
+  width: 38px; height: 34px; padding: 2px; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 8px; background: var(--white);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — 768px (Tablet)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  :root { --sidebar-w: 68px; }
+  .sidebar-logo-text, .nav-item .nav-text, .sidebar-footer { display: none; }
+  .nav-item { justify-content: center; padding: 12px; position: relative; }
+  .nav-item .icon { font-size: 18px; margin: 0; }
+.sidebar-logo { justify-content: center; padding: 15px 0; }
+  #main { margin-left: var(--sidebar-w); }
+  /* Tablet: ikon-only → tooltip */
+  .nav-item::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%; transform: translateY(-50%);
+    background: var(--ink, #1a2332);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+    z-index: 300;
+  }
+  .nav-item:hover::after { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  #main { margin-left: 0 !important; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .stat-value { font-size: 26px; }
+
+  /* Depo kartları: 5→3 kolon */
+  .depo-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .depo-card .depo-count { font-size: 22px; }
+
+  /* Grafik satırı: 2→1 kolon */
+  .charts-row { grid-template-columns: 1fr; }
+
+  /* Hareket özet: 4→2 kolon */
+  .har-ozet-row { grid-template-columns: 1fr 1fr; }
+
+  /* Hareket personel filtresi mobilde genişlesin */
+  #har-personel-filter { width: 100% !important; }
+
+  /* Talepname 900px altı (eski ts-* kuralları F'de kaldırıldı;
+     mobile düzeni talep-paper @media bloğu içinde) */
+
+  /* Arama alanı daha dar */
+  .search-wrap { min-width: 140px; }
+
+  /* Sayfa başlığı buton küçülsün */
+  .page-header .btn { font-size: 12px; padding: 7px 12px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet: Stok tablo kompakt mod (600px–900px)
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 601px) and (max-width: 900px) {
+  #stok-table { min-width: 600px; font-size: 11px; }
+  #stok-table thead th { padding: 8px 8px; font-size: 9px; }
+  #stok-table tbody td { padding: 7px 8px !important; }
+  /* Tablet'te az kritik olmayan sütunları daralt */
+  #stok-table th[data-col="kategori"],
+  #stok-table td[data-col="kategori"] { width: 80px; }
+  #stok-table th[data-col="doluluk"],
+  #stok-table td[data-col="doluluk"]  { width: 90px; }
+  #stok-table th[data-col="birim"],
+  #stok-table td[data-col="birim"]    { width: 50px; }
+  #stok-table th[data-col="min"],
+  #stok-table td[data-col="min"]      { width: 50px; }
+  #stok-table th[data-col="max"],
+  #stok-table td[data-col="max"]      { width: 50px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — 600px (Büyük telefon)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* Depo kartları: 3→2 kolon */
+  .depo-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* SKT özet: 3→2 kolon */
+  .skt-ozet-grid { grid-template-columns: 1fr 1fr; }
+  .skt-ozet-sayi { font-size: 22px; }
+
+  /* Filter chip daha kompakt */
+  .filter-chip { padding: 5px 10px; font-size: 11px; }
+
+  /* Toast: köşeden biraz içeri */
+  #toast { bottom: 12px; right: 12px; left: 12px; text-align: center; }
+
+  /* Talepname tablosu: sütunları gizle, scroll yeterli */
+  .talep-table th:nth-child(5),
+  .talep-table td:nth-child(5) { display: none; } /* Onaylanan miktar gizle */
+
+  /* Talep listesi tablosu kart görünümü */
+  #talep-list-table thead { display: none; }
+  #talep-list-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    background: var(--white) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    padding: 12px !important;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+  }
+  #talep-list-table tbody td { display: block; padding: 3px 0 !important; border: none !important; font-size: 12px; }
+  #talep-list-table tbody td:nth-child(1) { grid-column: 1 / -1; } /* Talep no */
+  #talep-list-table tbody td:nth-child(9) { grid-column: 1 / -1; } /* Görüntüle */
+}
+

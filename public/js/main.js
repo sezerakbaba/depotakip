@@ -212,12 +212,21 @@ function _stokSearchClear(el) {
   window.renderStok?.();
 }
 function _harFiltreTemizle() {
-  ['harTarihBas','harTarihBit','harDepoFilter','harPersonelFilter'].forEach(k => { window[k] = ''; });
-  ['har-tarih-bas','har-tarih-bit','har-depo-filter','har-personel-filter'].forEach(id => {
+  // Filtre state'ini sıfırla (render S.* okuduğu için DOM'u temizlemek yetmez).
+  S.harFilter = 'Tümü';
+  S.harDepoFilter = '';
+  S.harTarihBas = '';
+  S.harTarihBit = '';
+  S.harPersonelFilter = '';
+  S.harSayfa = 0;
+  // DOM input'larını da temizle (görünür hâli senkronla).
+  ['har-search','har-tarih-bas','har-tarih-bit','har-depo-filter','har-personel-filter'].forEach(id => {
     const e = document.getElementById(id); if (e) e.value = '';
   });
   document.querySelectorAll('.har-tarih-chip').forEach(c => c.classList.remove('active'));
-  if (typeof window.harSayfa !== 'undefined') window.harSayfa = 0;
+  // Tür chip'lerini sıfırla → "Tümü" aktif.
+  document.querySelectorAll('.filter-chip[data-htur]').forEach(c => c.classList.remove('active'));
+  document.querySelector('.filter-chip[data-htur="Tümü"]')?.classList.add('active');
   window.renderHareketList?.();
 }
 function _toggleStokSutunMenu() {

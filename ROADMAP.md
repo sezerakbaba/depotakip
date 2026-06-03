@@ -168,24 +168,47 @@ Her madde ayrı bir Claude Code oturumunda yapılacak. Oturum başında:
 
 ## 3.0 Acil — Test + bugfix
 
-### [ ] S1. Tarayıcı test + bugfix
+### [x] S1. Tarayıcı test + bugfix
 Dashboard, Stok, Hareket, Talepname (en kritik), Veri Yönet, Ayarlar +
 3 modal + tema toggle + klavye gezinme + Ctrl+P print preview.
 Console hataları + ekran görüntüleri ile dön. Bugfix commit'leri.
 
 **Bağımlılık:** Hiçbiri — başlangıç noktası.
 
+**Sonuç (2026-06-03):** 10 sayfanın tamamı sorunsuz render oldu, console
+tamamen temiz (0 hata/uyarı). Test edilenler: Talepname malzeme seçici
+(aç/filtrele/seç/kapan), Stok güncelle modalı, ESC ile modal kapatma,
+tema toggle (Açık/Koyu/Otomatik), Chart.js grafikleri (offline vendor),
+responsive breakpoint'ler (1024 rail / 768 hamburger / 480 tek kolon),
+@media print mevcut. **Bug bulunamadı** — bugfix commit'i gerekmedi.
+- Gözlem (bug değil, tasarım kararı): Dashboard "KRİTİK STOK = 41" =
+  stok-kritik (8) + SKT geçmiş (33) birleşik metriği (`dashboard.js:16`).
+  Stok Listesi "KRİTİK = 8" yalnızca stok-kritik sayar. Aynı "Kritik"
+  kelimesi iki farklı değer gösteriyor → ileride etiket netleştirilebilir.
+- Dev kolaylığı: `.claude/launch.json` eklendi (preview server'ı yönetir).
+
 ## 3.1 PR ve süreç
 
-### [ ] S2. PR güncelleme + ultrareview
+### [x] S2. PR güncelleme + ultrareview
 PR #2 başlığı ve gövdesini ~12 commit'i yansıtacak şekilde güncelle.
 Sonra `/ultrareview` ile cloud review başlat, feedback'i issue'lara böl.
 
 **Bağımlılık:** S1 (test edilmiş sürüm üzerinde review anlamlı).
 
+**Sonuç (2026-06-03):** S1/S3/S4/S5/S6 çalışmaları **PR #3** altında
+toplandı (5 commit); başlık/gövde her adımda güncel tutuldu. `/code-review`
+ile diff incelendi → **kritik/yüksek bulgu yok, Approve**. Bulgular yalnızca
+nit/tartışma seviyesinde, issue açmayı gerektirmedi:
+- (nit) `server.js` `CSP_ENFORCE !== 'false'` → yalnız `"false"` devre dışı
+  bırakır; `0`/`no` enforce kalır (escape hatch `=false` olarak belgeli).
+- (tartışma) Taslak kaydı hâlâ ≥1 satır ister (davranış korundu).
+- (pre-existing) `hareket.js` `<option>` kapatılmıyor — tarayıcı otomatik
+  kapatır, zararsız, kapsam dışı.
+PR durumu MERGEABLE/CLEAN. CI yok (S8 smoke test ekleyecek).
+
 ## 3.2 Yüksek değerli takipler
 
-### [ ] S3. CSP'yi aç
+### [x] S3. CSP'yi aç
 `helmet.contentSecurityPolicy` config: önce report-only, browser console
 raporlarına göre kalan inline'ları temizle, sonra enforce.
 `script-src 'self'` (inline JS gitti), `style-src 'self' 'unsafe-inline'`
@@ -193,7 +216,14 @@ raporlarına göre kalan inline'ları temizle, sonra enforce.
 
 **Bağımlılık:** S1 (test edilmiş).
 
-### [ ] S4. Personel filter + ölü kod
+**Sonuç (2026-06-03):** CSP artık varsayılan **ENFORCE** (`server.js`:
+`cspEnforce = process.env.CSP_ENFORCE !== 'false'`). Escape hatch:
+`CSP_ENFORCE=false` ile report-only'ye dönülebilir. Tarayıcıda enforce
+modda doğrulandı — Dashboard + İstatistikler (Chart.js grafikleri,
+lucide ikonlar, IBM Plex fontlar, `/api` connect-src) sorunsuz çalıştı,
+console'da **0 CSP ihlali**. `style-src 'unsafe-inline'` S9'a kadar kalıyor.
+
+### [x] S4. Personel filter + ölü kod
 - `hareket.js` `apiHareketList`'e `personel` parametresi ekle, `server.js`
   `hareket_list` endpoint'inde `WHERE personel LIKE ?`.
 - `escKey`/`escQ` kullanım yerlerini gözden geçir — inline handler yok,
@@ -203,7 +233,29 @@ raporlarına göre kalan inline'ları temizle, sonra enforce.
 
 **Bağımlılık:** Yok.
 
-### [ ] S5. Form alanı hata UI'ı
+**Sonuç (2026-06-03):**
+- **Personel filter zaten tamdı** — `server.js` `hareket_list`
+  `personel LIKE ? ESCAPE '\'` (escLike ile) + `api.js` `personel`
+  parametresi + `hareket.js` `S.harPersonelFilter` zaten bağlıydı.
+  Değişiklik gerekmedi.
+- **Gerçek bug bulundu ve düzeltildi:** `main.js _harFiltreTemizle`
+  filtre state'ini `window.harDepoFilter=''` ile sıfırlamaya çalışıyordu
+  ama render `S.harDepoFilter` okuyor → **"Temizle" butonu filtreleri
+  gerçekten temizlemiyordu** (input'lar boşalıyor, aktif filtre kalıyordu).
+  Artık `S.harFilter/harDepoFilter/harTarihBas/harTarihBit/
+  harPersonelFilter/harSayfa` sıfırlanıyor + tür chip "Tümü"ye dönüyor +
+  arama temizleniyor. Tarayıcıda doğrulandı.
+- **`escQ` kaldırıldı:** tek kullanım yeri (`hareket.js` toplu hareket
+  `<option>`) `esc`'e çevrildi — `escQ` aslında JS-string escaper'dı,
+  HTML attribute'ünde `'` içeren ad'lar (`O'Brien`) için yanlış kaçış
+  üretiyordu; `esc` doğru. Option metni de artık `esc`'li.
+- **`_pendingKritikler` SİLİNMEDİ** — ölü değil, canlı özellik
+  ("Talepnameye Aktar": `kritik.js:77` → `talep.js:177`). ROADMAP notu
+  hatalıymış; korundu.
+- `escKey` ve `.logo-badge` zaten kod tabanında yok (önceki temizlikte
+  gitmiş) — yapılacak bir şey kalmamıştı.
+
+### [x] S5. Form alanı hata UI'ı
 Şu an form hataları toast ile gösteriliyor; alan-bazlı UI yok. `.field`
 pattern'ine `.field--error` + `.field-hint` + `aria-invalid` ekle,
 `setFieldError(id, msg)` helper'ı. Talep, stok modal, ayarlar, malzeme
@@ -211,15 +263,40 @@ ekle formlarında uygula.
 
 **Bağımlılık:** Yok.
 
-### [ ] S6. Notification HTTPS fallback
+**Sonuç (2026-06-03):** Altyapı zaten vardı — `ui-common.js`
+`setFieldError(id,msg)` + `clearFieldErrors(scope)` (input'a girince
+otomatik temizlenir), CSS `.field--error`/`.field__error`/`.field__hint`
+(`style.css:648`), `aria-invalid`. Zaten uygulanmıştı: **stok modal**
+(`m-ad`), **ayarlar** (depo/kategori), **malzeme ekle** (depo/ad/kategori),
+**hareket** (miktar/not). Tek eksik **Talepname** formuydu → eklendi:
+"Onaya Gönder"de `t-birim` + `t-personel` zorunlu (taslakta serbest),
+hata alanları `.field--error` + mesaj + `aria-invalid`, ilk hatalı alana
+focus. Tarayıcıda doğrulandı (hata göster → yazınca temizlenir).
+
+### [x] S6. Notification HTTPS fallback
 `Notification` API HTTP origin'de izin alamıyor. `location.protocol`
 kontrolü ekle, HTTP'de "bu özellik HTTPS gerektiriyor" mesajıyla gri'le.
 
 **Bağımlılık:** Yok.
 
+**Sonuç (2026-06-03):** Zaten uygulanmış — ve spec'ten daha doğru:
+`location.protocol` yerine `window.isSecureContext` kullanılıyor
+(localhost-üzeri-HTTP'yi doğru şekilde güvenli sayar, sadece protocol
+bakan kontrol bunu kaçırırdı). Mevcut implementasyon (`ui-common.js`):
+- `notificationDestekleniyor()` / `notificationDurumu()` → secure context
+  + 'Notification' in window kontrolü ('insecure' durumu döner).
+- `bildirimIzniSor()` → `!window.isSecureContext` ise net toast
+  ("Bildirimler yalnızca HTTPS bağlantısında çalışır…") ile erken çıkar.
+- `checkKritikNotification()` → güvenli değilse hiç bildirim denemez.
+- `ayarlar.js` Eşik & Limitler: durum metni ("HTTPS gerektirir…" /
+  "İzin verildi ✓" / "Tarayıcıda engellendi" / "İzin gerekiyor") +
+  güvensiz context'te buton `disabled`.
+Tarayıcıda doğrulandı (localhost = secure → buton aktif, izin reddedilince
+"Tarayıcıda engellendi" gösteriliyor). Kod değişikliği gerekmedi.
+
 ## 3.3 Teknik borç
 
-### [ ] S7. CSS modülerizasyonu
+### [x] S7. CSS modülerizasyonu
 `style.css` 2300+ satır tek dosya. Şu yapıya böl:
 ```
 css/tokens.css        (mevcut)
@@ -233,6 +310,25 @@ css/print.css
 Şimdilik `@import` ile tek `<link>` arkasında.
 
 **Bağımlılık:** S1 (regresyon riski yüksek; test edilmiş baz şart).
+
+**Sonuç (2026-06-03):** `style.css` (2313 satır) → `css/parts/` altında
+11 dosyaya bölündü; `style.css` artık yalnızca **kaynak sırasında**
+`@import` eden bir toplayıcı (`index.html` link'i değişmedi).
+
+**Önemli tasarım kararı:** Spec'teki `components/` + `pages/` semantik
+klasörleri yerine **kaynak-sıralı bitişik parçalar** kullanıldı. Sebep:
+mevcut `style.css`'te bileşen ve sayfa kuralları iç içe (ör. SKT badge,
+grid yardımcıları sayfa bloklarından *sonra* geliyor). Semantik gruplayıp
+kategori sırasında import etmek **cascade'i değiştirir** → regresyon. Bitişik
+parçaları orijinal sırada import etmek cascade'i **birebir** korur.
+
+Parçalar (hepsi brace-dengeli, kapsama tam):
+`base · icons · layout · components(599) · page-talep · page-dashboard ·
+log-print · layout-extra · components-hareket · page-ayarlar · page-stok`.
+
+Doğrulama: 11 parça da 200 dönüyor, console 0 hata, Dashboard 1280px'de
+bölünme öncesiyle piksel-aynı (KPI overlap yok), depo-detay tam stilli.
+CSP `style-src 'self'` `@import`'leri (same-origin) engellemiyor.
 
 ### [ ] S8. Build pipeline + lint
 - `esbuild` ile JS modüllerini concat + minify

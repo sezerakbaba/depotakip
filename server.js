@@ -55,8 +55,9 @@ function requireToken(req, res, next) {
 // servis edildiği için 'self' yeterli. data: URI'lar (favicons, SVG
 // kritik bildirim ikonu) için img-src 'self' data:.
 //
-// CSP_ENFORCE=false (varsayılan) → Report-Only mode; ihlal raporu
-// console'a düşer ama bloklanmaz. CSP_ENFORCE=true ise enforce edilir.
+// CSP artık varsayılan olarak ENFORCE edilir (S1 tarayıcı testinde hiçbir
+// ihlal raporlanmadı; inline JS Aşama 1+2'de temizlenmişti). Sorun
+// çıkarsa geçici olarak CSP_ENFORCE=false ile Report-Only moda dönülebilir.
 const CSP_DIRECTIVES = {
   defaultSrc: ["'self'"],
   scriptSrc:  ["'self'"],
@@ -69,7 +70,7 @@ const CSP_DIRECTIVES = {
   formAction: ["'self'"],
   frameAncestors: ["'none'"],
 };
-const cspEnforce = process.env.CSP_ENFORCE === 'true';
+const cspEnforce = process.env.CSP_ENFORCE !== 'false';
 app.use(helmet({
   contentSecurityPolicy: {
     directives: CSP_DIRECTIVES,

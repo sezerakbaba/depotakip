@@ -1,5 +1,5 @@
 import { S, API_URL } from './state.js';
-import { getAllItems, getStok, durum, depoBadge, esc, getKey, fmtGun, dClick, dInput, dChange } from './ui-common.js';
+import { getAllItems, getStok, durum, depoBadge, esc, getKey, fmtGun, dClick, dInput, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
 import { apiFetch } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -230,7 +230,27 @@ export function talepKaydet(durum = 'Taslak') {
       satirlar.push({ ad: inp.value.trim(), depo: '', birim: birim?.value||'', miktar: mik });
     }
   });
-  if (!satirlar.length) { window.toast('En az 1 malzeme ve geçerli miktar girin','error'); return; }
+  // ── Validasyon (alan-bazlı hata UI'ı) ───────────────────────────
+  const talepScope = document.getElementById('page-talep');
+  clearFieldErrors(talepScope);
+  let gecerli = true;
+  // Onaya gönderirken birim + personel zorunlu (taslakta serbest).
+  if (durum !== 'Taslak') {
+    if (!document.getElementById('t-birim')?.value.trim()) {
+      setFieldError('t-birim', 'Talep eden birim zorunlu'); gecerli = false;
+    }
+    if (!document.getElementById('t-personel')?.value.trim()) {
+      setFieldError('t-personel', 'Sorumlu personel zorunlu'); gecerli = false;
+    }
+  }
+  if (!satirlar.length) {
+    window.toast('En az 1 malzeme ve geçerli miktar girin', 'error');
+    gecerli = false;
+  }
+  if (!gecerli) {
+    talepScope?.querySelector('.field--error .field-inp, .field--error input, .field--error select')?.focus();
+    return;
+  }
   const payload = {
     no, tarih, durum,
     birim   : document.getElementById('t-birim')?.value||'',
