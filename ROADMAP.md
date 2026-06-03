@@ -189,11 +189,22 @@ responsive breakpoint'ler (1024 rail / 768 hamburger / 480 tek kolon),
 
 ## 3.1 PR ve süreç
 
-### [ ] S2. PR güncelleme + ultrareview
+### [x] S2. PR güncelleme + ultrareview
 PR #2 başlığı ve gövdesini ~12 commit'i yansıtacak şekilde güncelle.
 Sonra `/ultrareview` ile cloud review başlat, feedback'i issue'lara böl.
 
 **Bağımlılık:** S1 (test edilmiş sürüm üzerinde review anlamlı).
+
+**Sonuç (2026-06-03):** S1/S3/S4/S5/S6 çalışmaları **PR #3** altında
+toplandı (5 commit); başlık/gövde her adımda güncel tutuldu. `/code-review`
+ile diff incelendi → **kritik/yüksek bulgu yok, Approve**. Bulgular yalnızca
+nit/tartışma seviyesinde, issue açmayı gerektirmedi:
+- (nit) `server.js` `CSP_ENFORCE !== 'false'` → yalnız `"false"` devre dışı
+  bırakır; `0`/`no` enforce kalır (escape hatch `=false` olarak belgeli).
+- (tartışma) Taslak kaydı hâlâ ≥1 satır ister (davranış korundu).
+- (pre-existing) `hareket.js` `<option>` kapatılmıyor — tarayıcı otomatik
+  kapatır, zararsız, kapsam dışı.
+PR durumu MERGEABLE/CLEAN. CI yok (S8 smoke test ekleyecek).
 
 ## 3.2 Yüksek değerli takipler
 
