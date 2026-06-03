@@ -330,7 +330,7 @@ Doğrulama: 11 parça da 200 dönüyor, console 0 hata, Dashboard 1280px'de
 bölünme öncesiyle piksel-aynı (KPI overlap yok), depo-detay tam stilli.
 CSP `style-src 'self'` `@import`'leri (same-origin) engellemiyor.
 
-### [ ] S8. Build pipeline + lint
+### [x] S8. Build pipeline + lint
 - `esbuild` ile JS modüllerini concat + minify
 - `postcss` ile CSS concat + autoprefixer
 - ESLint + Prettier config
@@ -338,11 +338,51 @@ CSP `style-src 'self'` `@import`'leri (same-origin) engellemiyor.
 
 **Bağımlılık:** S7 (CSS modülarize sonrası concat anlamlı).
 
+**Sonuç (2026-06-04):** Tam pipeline kuruldu (`build.mjs`, `eslint.config.mjs`,
+`.prettierrc.json`, `test/smoke.mjs`):
+- `npm run build` → `public/dist/app.min.js` (esbuild IIFE bundle, 165KB,
+  sourcemap) + `app.min.css` (postcss-import concat + autoprefixer +
+  cssnano, 56KB). `dist/` gitignore'da.
+- `npm run lint` → ESLint flat config (3 grup: tarayıcı modülü / CJS
+  sunucu / ESM betik). **0 hata**, 28 uyarı (kullanılmayan değişken —
+  bloke etmiyor). `npm run format` Prettier.
+- `npm test` → smoke: sunucu + GET / · css · parts · js · /api 401/200.
+
+**Tasarım kararı:** Build **opt-in**. `index.html` geliştirmede kaynağı
+yükler (build-free workflow korunur); `dist/` bundle üretilip tarayıcıda
+çalıştığı doğrulandı (window.navigate/openStokModal mevcut, KPI 341,
+CSS uygulandı, console temiz) sonra `index.html` kaynağa geri alındı.
+
+**Lint'in yakaladığı gerçek bug (düzeltildi):** Excel export (`veri.js`)
+XLSX'i `cdn.jsdelivr.net`'ten lazy-load ediyordu → S3 CSP enforce
+(`script-src 'self'`) bunu **blokluyordu** + offline çalışmıyordu.
+XLSX `public/vendor/xlsx.full.min.js`'e indirildi, lazy-load `/vendor`'a
+çevrildi (same-origin, CSP-OK, offline çalışır).
+
 ### [ ] S9. Inline style purge (son tur)
 HTML'de hâlâ ~50 `style="..."` attribute'ü var. Hepsini class'a çek.
 Kazanç: CSP'den `style-src 'unsafe-inline'` kaldırılabilir.
 
 **Bağımlılık:** S7 (komponent CSS dosyaları yerinde olsun).
+
+**Kapsam revizyonu (2026-06-04):** Gerçek sayım spec'in ~4 katı çıktı,
+**toplam 222 inline style**:
+- `index.html` statik: **87**
+- JS template (innerHTML) statik: **116**
+- JS dinamik (`style="...${...}"` interpolasyonlu): **19**
+
+`style-src 'unsafe-inline'`'ı kaldırmak **hepsinin** (222) gitmesini
+gerektirir — kısmi temizlik CSP'yi sıkılaştırmaz. 19 dinamik style statik
+class'a çevrilemez; JS'te `el.style.x=` veya CSS custom property ile
+ele alınmalı (`.style` ataması CSP-governed değil). Ayrıca `inline > class`
+specificity'si nedeniyle üretilen utility class'lar CSS'in **en sonunda**
+olmalı ki eşitlikte kazansın.
+
+Bu kapsam tek oturumda güvenli değil → **ertelendi** (kullanıcı kararı).
+style-src 'unsafe-inline' şimdilik kalıyor. Önerilen aşamalı plan:
+(1) 116 statik JS + 87 statik HTML → utility class'lar (scriptle, en sona
+ekle, sayfa/modal regresyon testi), (2) 19 dinamik → `.style`/CSS var,
+(3) CSP'den `style-src 'unsafe-inline'` kaldır + enforce doğrula.
 
 ## 3.4 Gelecek özellikler
 

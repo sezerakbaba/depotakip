@@ -1,19 +1,38 @@
 {
   "name": "depotakip",
   "version": "1.0.0",
-  "description": "",
+  "description": "Depo/stok takip web uygulaması (vanilla JS + Express + SQLite)",
   "main": "server.js",
+  "type": "commonjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node build.mjs",
+    "build:js": "node build.mjs js",
+    "build:css": "node build.mjs css",
+    "lint": "eslint public/js server.js build.mjs",
+    "lint:fix": "eslint public/js server.js build.mjs --fix",
+    "format": "prettier --write \"public/js/**/*.js\" \"public/css/**/*.css\" server.js build.mjs",
+    "format:check": "prettier --check \"public/js/**/*.js\" \"public/css/**/*.css\" server.js build.mjs",
+    "test": "node test/smoke.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "autoprefixer": "^10.4.20",
+    "cssnano": "^7.0.6",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "postcss": "^8.4.49",
+    "postcss-import": "^16.1.0",
+    "prettier": "^3.4.2"
   }
 }

@@ -5,3 +5,4 @@ database.sqlite-shm
 backups/
 *.log
 .app-token
+public/dist/
