@@ -168,12 +168,24 @@ Her madde ayrı bir Claude Code oturumunda yapılacak. Oturum başında:
 
 ## 3.0 Acil — Test + bugfix
 
-### [ ] S1. Tarayıcı test + bugfix
+### [x] S1. Tarayıcı test + bugfix
 Dashboard, Stok, Hareket, Talepname (en kritik), Veri Yönet, Ayarlar +
 3 modal + tema toggle + klavye gezinme + Ctrl+P print preview.
 Console hataları + ekran görüntüleri ile dön. Bugfix commit'leri.
 
 **Bağımlılık:** Hiçbiri — başlangıç noktası.
+
+**Sonuç (2026-06-03):** 10 sayfanın tamamı sorunsuz render oldu, console
+tamamen temiz (0 hata/uyarı). Test edilenler: Talepname malzeme seçici
+(aç/filtrele/seç/kapan), Stok güncelle modalı, ESC ile modal kapatma,
+tema toggle (Açık/Koyu/Otomatik), Chart.js grafikleri (offline vendor),
+responsive breakpoint'ler (1024 rail / 768 hamburger / 480 tek kolon),
+@media print mevcut. **Bug bulunamadı** — bugfix commit'i gerekmedi.
+- Gözlem (bug değil, tasarım kararı): Dashboard "KRİTİK STOK = 41" =
+  stok-kritik (8) + SKT geçmiş (33) birleşik metriği (`dashboard.js:16`).
+  Stok Listesi "KRİTİK = 8" yalnızca stok-kritik sayar. Aynı "Kritik"
+  kelimesi iki farklı değer gösteriyor → ileride etiket netleştirilebilir.
+- Dev kolaylığı: `.claude/launch.json` eklendi (preview server'ı yönetir).
 
 ## 3.1 PR ve süreç
 
