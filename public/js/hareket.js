@@ -1,6 +1,6 @@
 import { S, KAYNAK } from './state.js';
 import { apiFetch, apiSave, apiHareketEkle, apiHareketSil, apiHareketList } from './api.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, escQ, fmt, getKey, timeAgo, dClick, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, fmt, getKey, timeAgo, dClick, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GİRİŞ / ÇIKIŞ — hareketler artık sunucu tablosunda
@@ -422,7 +422,7 @@ export function topluHarDepChange(sel, rowId) {
   malSel.innerHTML = '<option value="">— Malzeme —</option>' +
     items.map(i => {
       const s = getStok(dep, i.ad);
-      return `<option value="${escQ(i.ad)}">${i.ad} (${s.mevcut})`;
+      return `<option value="${esc(i.ad)}">${esc(i.ad)} (${s.mevcut})`;
     }).join('');
 }
 

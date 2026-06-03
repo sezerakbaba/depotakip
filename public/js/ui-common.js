@@ -16,11 +16,6 @@ export function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-// HTML attribute içinde JS string + attribute escape (sadece <option
-// value="${escQ(...)}"> gibi nadir kullanım için kalır; inline onclick
-// pattern'i artık yok — data-action + JSON args ile temin ediliyor).
-export function escQ(s) { return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r?\n/g,'\\n'); }
-
 // FIX: Varsayılan min=0, max=0 → stok girilmeden hiçbir şey kritik değil
 export function getStok(depo, mal) {
   const k = getKey(depo, mal);

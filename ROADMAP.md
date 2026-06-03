@@ -212,7 +212,7 @@ modda doğrulandı — Dashboard + İstatistikler (Chart.js grafikleri,
 lucide ikonlar, IBM Plex fontlar, `/api` connect-src) sorunsuz çalıştı,
 console'da **0 CSP ihlali**. `style-src 'unsafe-inline'` S9'a kadar kalıyor.
 
-### [ ] S4. Personel filter + ölü kod
+### [x] S4. Personel filter + ölü kod
 - `hareket.js` `apiHareketList`'e `personel` parametresi ekle, `server.js`
   `hareket_list` endpoint'inde `WHERE personel LIKE ?`.
 - `escKey`/`escQ` kullanım yerlerini gözden geçir — inline handler yok,
@@ -221,6 +221,28 @@ console'da **0 CSP ihlali**. `style-src 'unsafe-inline'` S9'a kadar kalıyor.
   gibi kalıntıları temizle.
 
 **Bağımlılık:** Yok.
+
+**Sonuç (2026-06-03):**
+- **Personel filter zaten tamdı** — `server.js` `hareket_list`
+  `personel LIKE ? ESCAPE '\'` (escLike ile) + `api.js` `personel`
+  parametresi + `hareket.js` `S.harPersonelFilter` zaten bağlıydı.
+  Değişiklik gerekmedi.
+- **Gerçek bug bulundu ve düzeltildi:** `main.js _harFiltreTemizle`
+  filtre state'ini `window.harDepoFilter=''` ile sıfırlamaya çalışıyordu
+  ama render `S.harDepoFilter` okuyor → **"Temizle" butonu filtreleri
+  gerçekten temizlemiyordu** (input'lar boşalıyor, aktif filtre kalıyordu).
+  Artık `S.harFilter/harDepoFilter/harTarihBas/harTarihBit/
+  harPersonelFilter/harSayfa` sıfırlanıyor + tür chip "Tümü"ye dönüyor +
+  arama temizleniyor. Tarayıcıda doğrulandı.
+- **`escQ` kaldırıldı:** tek kullanım yeri (`hareket.js` toplu hareket
+  `<option>`) `esc`'e çevrildi — `escQ` aslında JS-string escaper'dı,
+  HTML attribute'ünde `'` içeren ad'lar (`O'Brien`) için yanlış kaçış
+  üretiyordu; `esc` doğru. Option metni de artık `esc`'li.
+- **`_pendingKritikler` SİLİNMEDİ** — ölü değil, canlı özellik
+  ("Talepnameye Aktar": `kritik.js:77` → `talep.js:177`). ROADMAP notu
+  hatalıymış; korundu.
+- `escKey` ve `.logo-badge` zaten kod tabanında yok (önceki temizlikte
+  gitmiş) — yapılacak bir şey kalmamıştı.
 
 ### [ ] S5. Form alanı hata UI'ı
 Şu an form hataları toast ile gösteriliyor; alan-bazlı UI yok. `.field`
