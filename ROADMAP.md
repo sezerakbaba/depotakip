@@ -244,13 +244,23 @@ console'da **0 CSP ihlali**. `style-src 'unsafe-inline'` S9'a kadar kalıyor.
 - `escKey` ve `.logo-badge` zaten kod tabanında yok (önceki temizlikte
   gitmiş) — yapılacak bir şey kalmamıştı.
 
-### [ ] S5. Form alanı hata UI'ı
+### [x] S5. Form alanı hata UI'ı
 Şu an form hataları toast ile gösteriliyor; alan-bazlı UI yok. `.field`
 pattern'ine `.field--error` + `.field-hint` + `aria-invalid` ekle,
 `setFieldError(id, msg)` helper'ı. Talep, stok modal, ayarlar, malzeme
 ekle formlarında uygula.
 
 **Bağımlılık:** Yok.
+
+**Sonuç (2026-06-03):** Altyapı zaten vardı — `ui-common.js`
+`setFieldError(id,msg)` + `clearFieldErrors(scope)` (input'a girince
+otomatik temizlenir), CSS `.field--error`/`.field__error`/`.field__hint`
+(`style.css:648`), `aria-invalid`. Zaten uygulanmıştı: **stok modal**
+(`m-ad`), **ayarlar** (depo/kategori), **malzeme ekle** (depo/ad/kategori),
+**hareket** (miktar/not). Tek eksik **Talepname** formuydu → eklendi:
+"Onaya Gönder"de `t-birim` + `t-personel` zorunlu (taslakta serbest),
+hata alanları `.field--error` + mesaj + `aria-invalid`, ilk hatalı alana
+focus. Tarayıcıda doğrulandı (hata göster → yazınca temizlenir).
 
 ### [ ] S6. Notification HTTPS fallback
 `Notification` API HTTP origin'de izin alamıyor. `location.protocol`
