@@ -365,6 +365,25 @@ Kazanç: CSP'den `style-src 'unsafe-inline'` kaldırılabilir.
 
 **Bağımlılık:** S7 (komponent CSS dosyaları yerinde olsun).
 
+**Kapsam revizyonu (2026-06-04):** Gerçek sayım spec'in ~4 katı çıktı,
+**toplam 222 inline style**:
+- `index.html` statik: **87**
+- JS template (innerHTML) statik: **116**
+- JS dinamik (`style="...${...}"` interpolasyonlu): **19**
+
+`style-src 'unsafe-inline'`'ı kaldırmak **hepsinin** (222) gitmesini
+gerektirir — kısmi temizlik CSP'yi sıkılaştırmaz. 19 dinamik style statik
+class'a çevrilemez; JS'te `el.style.x=` veya CSS custom property ile
+ele alınmalı (`.style` ataması CSP-governed değil). Ayrıca `inline > class`
+specificity'si nedeniyle üretilen utility class'lar CSS'in **en sonunda**
+olmalı ki eşitlikte kazansın.
+
+Bu kapsam tek oturumda güvenli değil → **ertelendi** (kullanıcı kararı).
+style-src 'unsafe-inline' şimdilik kalıyor. Önerilen aşamalı plan:
+(1) 116 statik JS + 87 statik HTML → utility class'lar (scriptle, en sona
+ekle, sayfa/modal regresyon testi), (2) 19 dinamik → `.style`/CSS var,
+(3) CSP'den `style-src 'unsafe-inline'` kaldır + enforce doğrula.
+
 ## 3.4 Gelecek özellikler
 
 ### [ ] S10. Topbar global arama (Ctrl+K)
