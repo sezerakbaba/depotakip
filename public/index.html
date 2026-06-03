@@ -111,6 +111,25 @@
   </div>
 </div>
 
+<!-- Global Arama Modal (Ctrl+K) -->
+<div class="modal-overlay" id="modal-global-search">
+  <div class="modal modal--md gs-modal">
+    <div class="gs-search-wrap">
+      <i data-lucide="search" class="gs-search-icon"></i>
+      <input type="text" id="gs-input" class="gs-input" placeholder="Stok, depo veya talep no ara…"
+        autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true"
+        aria-controls="gs-results" aria-label="Global arama">
+      <button class="modal-close" data-action="closeModal" data-arg="modal-global-search" aria-label="Kapat"><i data-lucide="x"></i></button>
+    </div>
+    <div id="gs-results" class="gs-results" role="listbox" aria-label="Arama sonuçları"></div>
+    <div class="gs-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> gezin</span>
+      <span><kbd>Enter</kbd> git</span>
+      <span><kbd>Esc</kbd> kapat</span>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ MAIN ═══ -->
 <div id="main">
   <!-- Topbar: sticky, sayfa başlığı + tema + saat -->
@@ -118,6 +137,11 @@
     <button id="hamburger" data-action="toggleSidebar" aria-label="Menü"><i data-lucide="menu"></i></button>
     <h2 id="topbar-title">Dashboard</h2>
     <div id="topbar-actions">
+      <button id="global-search-btn" class="topbar-search" data-action="openGlobalSearch" title="Ara (Ctrl+K)" aria-label="Global arama">
+        <i data-lucide="search" class="icon-inline"></i>
+        <span class="topbar-search-text">Ara…</span>
+        <kbd class="topbar-search-kbd">Ctrl K</kbd>
+      </button>
       <button id="theme-toggle" class="topbar-btn" data-action="cycleTema" title="Tema değiştir" aria-label="Tema değiştir">
         <i data-lucide="sun-moon"></i>
       </button>

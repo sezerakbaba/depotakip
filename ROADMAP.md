@@ -386,11 +386,27 @@ ekle, sayfa/modal regresyon testi), (2) 19 dinamik → `.style`/CSS var,
 
 ## 3.4 Gelecek özellikler
 
-### [ ] S10. Topbar global arama (Ctrl+K)
+### [x] S10. Topbar global arama (Ctrl+K)
 Stok + depo + talep no araması, klavye odaklı. Modal'da liste + ok
 tuşlarıyla seçim + Enter ile gitme.
 
 **Bağımlılık:** Yok.
+
+**Sonuç (2026-06-04):** Yeni `js/global-search.js` modülü + `modal-global-search`
++ topbar "Ara… Ctrl K" butonu + `parts/global-search.css`.
+- **Ctrl/Cmd+K** her yerden açar (`main.js` kısayol handler), topbar butonu
+  da açar (`data-action="openGlobalSearch"`).
+- Kaynaklar: **Stok** (getAllItems), **Depo** (DEPO_META), **Talep no**
+  (S._talepListesi). Her açılışta indeks tazelenir.
+- Klavye: ↑/↓ seçim, **Enter** git, **Esc** kapat (global modal handler),
+  fare hover seçimi + tıklama. Sonuç: Stok → stok sayfası + arama dolu,
+  Depo → `goDetay`, Talep → `talepGoruntule`.
+- **Alaka skoru:** etiket eşleşmesi (startsWith>includes) alt-bilgi/depo
+  eşleşmesini yener → "asansör" araması Depo kartını stok kayıtlarının
+  altında bırakmaz.
+- CSP-uyumlu: inline JS yok, listener'lar modülde bağlanır.
+- Tarayıcıda uçtan uca doğrulandı (Ctrl+K aç, filtrele, ok tuşları,
+  Enter→depo-detay ve Enter→stok+filtre, console temiz, responsive).
 
 ### [ ] S11. i18n şeması
 Tüm Türkçe string'ler hard-coded. `i18n/tr.json` + key-based lookup

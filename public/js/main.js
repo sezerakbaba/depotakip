@@ -10,6 +10,7 @@ import { renderMalzemeEkleList } from './malzeme.js';
 import { renderBackupList, refreshVeriYonet } from './veri.js';
 import { initTalep, renderTalepListesi, talepListesiYukle } from './talep.js';
 import { ayarlariYukle, ayarlariKaydet, applyTheme, renderAyarlar } from './ayarlar.js';
+import { openGlobalSearch } from './global-search.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL HELPERS
@@ -396,6 +397,7 @@ function _toggleYeniSKTChg(el) { window.toggleYeniSKT?.(el.value); }
 const ACTIONS = {
   navigate:             (_el, arg) => navigate(arg),
   closeModal:           (_el, arg) => closeModal(arg),
+  openGlobalSearch:     () => openGlobalSearch(),
   toggleSidebar:        () => toggleSidebar(),
   print:                () => window.print(),
   toggleStokSutunMenu:  _toggleStokSutunMenu,
@@ -706,6 +708,13 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keydown', function(e) {
   const tag = document.activeElement?.tagName;
   const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+  // Ctrl/Cmd+K → global arama (her yerden, input içinde bile)
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault();
+    openGlobalSearch();
+    return;
+  }
 
   if (e.key === 'Escape') {
     const searches = [
