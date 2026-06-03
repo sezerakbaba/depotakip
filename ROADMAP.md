@@ -262,11 +262,26 @@ otomatik temizlenir), CSS `.field--error`/`.field__error`/`.field__hint`
 hata alanları `.field--error` + mesaj + `aria-invalid`, ilk hatalı alana
 focus. Tarayıcıda doğrulandı (hata göster → yazınca temizlenir).
 
-### [ ] S6. Notification HTTPS fallback
+### [x] S6. Notification HTTPS fallback
 `Notification` API HTTP origin'de izin alamıyor. `location.protocol`
 kontrolü ekle, HTTP'de "bu özellik HTTPS gerektiriyor" mesajıyla gri'le.
 
 **Bağımlılık:** Yok.
+
+**Sonuç (2026-06-03):** Zaten uygulanmış — ve spec'ten daha doğru:
+`location.protocol` yerine `window.isSecureContext` kullanılıyor
+(localhost-üzeri-HTTP'yi doğru şekilde güvenli sayar, sadece protocol
+bakan kontrol bunu kaçırırdı). Mevcut implementasyon (`ui-common.js`):
+- `notificationDestekleniyor()` / `notificationDurumu()` → secure context
+  + 'Notification' in window kontrolü ('insecure' durumu döner).
+- `bildirimIzniSor()` → `!window.isSecureContext` ise net toast
+  ("Bildirimler yalnızca HTTPS bağlantısında çalışır…") ile erken çıkar.
+- `checkKritikNotification()` → güvenli değilse hiç bildirim denemez.
+- `ayarlar.js` Eşik & Limitler: durum metni ("HTTPS gerektirir…" /
+  "İzin verildi ✓" / "Tarayıcıda engellendi" / "İzin gerekiyor") +
+  güvensiz context'te buton `disabled`.
+Tarayıcıda doğrulandı (localhost = secure → buton aktif, izin reddedilince
+"Tarayıcıda engellendi" gösteriliyor). Kod değişikliği gerekmedi.
 
 ## 3.3 Teknik borç
 
