@@ -14,3 +14,4 @@
 @import 'parts/page-ayarlar.css';
 @import 'parts/page-stok.css';
 @import 'parts/global-search.css'; /* S10 — Ctrl+K global arama */
+@import 'parts/skeleton.css';      /* öneri #11 — yükleme iskeleti */

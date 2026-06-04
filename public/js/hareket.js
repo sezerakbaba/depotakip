@@ -1,6 +1,6 @@
 import { S, KAYNAK } from './state.js';
 import { apiFetch, apiSave, apiHareketEkle, apiHareketSil, apiHareketList } from './api.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, fmt, getKey, timeAgo, dClick, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, fmt, getKey, timeAgo, dClick, dChange, setFieldError, clearFieldErrors, skeletonList, skeletonStats } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GİRİŞ / ÇIKIŞ — hareketler artık sunucu tablosunda
@@ -224,7 +224,8 @@ export async function renderHareketList() {
   const ozEl   = document.getElementById('har-ozet');
   if (!list) return;
 
-  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Yükleniyor…</div>';
+  list.innerHTML = skeletonList(6);
+  if (ozEl && !ozEl.children.length) ozEl.innerHTML = skeletonStats(4);
 
   try {
     const tur = S.harFilter !== 'Tümü' ? S.harFilter : '';
@@ -314,8 +315,8 @@ export async function openMalHareket(dep, mal) {
   if (!title||!ozet||!liste) return;
 
   title.textContent = mal + ' — Hareket Geçmişi';
-  ozet.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:10px">Yükleniyor…</p>';
-  liste.innerHTML = '';
+  ozet.innerHTML = skeletonStats(3);
+  liste.innerHTML = skeletonList(4);
   document.getElementById('modal-mal-hareket').classList.add('open');
 
   try {
