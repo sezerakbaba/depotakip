@@ -407,7 +407,7 @@ export function topluHarSatirEkle() {
       <option>Giriş</option><option>Çıkış</option>
     </select>
     <input type="number" class="thr-mik" min="1" value="1" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink);text-align:center">
-    <button ${dClick('removeById',id)} style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button>
+    <button class="btn-x" ${dClick('removeById',id)} title="Satırı kaldır" aria-label="Satırı kaldır">×</button>
     <select class="thr-mal" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2);grid-column:1/-2">
       ${malOpts}
     </select>`;
