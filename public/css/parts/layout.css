@@ -75,10 +75,10 @@ nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 
   padding-left: 16px;
 }
 .nav-item.active {
-  background: rgba(0,191,165,.12);
+  background: color-mix(in srgb, var(--teal2) 14%, transparent);
   color: var(--teal2);
-  border-left: 2px solid var(--teal2);
-  padding-left: 12px;
+  border-left: 3px solid var(--teal2);
+  padding-left: 13px;
 }
 .nav-item.active::before { display: none; }
 .nav-item .icon {
@@ -92,17 +92,39 @@ nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 
 .nav-item:hover .icon { opacity: .9; }
 .nav-item.active .icon { opacity: 1; }
 
-/* Footer */
+/* Footer — versiyon pill + kayıt durumu (yeşil nokta) */
 .sidebar-footer {
   padding: 12px 16px;
   border-top: 1px solid rgba(255,255,255,.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 10.5px;
-  color: rgba(255,255,255,.2);
-  line-height: 1.5;
+  color: rgba(255,255,255,.3);
 }
 .sidebar-footer strong {
-  color: rgba(255,255,255,.35);
+  color: rgba(255,255,255,.6);
   font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .5px;
+  padding: 2px 7px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--r-pill);
+}
+#api-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+#api-status:not(:empty)::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 25%, transparent);
 }
 
 /* ── Main ── */
