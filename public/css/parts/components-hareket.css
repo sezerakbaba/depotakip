@@ -89,8 +89,8 @@
   white-space: nowrap;
   user-select: none;
 }
-.har-tarih-chip:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,137,123,.15); }
-.har-tarih-chip.active { background: var(--gradient-primary); color: #fff; border-color: var(--teal); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,137,123,.3); }
+.har-tarih-chip:hover { border-color: var(--teal); color: var(--teal); }
+.har-tarih-chip.active { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
 
 /* Hareket temizle butonu */
 .har-temizle-btn {
@@ -105,7 +105,7 @@
   cursor: pointer;
   transition: all .18s cubic-bezier(.4,0,.2,1);
 }
-.har-temizle-btn:hover { border-color: var(--red); color: var(--red); transform: translateY(-1px); }
+.har-temizle-btn:hover { border-color: var(--red); color: var(--red); }
 
 /* Hareket sil butonu */
 .har-sil-btn {
@@ -222,7 +222,7 @@
 .har-not-lbl-aktif { color: var(--teal); }
 
 /* Not zorunlu buton aktif */
-#not-zorunlu-btn.active { background: rgba(0,191,165,.15); }
+#not-zorunlu-btn.active { background: color-mix(in srgb, var(--accent) 15%, transparent); }
 
 .har-ozet-sayi { font-size:22px; font-weight:700; font-family:'IBM Plex Mono',monospace; line-height:1; }
 .har-ozet-lbl  { font-size:10px; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.5px; }
