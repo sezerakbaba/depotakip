@@ -15,7 +15,9 @@ export async function renderBackupList() {
   liste.innerHTML = skeletonList(3);
   const yedekler = await apiBackupList();
   if (!yedekler.length) {
-    liste.innerHTML='<p style="font-size:13px;color:var(--muted)">Henüz yedek yok.</p>'; return;
+    liste.innerHTML='<div class="empty-state"><div class="empty-icon"><i data-lucide="archive"></i></div><div class="empty-title">Yedek yok</div><div class="empty-desc">Henüz otomatik yedek alınmadı.</div></div>';
+    if (window.lucide) lucide.createIcons({ nodes: [liste] });
+    return;
   }
   liste.innerHTML = yedekler.map(y=>`
     <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)">
@@ -25,6 +27,7 @@ export async function renderBackupList() {
       </div>
       <button class="btn btn-sm btn-outline" ${dClick('apiBackupLoad',y.dosya)}><i data-lucide="rotate-ccw" class="icon-inline"></i> Yükle</button>
     </div>`).join('');
+  if (window.lucide) lucide.createIcons({ nodes: [liste] });
 }
 
 export async function refreshVeriYonet() {
