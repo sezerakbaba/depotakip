@@ -329,7 +329,8 @@ export function renderTalepListesi() {
   const durumFilter = document.getElementById('tl-durum-filter')?.value || '';
   const liste = [...S._talepListesi].reverse().filter(t => !durumFilter || t.durum === durumFilter);
   if (!liste.length) {
-    el.innerHTML = '<div class="card"><div class="card-body"><p style="color:var(--muted);font-size:13px">Kayıtlı talep bulunamadı.</p></div></div>';
+    el.innerHTML = '<div class="card"><div class="card-body"><div class="empty-state"><div class="empty-icon"><i data-lucide="file-text"></i></div><div class="empty-title">Talep yok</div><div class="empty-desc">Henüz kayıtlı talep bulunmuyor. Talepname sayfasından yeni talep oluşturabilirsiniz.</div></div></div></div>';
+    if (window.lucide) lucide.createIcons({ nodes: [el] });
     return;
   }
   const acilRenk = { 'Normal':'var(--ink2)', 'Acil':'var(--amber)', 'Çok Acil':'var(--red)' };

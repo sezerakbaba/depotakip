@@ -155,7 +155,7 @@ export async function renderDashboard() {
     const sh = document.getElementById('son-hareketler');
     if (sh) {
       sh.innerHTML = !sonHareketler?.length
-        ? '<p style="color:var(--muted);font-size:13px;">Henüz hareket kaydı yok.</p>'
+        ? '<div class="empty-state"><div class="empty-icon"><i data-lucide="inbox"></i></div><div class="empty-title">Hareket yok</div><div class="empty-desc">Henüz giriş/çıkış kaydı bulunmuyor.</div></div>'
         : sonHareketler.slice(0, S.ayarlar.sonHareketLimit).map(h => `
           <div class="hareket-item">
             <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
@@ -165,6 +165,7 @@ export async function renderDashboard() {
             </div>
             <div class="hareket-miktar ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.miktar}</div>
           </div>`).join('');
+      if (window.lucide) lucide.createIcons({ nodes: [sh] });
     }
   } catch(e) {
     console.warn('Dashboard hareket istatistik hatası:', e);

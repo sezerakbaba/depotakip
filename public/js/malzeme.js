@@ -97,7 +97,8 @@ export function renderMalzemeEkleList() {
       </td>
     </tr>`;
   });
-  tbody.innerHTML = rows || `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Malzeme bulunamadı.</td></tr>`;
+  tbody.innerHTML = rows || `<tr><td colspan="7" style="padding:0"><div class="empty-state"><div class="empty-icon"><i data-lucide="package-search"></i></div><div class="empty-title">Malzeme bulunamadı</div><div class="empty-desc">Arama kriterini değiştirin veya yeni malzeme ekleyin.</div></div></td></tr>`;
+  if (window.lucide) lucide.createIcons({ nodes: [tbody] });
 }
 
 // Expose on window for inline handlers
