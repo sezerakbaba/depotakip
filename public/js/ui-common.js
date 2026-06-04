@@ -16,6 +16,22 @@ export function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
+// Chart.js CSS değişkenlerini okuyamaz → aktif temanın token renklerini
+// computed style'dan çözüp grafik konfigine veririz (tema-duyarlı + sade).
+export function chartTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  const v = (n, fb) => (cs.getPropertyValue(n).trim() || fb);
+  return {
+    grid:    v('--border', '#dde4ec'),
+    tick:    v('--text-muted', '#8a9bb0'),
+    success: v('--success', '#1b5e20'),
+    danger:  v('--danger', '#d32f2f'),
+    warning: v('--warning', '#e65100'),
+    accent:  v('--accent', '#0f766e'),
+    font:    "'IBM Plex Sans', system-ui, sans-serif",
+  };
+}
+
 // FIX: Varsayılan min=0, max=0 → stok girilmeden hiçbir şey kritik değil
 export function getStok(depo, mal) {
   const k = getKey(depo, mal);

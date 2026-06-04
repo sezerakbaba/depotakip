@@ -1,6 +1,6 @@
 import { S, DEPO_META, API_URL } from './state.js';
 import { apiFetch } from './api.js';
-import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, fmt, timeAgo, dClick } from './ui-common.js';
+import { getAllItems, getDepoItems, getStok, durum, depoBadge, esc, fmt, timeAgo, dClick, chartTheme } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // DASHBOARD
@@ -175,13 +175,16 @@ export function renderChartDepo() {
   const labels = Object.keys(DEPO_META);
   const data   = Object.keys(DEPO_META).map(d => getDepoItems(d).length);
   const colors = Object.values(DEPO_META).map(m => m.color);
+  const ct = chartTheme();
   if (S.chartDepo) S.chartDepo.destroy();
   S.chartDepo = new Chart(document.getElementById('chartDepo'), {
     type:'bar',
-    data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,borderSkipped:false}]},
+    data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:4,borderSkipped:false,maxBarThickness:48}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true,grid:{color:'#dde4ec'}},x:{grid:{display:false}}}}
+      scales:{
+        y:{beginAtZero:true,grid:{color:ct.grid,drawBorder:false},ticks:{color:ct.tick,font:{family:ct.font,size:11},precision:0}},
+        x:{grid:{display:false},ticks:{color:ct.tick,font:{family:ct.font,size:11}}}}}
   });
 }
 
@@ -196,12 +199,13 @@ export function renderChartDurum(id) {
   if (!canvas) return;
   const existing = id==='chartDurum' ? S.chartDurum : S.chartDurum2;
   if (existing) existing.destroy();
+  const ct = chartTheme();
   const ch = new Chart(canvas, {
     type:'doughnut',
     data:{labels:['Normal','Kritik','Fazla'],
-      datasets:[{data:[n,k,f],backgroundColor:['#2e7d32','#d32f2f','#e65100'],borderWidth:0,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{position:'bottom',labels:{font:{family:'IBM Plex Sans',size:12},padding:12}}}}
+      datasets:[{data:[n,k,f],backgroundColor:[ct.success,ct.danger,ct.warning],borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{position:'bottom',labels:{color:ct.tick,font:{family:ct.font,size:12},padding:14,usePointStyle:true,boxWidth:10}}}}
   });
   if (id==='chartDurum') S.chartDurum=ch; else S.chartDurum2=ch;
 }

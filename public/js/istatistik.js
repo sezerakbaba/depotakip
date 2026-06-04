@@ -1,5 +1,5 @@
 import { S, API_URL, DEPO_META } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, esc } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, esc, chartTheme } from './ui-common.js';
 import { renderChartDurum } from './dashboard.js';
 import { apiFetch } from './api.js';
 
@@ -31,16 +31,19 @@ export async function renderIstatistik() {
     enAktif = [];
   }
 
+  const ct = chartTheme();
   if (S.chartTrend) S.chartTrend.destroy();
   S.chartTrend = new Chart(document.getElementById('chartTrend'),{
     type:'line',
     data:{labels:trend.map(t=>t.label),datasets:[
-      {label:'Giriş',data:trend.map(t=>t.giris),borderColor:'#2e7d32',backgroundColor:'rgba(46,125,50,.1)',tension:.4,fill:true},
-      {label:'Çıkış',data:trend.map(t=>t.cikis),borderColor:'#d32f2f',backgroundColor:'rgba(211,47,47,.08)',tension:.4,fill:true}
+      {label:'Giriş',data:trend.map(t=>t.giris),borderColor:ct.success,backgroundColor:ct.success,tension:.35,fill:false,pointRadius:2,borderWidth:2},
+      {label:'Çıkış',data:trend.map(t=>t.cikis),borderColor:ct.danger,backgroundColor:ct.danger,tension:.35,fill:false,pointRadius:2,borderWidth:2}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom'}},
-      scales:{y:{beginAtZero:true,grid:{color:'#dde4ec'}},x:{grid:{display:false}}}}
+      plugins:{legend:{position:'bottom',labels:{color:ct.tick,font:{family:ct.font,size:11},boxWidth:10,padding:14,usePointStyle:true}}},
+      scales:{
+        y:{beginAtZero:true,grid:{color:ct.grid,drawBorder:false},ticks:{color:ct.tick,font:{family:ct.font,size:11},precision:0}},
+        x:{grid:{display:false},ticks:{color:ct.tick,font:{family:ct.font,size:11}}}}}
   });
 
   const depKritik = Object.keys(DEPO_META).map(dep=>
@@ -51,10 +54,12 @@ export async function renderIstatistik() {
   S.chartKritikDepo = new Chart(document.getElementById('chartKritikDepo'),{
     type:'bar',
     data:{labels:Object.keys(DEPO_META),
-      datasets:[{label:'Kritik Kalem',data:depKritik,backgroundColor:'rgba(211,47,47,.8)',borderRadius:6,borderSkipped:false}]},
+      datasets:[{label:'Kritik Kalem',data:depKritik,backgroundColor:ct.danger,borderRadius:4,borderSkipped:false,maxBarThickness:48}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true,grid:{color:'#dde4ec'}},x:{grid:{display:false}}}}
+      scales:{
+        y:{beginAtZero:true,grid:{color:ct.grid,drawBorder:false},ticks:{color:ct.tick,font:{family:ct.font,size:11},precision:0}},
+        x:{grid:{display:false},ticks:{color:ct.tick,font:{family:ct.font,size:11}}}}}
   });
 
   const el=document.getElementById('aktif-malzeme-list');
