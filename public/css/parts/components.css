@@ -415,6 +415,24 @@ textarea { resize: vertical; min-height: 70px; }
 .btn-icon { width: 32px; padding: 0; }
 .btn-icon.btn-sm { width: 24px; }
 
+/* Satır-içi × kaldırma/temizle kontrolü (kanonik küçük buton) */
+.btn-x {
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--r-xs);
+  line-height: 0;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--motion-fast);
+}
+.btn-x:hover { color: var(--danger); }
+.btn-x svg { width: 12px; height: 12px; }
+
 /* ── Button group ──────────────────────────────────────────────── */
 .btn-group { display: inline-flex; }
 .btn-group .btn { border-radius: 0; }
