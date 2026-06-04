@@ -4,13 +4,10 @@
 .card {
   background: var(--white);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--el-1);          /* kurumsal sade: kenarlık + minik gölge */
   border: 1px solid var(--line);
-  transition: box-shadow .2s, transform .2s;
 }
-.card:hover {
-  box-shadow: var(--shadow-md);
-}
+/* Kartlar statik konteyner — hover'da yükselme yok (sade) */
 .card-header {
   padding: 15px 20px 12px;
   font-size: 13px;
@@ -242,9 +239,10 @@ tbody tr.row-fazla {
 }
 
 tbody td {
-  padding: 9px 12px;
+  padding: 10px 12px;
   color: var(--ink2);
   vertical-align: middle;
+  font-variant-numeric: tabular-nums;   /* sayılar eşit genişlik → hizalı kolonlar */
 }
 /* td hizalamaları data-col seçicilerde tanımlandı — nth-child kuralları kaldırıldı */
 
@@ -480,15 +478,11 @@ textarea { resize: vertical; min-height: 70px; }
 .filter-chip:hover {
   border-color: var(--teal);
   color: var(--teal);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,137,123,.15);
 }
 .filter-chip.active {
   border-color: var(--teal);
-  background: var(--gradient-primary);
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0,137,123,.3);
+  background: var(--accent);
+  color: var(--text-on-accent);
 }
 .filter-chip.active[data-color] { border-color: var(--chip-color); background: var(--chip-color); }
 #stok-depo-chips { display: contents; }
