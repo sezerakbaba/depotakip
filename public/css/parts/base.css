@@ -7,8 +7,8 @@
   --line:   #dde4ec;
   --bg:     #f4f7fb;
   --white:  #ffffff;
-  --teal:   #00897b;
-  --teal2:  #00bfa5;
+  --teal:   #0f766e;
+  --teal2:  #0d9488;
   --red:    #d32f2f;
   --red-bg: #fff5f5;
   --amber:  #e65100;
@@ -24,14 +24,14 @@
   --kd:  #bf360c; --kd-bg:  #fbe9e7;
   --kgd: #b71c1c; --kgd-bg: #ffebee;
 
-  --teal-bg:  #e0f2f1;
+  --teal-bg:  #e7f1ef;
 
   --sidebar-w: 240px;
   --radius: 10px;
   --shadow: 0 2px 12px rgba(15,25,35,.08);
   --shadow-md: 0 4px 20px rgba(15,25,35,.12);
   --shadow-lg: 0 8px 32px rgba(15,25,35,.16);
-  --gradient-primary: linear-gradient(135deg, #00897b 0%, #00bfa5 100%);
+  --gradient-primary: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
   --gradient-sidebar: linear-gradient(180deg, #0b1120 0%, #0d1f35 100%);
 }
 
@@ -39,7 +39,7 @@
   :root {
     --ink:    #e8edf2; --ink2: #b0bec5; --muted: #607d8b;
     --line:   #2a3a4a; --bg: #0d1b2a; --white: #162030;
-    --teal:   #00897b; --teal2: #00bfa5; --teal-bg: #0a1e1c;
+    --teal:   #14b8a6; --teal2: #2dd4bf; --teal-bg: #0c2622;
     --red:    #ef5350; --red-bg: #1a0a0a;
     --amber:  #ff7043; --amb-bg: #1a0f00;
     --green:  #66bb6a; --grn-bg: #0a1f0a;
@@ -52,7 +52,7 @@
 html[data-theme="dark"] {
   --ink:    #e8edf2; --ink2: #b0bec5; --muted: #607d8b;
   --line:   #2a3a4a; --bg: #0d1b2a; --white: #162030;
-  --teal:   #00897b; --teal2: #00bfa5; --teal-bg: #0a1e1c;
+  --teal:   #14b8a6; --teal2: #2dd4bf; --teal-bg: #0c2622;
   --red:    #ef5350; --red-bg: #1a0a0a;
   --amber:  #ff7043; --amb-bg: #1a0f00;
   --green:  #66bb6a; --grn-bg: #0a1f0a;
@@ -64,7 +64,7 @@ html[data-theme="dark"] {
 html[data-theme="light"] {
   --ink:    #0f1923; --ink2: #2d3f50; --muted: #8a9bb0;
   --line:   #dde4ec; --bg: #f4f7fb; --white: #ffffff;
-  --teal:   #00897b; --teal2: #00bfa5; --teal-bg: #e0f2f1;
+  --teal:   #0f766e; --teal2: #0d9488; --teal-bg: #e7f1ef;
   --red:    #d32f2f; --red-bg: #fff5f5;
   --amber:  #e65100; --amb-bg: #fff8f0;
   --green:  #1b5e20; --grn-bg: #c8e6c9;
@@ -95,12 +95,12 @@ html[data-theme="light"] {
 :focus { outline: none; }
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #00897b);
+  box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #0f766e);
   border-radius: var(--r-sm, 6px);
 }
 /* role="button" verilen non-button elementlerin Space basıldığında
    sayfayı kaydırmasını engelle (preventDefault JS'te yapılıyor ama
    görsel olarak da etkin görünsün) */
 [role="button"] { user-select: none; }
-[role="button"]:focus-visible { box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #00897b); }
+[role="button"]:focus-visible { box-shadow: 0 0 0 2px var(--surface-1, #fff), 0 0 0 4px var(--accent, #0f766e); }
 

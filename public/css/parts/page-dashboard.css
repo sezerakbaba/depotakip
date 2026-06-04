@@ -16,7 +16,10 @@
   padding: var(--s-4);
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  flex-wrap: wrap;          /* alt-bilgi (trend) dar kartta değerin altına geçer */
+  align-content: center;
+  column-gap: var(--s-3);
+  row-gap: 2px;
   position: relative;
   overflow: hidden;
   min-height: 80px;
@@ -55,7 +58,12 @@
   margin-top: 2px;
 }
 .c-kpi.amber .c-kpi-val, .c-kpi.red .c-kpi-val { color: var(--danger); }
-.c-kpi-sub { font-size: var(--fs-xs); color: var(--text-muted); margin-top: var(--s-1); }
+.c-kpi-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  flex-basis: 100%;                          /* her zaman değerin altına */
+  padding-left: calc(40px + var(--s-3));     /* ikon (40) + sütun boşluğu hizası */
+}
 #dash-sparkline { margin-top: var(--s-1); opacity: .7; line-height: 0; }
 
 /* ── Depo kartları (nötr + sol kenar depo rengi) ────────────────── */

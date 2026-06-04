@@ -127,7 +127,7 @@ async function _doSave() {
     const json = await r.json();
     if (!json.ok) { window.toast('Kayıt hatası: ' + json.error, 'error'); return; }
     if (json.version != null) S._serverVersion = json.version;
-    const _as = document.getElementById('api-status'); if(_as) _as.textContent = '💾 ' + new Date().toLocaleTimeString('tr-TR');
+    const _as = document.getElementById('api-status'); if(_as) _as.textContent = 'Kaydedildi ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
   } catch(e) {
     window.toast('Sunucu bağlantı hatası: ' + e.message, 'error');
   }
