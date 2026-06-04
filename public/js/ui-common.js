@@ -32,6 +32,19 @@ export function chartTheme() {
   };
 }
 
+// Yükleme iskeleti üreticileri (öneri #11) — "Yükleniyor…" metni yerine.
+export function skeletonList(rows = 6) {
+  const row =
+    '<div class="sk-row"><div class="sk-circle"></div>' +
+    '<div class="sk-lines"><div class="sk-line sk-w-60"></div><div class="sk-line sk-w-30"></div></div>' +
+    '<div class="sk-amount"></div></div>';
+  return row.repeat(rows);
+}
+export function skeletonStats(n = 4) {
+  const box = '<div class="sk-stat"><div class="sk-line sk-w-40"></div><div class="sk-line sk-w-60"></div></div>';
+  return '<div class="sk-stats">' + box.repeat(n) + '</div>';
+}
+
 // FIX: Varsayılan min=0, max=0 → stok girilmeden hiçbir şey kritik değil
 export function getStok(depo, mal) {
   const k = getKey(depo, mal);

@@ -1,5 +1,5 @@
 import { S, API_URL } from './state.js';
-import { getAllItems, getStok, durum, esc, getKey, dClick } from './ui-common.js';
+import { getAllItems, getStok, durum, esc, getKey, dClick, skeletonList } from './ui-common.js';
 import { apiFetch, apiBackupList, apiBackupLoad, apiHareketList } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -12,7 +12,7 @@ export async function renderBackupList() {
   if (!kart || !liste) return;
   if (!S.API_MOD) { kart.style.display='none'; return; }
   kart.style.display='block';
-  liste.innerHTML='<p style="font-size:13px;color:var(--muted)">Yükleniyor...</p>';
+  liste.innerHTML = skeletonList(3);
   const yedekler = await apiBackupList();
   if (!yedekler.length) {
     liste.innerHTML='<p style="font-size:13px;color:var(--muted)">Henüz yedek yok.</p>'; return;

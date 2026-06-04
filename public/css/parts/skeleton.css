@@ -1,0 +1,51 @@
+/* skeleton.css — S/öneri #11: yükleme placeholder'ı (pulse, tema-duyarlı) */
+
+.sk-line,
+.sk-circle,
+.sk-amount {
+  background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+  border-radius: var(--r-sm);
+  animation: sk-pulse 1.3s ease-in-out infinite;
+}
+@keyframes sk-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+/* Hareket azaltma tercihinde animasyonu kapat (a11y) */
+@media (prefers-reduced-motion: reduce) {
+  .sk-line, .sk-circle, .sk-amount { animation: none; }
+}
+
+/* Liste satırı iskeleti (hareket listesi / yedek listesi) */
+.sk-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sk-circle { width: 34px; height: 34px; border-radius: var(--r-pill); flex-shrink: 0; }
+.sk-lines  { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sk-line   { height: 10px; }
+.sk-w-60 { width: 60%; }
+.sk-w-40 { width: 40%; }
+.sk-w-30 { width: 30%; }
+.sk-amount { width: 48px; height: 16px; flex-shrink: 0; }
+
+/* Özet kartları iskeleti (hareket özet satırı) */
+.sk-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s-2);
+}
+.sk-stat {
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (max-width: 600px) {
+  .sk-stats { grid-template-columns: 1fr 1fr; }
+}
