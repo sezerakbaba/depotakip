@@ -11,6 +11,7 @@ import { renderBackupList, refreshVeriYonet } from './veri.js';
 import { initTalep, renderTalepListesi, talepListesiYukle } from './talep.js';
 import { ayarlariYukle, ayarlariKaydet, applyTheme, renderAyarlar } from './ayarlar.js';
 import { openGlobalSearch } from './global-search.js';
+import { initI18n, applyI18n, t, setLang } from './i18n.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL HELPERS
@@ -85,7 +86,7 @@ export function navigate(page) {
   const ni = document.querySelector(`.nav-item[data-action="navigate"][data-arg="${page}"]`);
   if (ni) ni.classList.add('active');
   const tt = document.getElementById('topbar-title');
-  if (tt) tt.textContent = PAGE_TITLES[page] || page;
+  if (tt) tt.textContent = t('page.' + page);   // i18n; tr.json page.* TR başlıkları içerir
 
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -451,6 +452,7 @@ const ACTIONS = {
   // Ayarlar
   setTema:              _setTemaThen,
   cycleTema:            _cycleTema,
+  setDil:               (_el, lang) => setLang(lang),
   setTarihFormat:       _setTarihFormatThen,
   birimSil:             (_el, b) => window.birimSil?.(b),
   birimEkle:            () => window.birimEkle?.(),
@@ -607,6 +609,7 @@ function _a11yEnhance(root = document) {
     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
   });
   _applyDataStyles(root);
+  applyI18n(root);   // S11: dinamik eklenen [data-i18n] da çevrilsin
 }
 
 // S9 faz 3: dinamik inline style'lar (`data-style="...${...}"`) `data-style`'a
@@ -801,6 +804,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
     window.toast('⚠ Sunucu bağlantısı yok — veriler kaydedilmeyecek', 'error');
   }
   ayarlariYukle();
+  await initI18n();   // S11: sözlükleri yükle + statik DOM'u çevir (dil S.ayarlar.dil)
   document.title = (S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi') + ' — Depo Takip';
   _syncThemeToggleIcon();
   _a11yEnhance();

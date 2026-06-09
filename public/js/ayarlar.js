@@ -1,6 +1,7 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
 import { esc, dClick, dChange, dInput, dKeydown, setFieldError, clearFieldErrors } from './ui-common.js';
 import { apiFetch } from './api.js';
+import { t } from './i18n.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // AYARLAR
@@ -111,6 +112,11 @@ export function renderAyarlar() {
         <button class="btn btn-sm ${S.ayarlar.tema==='light'?'btn-primary':'btn-outline'}" ${dClick('setTema','light')}><i data-lucide="sun" class="icon-inline"></i> Açık</button>
         <button class="btn btn-sm ${S.ayarlar.tema==='dark'?'btn-primary':'btn-outline'}" ${dClick('setTema','dark')}><i data-lucide="moon" class="icon-inline"></i> Koyu</button>
         <button class="btn btn-sm ${S.ayarlar.tema==='auto'?'btn-primary':'btn-outline'}" ${dClick('setTema','auto')}><i data-lucide="monitor" class="icon-inline"></i> Otomatik</button>
+      </div></div>
+    <div class="ayar-row"><div class="ayar-label">${t('ayarlar.gorunum.dil')}<small>${t('ayarlar.gorunum.dilAciklama')}</small></div>
+      <div class="btn-group">
+        <button class="btn btn-sm ${(S.ayarlar.dil||'tr')==='tr'?'btn-primary':'btn-outline'}" ${dClick('setDil','tr')}>Türkçe</button>
+        <button class="btn btn-sm ${S.ayarlar.dil==='en'?'btn-primary':'btn-outline'}" ${dClick('setDil','en')}>English</button>
       </div></div>
     <div class="ayar-row"><div class="ayar-label">Yazı Tipi Boyutu<small id="yazitipiBoy-lbl">Şu an: ${S.ayarlar.yazitipiBoy||100}%</small></div>
       <input class="u-66" type="range" min="80" max="130" step="5" value="${S.ayarlar.yazitipiBoy||100}"

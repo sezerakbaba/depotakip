@@ -12,6 +12,7 @@ export const AYARLAR_DEFAULT = {
   harSayfaBoy:      50,
   stokSayfaBoy:     100,
   tema:             'auto',
+  dil:              'tr',
   yazitipiBoy:      100,
   tarihFormat:      'tr',
   katZorunlu:       false,

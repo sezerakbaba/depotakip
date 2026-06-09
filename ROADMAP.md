@@ -429,11 +429,32 @@ tuşlarıyla seçim + Enter ile gitme.
 - Tarayıcıda uçtan uca doğrulandı (Ctrl+K aç, filtrele, ok tuşları,
   Enter→depo-detay ve Enter→stok+filtre, console temiz, responsive).
 
-### [ ] S11. i18n şeması
+### [ ] S11. i18n şeması  *(Faz 1 ✅ — altyapı + nav kabuğu; string migrasyonu sürüyor)*
 Tüm Türkçe string'ler hard-coded. `i18n/tr.json` + key-based lookup
 helper. EN için temel çeviri. Ayarlar'a dil seçimi.
 
 **Bağımlılık:** Yok (ama büyük scope — 2-3 oturum).
+
+**Faz 1 (2026-06-09):** i18n altyapısı kuruldu + ilk dilim (navigasyon
+kabuğu) çevrildi.
+- `public/i18n/tr.json` + `en.json` (key→string sözlükler, fetch ile yüklenir).
+- `public/js/i18n.js`: `t(key,{vars})` (çözüm zinciri **aktif dil → TR →
+  key** ⇒ kapsanmayan string TR'ye düşer, varsayılanda **sıfır regresyon**),
+  `applyI18n(root)` (`data-i18n` / `data-i18n-ph` / `data-i18n-title`),
+  `setLang`, `initI18n`. `_a11yEnhance`'e bağlandı → dinamik eklenen
+  `[data-i18n]` de çevrilir.
+- `AYARLAR_DEFAULT.dil` ('tr'); Ayarlar → Görünüm'e **Türkçe/English** seçici
+  (`setDil`). `navigate` topbar başlığını `t('page.'+page)` ile üretir.
+- index.html sidebar (nav-label + nav-text) `data-i18n` ile işaretlendi.
+- **Doğrulandı (tarayıcı):** varsayılan TR birebir (regresyon yok); EN'e
+  geçince sidebar + bölüm başlıkları + topbar başlığı İngilizce, kalan
+  içerik TR fallback; reload sonrası dil kalıcı; i18n fetch CSP-OK
+  (connect-src 'self'); console temiz; `<html lang>` güncelleniyor.
+
+**Kalan fazlar:** (2) JS render'larındaki ve index.html'deki kalan TR
+string'leri `t()`/`data-i18n`'e taşı (stok/hareket/talep/ayarlar/kritik/
+malzeme/veri sayfaları, modallar, toast'lar) + tr.json/en.json'u genişlet.
+(3) Tarih/sayı yerelleştirme (`toLocale*` zaten kısmen TR). Büyük scope.
 
 ### [x] S12. Talep duplicate prevention
 LocalStorage + server iki tarafı senkronize ediyor, id çakışabilir.
