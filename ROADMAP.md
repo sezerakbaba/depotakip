@@ -378,11 +378,26 @@ ele alınmalı (`.style` ataması CSP-governed değil). Ayrıca `inline > class`
 specificity'si nedeniyle üretilen utility class'lar CSS'in **en sonunda**
 olmalı ki eşitlikte kazansın.
 
-Bu kapsam tek oturumda güvenli değil → **ertelendi** (kullanıcı kararı).
-style-src 'unsafe-inline' şimdilik kalıyor. Önerilen aşamalı plan:
-(1) 116 statik JS + 87 statik HTML → utility class'lar (scriptle, en sona
-ekle, sayfa/modal regresyon testi), (2) 19 dinamik → `.style`/CSS var,
-(3) CSP'den `style-src 'unsafe-inline'` kaldır + enforce doğrula.
+Bu kapsam tek oturumda güvenli değil → 3 faza bölündü:
+(1) 87 statik HTML + ~108 statik JS → utility class'lar, (2) 19 dinamik →
+`.style`/CSS var, (3) CSP'den `style-src 'unsafe-inline'` kaldır + enforce.
+
+**İlerleme (2026-06-09):**
+- **Faz 1 ✅** (commit `fddff4f`): index.html 87 statik style → 65 utility
+  class. Yeni `parts/utilities.css` cascade'in en sonunda @import.
+- **Faz 2 ✅** (commit `c1dd827`): 11 JS modülünde 108 statik style → class.
+  utilities.css 132 class (HTML+JS dedup). Codemod + .mjs syntax-check +
+  10 sayfa/modal tarayıcı regresyon testi, console temiz.
+- **Faz 3 ⏳ kalan:** 19 dinamik `style="...${...}"` → render-sonrası
+  `el.style.x=` (CSS-var-via-attribute CSP'yi geçmez; `style="--w:42%"` de
+  inline ihlali). Sonra `style-src 'unsafe-inline'` kaldırılıp enforce
+  doğrulanacak. **En riskli faz** — her dinamik genelde map().join()
+  template'i içinde, post-render hook gerektiriyor.
+
+Kalan dinamikler (19): ayarlar.js(1) dashboard.js(3) hareket.js(3)
+istatistik.js(1) kritik.js(4) main.js(1) malzeme.js(1) stok.js(2)
+talep.js(2) ui-common.js(1). Çoğu: doluluk barı `width:${pct}%` ve
+durum-renkli metin `color:${...}`.
 
 ## 3.4 Gelecek özellikler
 
