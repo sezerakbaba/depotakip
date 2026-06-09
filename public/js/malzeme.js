@@ -83,21 +83,21 @@ export function renderMalzemeEkleList() {
     const sktHtml = mm.skt ? '<br>'+window.sktBadge(mm.skt) : '';
     const ozelStar = item.ozel ? '<i data-lucide="star" class="icon-inline ozel-star" title="Özel ekleme"></i>' : '';
     const birimTxt = mm.birim || item.birim || '—';
-    const katHtml  = item.kategori ? window.katBadgeHTML(item.kategori) : '<span style="color:var(--muted)">—</span>';
+    const katHtml  = item.kategori ? window.katBadgeHTML(item.kategori) : '<span class="u-99">—</span>';
     rows += `<tr>
       <td class="td-name">${esc(item.ad)}${ozelStar}${sktHtml}</td>
       <td>${depoBadge(item.depo)}</td>
-      <td class="td-mono" style="font-size:11px">${esc(birimTxt)}</td>
+      <td class="td-mono u-20">${esc(birimTxt)}</td>
       <td>${katHtml}</td>
       <td class="td-mono" style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
       <td>${durumBadge(d)}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,item.depo,item.ad)} style="margin-right:4px" title="Düzenle"><i data-lucide="pencil"></i></button>
+      <td class="u-111">
+        <button class="btn btn-sm btn-outline u-112" ${dClick('openStokModal',key,item.depo,item.ad)} title="Düzenle"><i data-lucide="pencil"></i></button>
         <button class="btn btn-sm btn-danger-soft btn-icon" ${dClick('malzemeSil',item.depo,item.ad)} title="Sil"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   });
-  tbody.innerHTML = rows || `<tr><td colspan="7" style="padding:0"><div class="empty-state"><div class="empty-icon"><i data-lucide="package-search"></i></div><div class="empty-title">Malzeme bulunamadı</div><div class="empty-desc">Arama kriterini değiştirin veya yeni malzeme ekleyin.</div></div></td></tr>`;
+  tbody.innerHTML = rows || `<tr><td class="u-105" colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="package-search"></i></div><div class="empty-title">Malzeme bulunamadı</div><div class="empty-desc">Arama kriterini değiştirin veya yeni malzeme ekleyin.</div></div></td></tr>`;
   if (window.lucide) lucide.createIcons({ nodes: [tbody] });
 }
 

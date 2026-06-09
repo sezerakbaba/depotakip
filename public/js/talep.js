@@ -335,11 +335,11 @@ export function renderTalepListesi() {
   }
   const acilRenk = { 'Normal':'var(--ink2)', 'Acil':'var(--amber)', 'Çok Acil':'var(--red)' };
   const durumCls = d => ({ 'Taslak':'taslak','Onay Bekliyor':'onay-bekliyor','Onaylı':'onayli','Reddedildi':'reddedildi' }[d]||'taslak');
-  el.innerHTML = `<div class="card" style="overflow:hidden"><div style="overflow-x:auto">
+  el.innerHTML = `<div class="card u-124"><div class="u-125">
     <table id="talep-list-table">
       <thead><tr>
         <th>Talep No</th><th>Tarih</th><th>Birim</th><th>Personel</th>
-        <th>Aciliyet</th><th style="text-align:center">Kalem</th>
+        <th>Aciliyet</th><th class="u-108">Kalem</th>
         <th>Durum</th><th></th>
       </tr></thead>
       <tbody>
@@ -348,14 +348,14 @@ export function renderTalepListesi() {
         const d = t.durum || 'Taslak';
         const bekliyor = d === 'Onay Bekliyor';
         return `<tr>
-          <td><strong style="font-family:'IBM Plex Mono',monospace;font-size:12px">${esc(t.no)}</strong></td>
-          <td style="font-size:12px">${esc(t.tarih||'—')}</td>
+          <td><strong class="u-126">${esc(t.no)}</strong></td>
+          <td class="u-48">${esc(t.tarih||'—')}</td>
           <td>${esc(t.birim||'—')}</td>
           <td>${esc(t.personel||'—')}</td>
           <td style="color:${acilRenk[t.aciliyet]||'var(--ink2)'}"><strong>${esc(t.aciliyet||'Normal')}</strong></td>
-          <td style="text-align:center">${kalem}</td>
+          <td class="u-108">${kalem}</td>
           <td><span class="talep-durum-badge ${durumCls(d)}">${esc(d)}</span></td>
-          <td style="text-align:right;white-space:nowrap;display:flex;gap:4px;justify-content:flex-end">
+          <td class="u-127">
             ${bekliyor ? `<button class="btn btn-sm btn-success" ${dClick('talepDurumGuncelle',t.id,'Onaylı')}><i data-lucide="check" class="icon-inline"></i> Onayla</button>
               <button class="btn btn-sm btn-danger-soft" ${dClick('talepDurumGuncelle',t.id,'Reddedildi')}><i data-lucide="x" class="icon-inline"></i> Reddet</button>` : ''}
             <button class="btn btn-sm btn-outline" ${dClick('talepGoruntule',t.id)}><i data-lucide="eye" class="icon-inline"></i> Görüntüle</button>
@@ -401,18 +401,18 @@ export function talepSatirEkle(malzemeVal) {
   tr.id = 'talep-satir-' + S.talepSatirCount;
   const n = S.talepSatirCount;
   tr.innerHTML = `
-    <td style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">${n}</td>
-    <td style="min-width:180px">
+    <td class="u-128">${n}</td>
+    <td class="u-129">
       <input type="hidden" id="talep-hid-${n}" value="">
       <div class="talep-mal-cell" id="talep-combo-${n}">
         <button class="talep-mal-btn" type="button" ${dClick('talepMalModalAc',n)}><i data-lucide="package" class="icon-inline"></i> Malzeme Seç</button>
       </div>
     </td>
     <td class="t-depo-cell"></td>
-    <td><input type="text" class="talep-birim" placeholder="adet" style="width:100%"></td>
-    <td class="t-mevcut-cell" style="text-align:center"></td>
+    <td><input type="text" class="talep-birim u-7" placeholder="adet"></td>
+    <td class="t-mevcut-cell u-108"></td>
     <td><input type="number" class="talep-miktar" min="0" placeholder="0" ${dInput('updateTalepToplam')}></td>
-    <td class="no-print" style="text-align:center">
+    <td class="no-print u-108">
       <button ${dClick('talepSatirSil',n)} class="btn btn-sm btn-ghost btn-icon" title="Satırı sil"><i data-lucide="x"></i></button>
     </td>`;
   tbody.appendChild(tr);

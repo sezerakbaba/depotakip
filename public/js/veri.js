@@ -20,10 +20,10 @@ export async function renderBackupList() {
     return;
   }
   liste.innerHTML = yedekler.map(y=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)">
-      <div style="flex:1">
-        <div style="font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace">${esc(y.tarih)}</div>
-        <div style="font-size:10px;color:var(--muted)">${esc(y.dosya)} · ${esc(y.boyut)}</div>
+    <div class="u-130">
+      <div class="u-19">
+        <div class="u-131">${esc(y.tarih)}</div>
+        <div class="u-132">${esc(y.dosya)} · ${esc(y.boyut)}</div>
       </div>
       <button class="btn btn-sm btn-outline" ${dClick('apiBackupLoad',y.dosya)}><i data-lucide="rotate-ccw" class="icon-inline"></i> Yükle</button>
     </div>`).join('');
