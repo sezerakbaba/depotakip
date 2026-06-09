@@ -62,19 +62,19 @@
 
 
 <!-- Token / Giriş Modal -->
-<div class="modal-overlay" id="modal-login" style="z-index:9999">
+<div class="modal-overlay u-1" id="modal-login">
   <div class="modal modal--sm">
     <div class="modal-header">
       <div class="modal-title"><i data-lucide="lock" class="icon-inline"></i> Sunucu Erişimi</div>
     </div>
-    <div style="padding:6px 0 14px;color:var(--muted);font-size:13px">
+    <div class="u-2">
       Sunucu erişim tokeninizi girin. Token <code>.app-token</code> dosyasında saklıdır (sunucu yöneticisinden alın).
     </div>
-    <form id="login-form" style="display:flex;flex-direction:column;gap:10px">
-      <input type="password" id="login-token" placeholder="Token" autocomplete="off"
-        style="font-family:var(--mono);padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);font-size:13px" required>
-      <div id="login-err" style="display:none;color:var(--red);font-size:12px"></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+    <form class="u-3" id="login-form">
+      <input class="u-4" type="password" id="login-token" placeholder="Token" autocomplete="off"
+        required>
+      <div class="u-5" id="login-err"></div>
+      <div class="u-6">
         <button type="submit" class="btn btn-primary">Giriş</button>
       </div>
     </form>
@@ -89,7 +89,7 @@
       <button class="modal-close" data-action="closeModal" data-arg="modal-mal-sec" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
     <div class="modal-toolbar">
-      <div class="search-wrap" style="width:100%">
+      <div class="search-wrap u-7">
         <span class="search-icon"><i data-lucide="search"></i></span>
         <input type="text" id="mal-sec-ara" placeholder="Malzeme veya depo ara..." data-input="_talepMalModalRender" autocomplete="off">
       </div>
@@ -106,8 +106,8 @@
       <div class="modal-title" id="modal-mal-har-title">Hareket Geçmişi</div>
       <button class="modal-close" data-action="closeModal" data-arg="modal-mal-hareket" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
-    <div id="modal-mal-har-ozet" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 0 14px"></div>
-    <div id="modal-mal-har-liste" style="max-height:340px;overflow-y:auto"></div>
+    <div class="u-8" id="modal-mal-har-ozet"></div>
+    <div class="u-9" id="modal-mal-har-liste"></div>
   </div>
 </div>
 
@@ -216,7 +216,7 @@
       </div>
 
       <!-- Grafikler — istatistik sayfasına taşındı, canvas'lar burada gizli kalır -->
-      <div style="display:none">
+      <div class="u-10">
         <canvas id="chartDepo"></canvas>
         <canvas id="chartDurum"></canvas>
       </div>
@@ -230,21 +230,21 @@
           <div class="search-wrap">
             <span class="search-icon"><i data-lucide="search"></i></span>
             <input type="text" placeholder="Malzeme ara..." id="stok-search" data-input="stokSearch">
-            <button id="stok-search-clear" class="search-clear" data-action="stokSearchClear" style="display:none" title="Temizle">×</button>
+            <button id="stok-search-clear" class="search-clear u-10" data-action="stokSearchClear" title="Temizle">×</button>
           </div>
           <div class="filter-chip" data-durum="Kritik" data-action="setDurumFilter" data-arg="Kritik"><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik</div>
         </div>
-        <div class="toolbar toolbar-sub" style="flex-wrap:wrap;gap:8px">
-          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;align-self:center">Depo</span>
-          <div id="stok-depo-chips" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
-          <div style="width:1px;background:var(--line);align-self:stretch;margin:0 4px"></div>
+        <div class="toolbar toolbar-sub u-11">
+          <span class="u-12">Depo</span>
+          <div class="u-13" id="stok-depo-chips"></div>
+          <div class="u-14"></div>
           <div class="kat-select-wrap">
             <label for="stok-kat-select">Kategori</label>
             <select id="stok-kat-select" data-change="setKatFilterSel">
               <option value="Tümü">Tümü</option>
             </select>
           </div>
-          <div class="sutun-menu-wrap" style="position:relative;display:inline-block">
+          <div class="sutun-menu-wrap u-15">
             <button id="stok-sutun-btn" class="btn btn-sm btn-outline" data-action="toggleStokSutunMenu" title="Sütunları Düzenle"><i data-lucide="settings-2" class="icon-inline"></i> Sütunlar</button>
             <div id="stok-sutun-menu" class="sutun-menu-dropdown"></div>
           </div>
@@ -252,7 +252,7 @@
       </div>
 
       <div id="stok-kpi" class="stok-kpi-bar"></div>
-      <div id="stok-aktif-filtreler" class="stok-aktif-filtreler" style="display:none"></div>
+      <div id="stok-aktif-filtreler" class="stok-aktif-filtreler u-10"></div>
 
       <div class="card">
         <div class="table-wrapper">
@@ -261,7 +261,7 @@
             <tbody id="stok-tbody"></tbody>
           </table>
         </div>
-        <div id="stok-sayfalama" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;border-top:1px solid var(--line)"></div>
+        <div class="u-16" id="stok-sayfalama"></div>
       </div>
     </div>
 
@@ -285,7 +285,7 @@
                 <div class="h-mal-wrap">
                   <input type="text" id="h-mal-search" placeholder="Malzeme ara..." autocomplete="off"
                     data-input="_harMalAra">
-                  <button class="h-mal-clear" id="h-mal-clear" data-action="_harMalTemizle" style="display:none">×</button>
+                  <button class="h-mal-clear u-10" id="h-mal-clear" data-action="_harMalTemizle">×</button>
                   <div class="h-mal-dropdown" id="h-mal-dropdown"></div>
                 </div>
                 <input type="hidden" id="h-depo" value="">
@@ -293,8 +293,8 @@
               </div>
 
               <!-- Seçim sonrası: stok bilgi + tür + miktar + ekle -->
-              <div id="h-ekle-satir" style="display:none">
-                <div id="h-stok-bilgi" style="display:none;align-items:center;gap:10px;background:var(--bg);border-radius:8px;padding:10px 14px;flex-wrap:wrap;margin-bottom:8px"></div>
+              <div class="u-10" id="h-ekle-satir">
+                <div class="u-17" id="h-stok-bilgi"></div>
                 <div class="h-ekle-row">
                   <select id="h-tur" class="h-ekle-tur">
                     <option value="Giriş">Giriş</option>
@@ -306,7 +306,7 @@
               </div>
 
               <!-- Eklenmiş malzemeler listesi -->
-              <div id="h-eklenenler-wrap" style="display:none">
+              <div class="u-10" id="h-eklenenler-wrap">
                 <div class="h-eklenenler-header">Eklenecek Hareketler <span id="h-eklenen-sayi" class="h-eklenen-badge"></span></div>
                 <div id="h-eklenenler-list"></div>
               </div>
@@ -324,10 +324,10 @@
                 <label id="h-not-label">Not (opsiyonel)</label>
                 <textarea id="h-not" placeholder="Açıklama..."></textarea>
               </div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="btn btn-primary" style="flex:1" data-action="kaydetHareket"><i data-lucide="save" class="icon-inline"></i> Kaydet</button>
+              <div class="u-18">
+                <button class="btn btn-primary u-19" data-action="kaydetHareket"><i data-lucide="save" class="icon-inline"></i> Kaydet</button>
                 <button class="btn btn-outline" data-action="clearHareketForm"><i data-lucide="rotate-ccw" class="icon-inline"></i> Temizle</button>
-                <button id="not-zorunlu-btn" class="btn btn-outline" data-action="toggleNotZorunlu" style="font-size:11px" title="Not zorunlu yap"><i data-lucide="file-pen" class="icon-inline"></i></button>
+                <button id="not-zorunlu-btn" class="btn btn-outline u-20" data-action="toggleNotZorunlu" title="Not zorunlu yap"><i data-lucide="file-pen" class="icon-inline"></i></button>
               </div>
 
             </div>
@@ -338,20 +338,20 @@
           <div class="card-header">Hareket Geçmişi</div>
           <div class="card-body">
             <!-- Özet kartlar -->
-            <div id="har-ozet" class="har-ozet-row" style="margin-bottom:14px"></div>
+            <div id="har-ozet" class="har-ozet-row u-21"></div>
             <!-- Toolbar -->
             <div class="toolbar toolbar-search">
-              <div class="search-wrap" style="max-width:220px">
+              <div class="search-wrap u-22">
                 <span class="search-icon"><i data-lucide="search"></i></span>
                 <input type="text" placeholder="Malzeme, depo ara..." id="har-search" data-input="harSearch">
               </div>
               <select id="har-depo-filter" class="har-filter-sel" data-change="harDepoFilter">
                 <option value="">Tüm Depolar</option>
               </select>
-              <input type="text" id="har-personel-filter" class="har-filter-date" placeholder="Personel..." data-input="harPersonelFilter" title="Personele göre filtrele" style="width:120px">
+              <input type="text" id="har-personel-filter" class="har-filter-date u-23" placeholder="Personel..." data-input="harPersonelFilter" title="Personele göre filtrele">
               <input type="date" id="har-tarih-bas" class="har-filter-date" data-change="harTarihBas" title="Başlangıç tarihi">
               <input type="date" id="har-tarih-bit" class="har-filter-date" data-change="harTarihBit" title="Bitiş tarihi">
-              <button class="btn btn-sm btn-outline" data-action="exportHareketExcel" title="Filtrelenmiş listeyi Excel'e aktar" style="margin-left:auto"><i data-lucide="download" class="icon-inline"></i> Excel</button>
+              <button class="btn btn-sm btn-outline u-24" data-action="exportHareketExcel" title="Filtrelenmiş listeyi Excel'e aktar"><i data-lucide="download" class="icon-inline"></i> Excel</button>
             </div>
             <div class="toolbar toolbar-chips">
               <div class="filter-chip active" data-htur="Tümü" data-action="setHarFilter" data-arg="Tümü">Tümü</div>
@@ -369,7 +369,7 @@
                 <div class="empty-desc">İlk giriş veya çıkışı kaydetmek için soldaki formu kullanın.</div>
               </div>
             </div>
-            <div id="har-sayfalama" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 0;border-top:1px solid var(--line);margin-top:8px"></div>
+            <div class="u-25" id="har-sayfalama"></div>
           </div>
         </div>
       </div>
@@ -383,25 +383,25 @@
           <div class="page-header-sub">Depo bazlı grafikler ve analizler</div>
         </div>
       </div>
-      <div class="grid-2" style="margin-bottom:20px">
+      <div class="grid-2 u-26">
         <div class="card">
           <div class="card-header">Aylık Giriş / Çıkış Trendi</div>
-          <div class="card-body"><div class="chart-container" style="height:260px"><canvas id="chartTrend"></canvas></div></div>
+          <div class="card-body"><div class="chart-container u-27"><canvas id="chartTrend"></canvas></div></div>
         </div>
         <div class="card">
           <div class="card-header">Depo Bazlı Kritik Stok</div>
-          <div class="card-body"><div class="chart-container" style="height:260px"><canvas id="chartKritikDepo"></canvas></div></div>
+          <div class="card-body"><div class="chart-container u-27"><canvas id="chartKritikDepo"></canvas></div></div>
         </div>
       </div>
       <div class="grid-3">
         <div class="card">
           <div class="card-header">Stok Durum Özeti</div>
-          <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="chartDurum2"></canvas></div></div>
+          <div class="card-body"><div class="chart-container u-28"><canvas id="chartDurum2"></canvas></div></div>
         </div>
-        <div class="card" style="grid-column:2/4">
+        <div class="card u-29">
           <div class="card-header">En Aktif Malzemeler (Hareket Sayısı)</div>
           <div class="card-body" id="aktif-malzeme-list">
-            <p style="color:var(--muted);font-size:13px;">Hareket kaydı oluştukça burada görünecek.</p>
+            <p class="u-30">Hareket kaydı oluştukça burada görünecek.</p>
           </div>
         </div>
       </div>
@@ -416,32 +416,32 @@
         </div>
       </div>
       <!-- SKT Özet Paneli (Kimyasal Deposu) -->
-      <div id="skt-ozet-wrap" class="card" style="margin-bottom:16px">
+      <div id="skt-ozet-wrap" class="card u-31">
         <div class="card-header"><i data-lucide="shield-alert" class="icon-inline"></i> Kimyasal Deposu — Son Kullanma Tarihleri</div>
         <div class="card-body">
           <div class="skt-ozet-grid">
             <div class="skt-ozet-kart">
-              <div class="skt-ozet-sayi" id="skt-gecmis-sayi" style="color:var(--red)">—</div>
+              <div class="skt-ozet-sayi u-32" id="skt-gecmis-sayi">—</div>
               <div class="skt-ozet-lbl">Tarihi Geçmiş</div>
             </div>
             <div class="skt-ozet-kart">
-              <div class="skt-ozet-sayi" id="skt-90g-sayi" style="color:var(--amber)">—</div>
+              <div class="skt-ozet-sayi u-33" id="skt-90g-sayi">—</div>
               <div class="skt-ozet-lbl">90 Gün İçinde</div>
             </div>
             <div class="skt-ozet-kart">
-              <div class="skt-ozet-sayi" id="skt-ok-sayi" style="color:var(--green)">—</div>
+              <div class="skt-ozet-sayi u-34" id="skt-ok-sayi">—</div>
               <div class="skt-ozet-lbl">Sorunsuz</div>
             </div>
           </div>
-          <div id="skt-ozet-liste" style="max-height:180px;overflow-y:auto"></div>
+          <div class="u-35" id="skt-ozet-liste"></div>
         </div>
       </div>
       <div class="card">
-        <div class="card-header" style="padding-bottom:0">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0">
+        <div class="card-header u-36">
+          <div class="u-37">
             <span><i data-lucide="alert-triangle" class="icon-inline"></i> Kritik Stok Listesi</span>
             <button class="btn btn-sm btn-outline" data-action="navigate" data-arg="hareket"><i data-lucide="plus" class="icon-inline"></i> Hareket Ekle</button>
-            <button id="kritik-talep-btn" class="btn btn-sm btn-primary" data-action="kritikTalepAktar" style="display:none"><i data-lucide="clipboard-list" class="icon-inline"></i> Talepnameye Aktar</button>
+            <button id="kritik-talep-btn" class="btn btn-sm btn-primary u-10" data-action="kritikTalepAktar"><i data-lucide="clipboard-list" class="icon-inline"></i> Talepnameye Aktar</button>
           </div>
         </div>
         <div class="card-body">
@@ -544,13 +544,13 @@
             <table class="talep-table" id="talep-satirlar">
               <thead>
                 <tr>
-                  <th style="width:32px">#</th>
+                  <th class="u-38">#</th>
                   <th>Malzeme</th>
-                  <th style="width:110px">Depo</th>
-                  <th style="width:65px">Birim</th>
-                  <th style="width:75px;text-align:center">Mevcut</th>
-                  <th style="width:100px">Talep Miktarı</th>
-                  <th style="width:32px" class="no-print"></th>
+                  <th class="u-39">Depo</th>
+                  <th class="u-40">Birim</th>
+                  <th class="u-41">Mevcut</th>
+                  <th class="u-42">Talep Miktarı</th>
+                  <th class="no-print u-38"></th>
                 </tr>
               </thead>
               <tbody id="talep-tbody"></tbody>
@@ -590,9 +590,9 @@
         </div>
         <button class="btn btn-primary no-print" data-action="navigate" data-arg="talep"><i data-lucide="plus" class="icon-inline"></i> Yeni Talep</button>
       </div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-body" style="padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <select id="tl-durum-filter" data-change="renderTalepListesi" style="padding:7px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--white);color:var(--ink2)">
+      <div class="card u-21">
+        <div class="card-body u-43">
+          <select class="u-44" id="tl-durum-filter" data-change="renderTalepListesi">
             <option value="">Tüm Durumlar</option>
             <option value="Taslak">Taslak</option>
             <option value="Onay Bekliyor">Onay Bekliyor</option>
@@ -603,7 +603,7 @@
         </div>
       </div>
       <div id="talep-listesi-icerik">
-        <p style="color:var(--muted);font-size:13px">Yükleniyor...</p>
+        <p class="u-30">Yükleniyor...</p>
       </div>
     </div>
 
@@ -625,24 +625,24 @@
       <div class="grid-form">
         <div class="card">
           <div class="card-header">Yeni Malzeme Ekle</div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="card-body u-45">
             <div class="form-group"><label>Depo</label>
               <select id="yeni-depo" data-change="toggleYeniSKT"><option value="">-- Seçin --</option>
               </select></div>
             <div class="form-group"><label>Malzeme Adı</label>
               <input type="text" id="yeni-ad" placeholder="Tam malzeme adı">
-              <input type="text" id="yeni-marka" placeholder="Marka (opsiyonel)" style="margin-top:5px;font-size:11px;color:var(--muted);border-color:var(--line)"></div>
+              <input class="u-46" type="text" id="yeni-marka" placeholder="Marka (opsiyonel)"></div>
             <div class="form-group"><label>Birim</label>
               <select id="yeni-birim" data-change="handleDiger" data-args='["yeni-birim-diger"]'><option value="">— Seçin —</option>
               </select>
-              <div id="yeni-birim-diger-wrap" style="display:none;margin-top:5px">
-                <input type="text" id="yeni-birim-diger" placeholder="Birim girin..." style="font-size:12px">
+              <div class="u-47" id="yeni-birim-diger-wrap">
+                <input class="u-48" type="text" id="yeni-birim-diger" placeholder="Birim girin...">
               </div></div>
             <div class="form-group"><label>Kategori</label>
               <select id="yeni-kategori" data-change="handleDiger" data-args='["yeni-kategori-diger"]'><option value="">— Seçin —</option>
               </select>
-              <div id="yeni-kategori-diger-wrap" style="display:none;margin-top:5px">
-                <input type="text" id="yeni-kategori-diger" placeholder="Kategori girin..." style="font-size:12px">
+              <div class="u-47" id="yeni-kategori-diger-wrap">
+                <input class="u-48" type="text" id="yeni-kategori-diger" placeholder="Kategori girin...">
               </div></div>
             <div class="form-group"><label>Başlangıç Stok</label>
               <input type="number" id="yeni-mevcut" min="0" value="0"></div>
@@ -652,9 +652,9 @@
               <div class="form-group"><label>Max</label>
                 <input type="number" id="yeni-max" min="0" value="10"></div>
             </div>
-            <div id="yeni-skt-wrap" style="display:none">
+            <div class="u-10" id="yeni-skt-wrap">
               <div class="form-group"><label><i data-lucide="shield-alert" class="icon-inline"></i> Son Kullanma Tarihi</label>
-                <input type="date" id="yeni-skt" style="font-family:'IBM Plex Mono',monospace">
+                <input class="u-49" type="date" id="yeni-skt">
               </div>
             </div>
             <button class="btn btn-primary" data-action="malzemeEkle"><i data-lucide="plus-circle" class="icon-inline"></i> Ekle</button>
@@ -663,18 +663,18 @@
         <div class="card">
           <div class="card-header card-header-row">
             <span>Mevcut Malzemeler</span>
-            <div style="display:flex;gap:8px;align-items:center">
-              <div class="search-wrap" style="max-width:200px">
+            <div class="u-50">
+              <div class="search-wrap u-51">
                 <span class="search-icon"><i data-lucide="search"></i></span>
                 <input type="text" placeholder="Ara..." id="ekle-search" data-input="renderMalzemeEkleList">
               </div>
-              <select id="ekle-depo-filter" data-change="renderMalzemeEkleList" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px">
+              <select class="u-52" id="ekle-depo-filter" data-change="renderMalzemeEkleList">
                 <option value="">Tüm Depolar</option>
               </select>
             </div>
           </div>
           <div class="card-body">
-            <div class="table-wrapper" style="max-height:500px;overflow-y:auto">
+            <div class="table-wrapper u-53">
               <table><thead><tr><th>Malzeme</th><th>Depo</th><th>Birim</th><th>Kategori</th><th>Stok</th><th>Durum</th><th>İşlem</th></tr></thead>
               <tbody id="malzeme-ekle-tbody"></tbody></table>
             </div>
@@ -692,12 +692,12 @@
         </div>
       </div>
       <!-- Sunucu Bağlantı Durumu -->
-      <div id="api-durum-kart" class="card" style="margin-bottom:16px;display:none"> 
-        <div class="card-body" style="display:flex;align-items:center;gap:16px;padding:14px 20px">
-          <div id="api-durum-icon" style="font-size:24px"><i data-lucide="plug"></i></div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:600" id="api-durum-text">Sunucu kontrol ediliyor...</div>
-            <div style="font-size:11px;color:var(--muted)" id="api-durum-sub"></div>
+      <div id="api-durum-kart" class="card u-54"> 
+        <div class="card-body u-55">
+          <div class="u-56" id="api-durum-icon"><i data-lucide="plug"></i></div>
+          <div class="u-19">
+            <div class="u-57" id="api-durum-text">Sunucu kontrol ediliyor...</div>
+            <div class="u-58" id="api-durum-sub"></div>
           </div>
           <button class="btn btn-sm btn-primary" data-action="apiBackupOlustur"><i data-lucide="save" class="icon-inline"></i> Yedek Al</button>
           <button class="btn btn-sm btn-outline" data-action="renderBackupList"><i data-lucide="refresh-cw" class="icon-inline"></i> Yenile</button>
@@ -705,22 +705,22 @@
       </div>
 
       <!-- Sunucu Yedekleri -->
-      <div id="api-yedek-kart" class="card" style="margin-bottom:16px;display:none">
+      <div id="api-yedek-kart" class="card u-54">
         <div class="card-header"><i data-lucide="server" class="icon-inline"></i> Sunucu Yedekleri (Otomatik)</div>
         <div class="card-body" id="api-yedek-liste">
-          <p style="font-size:13px;color:var(--muted)">Yedekler yükleniyor...</p>
+          <p class="u-59">Yedekler yükleniyor...</p>
         </div>
       </div>
 
       <div class="grid-2">
         <div class="card">
           <div class="card-header"><i data-lucide="upload" class="icon-inline"></i> Dışa Aktar (JSON)</div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="card-body u-45">
             <p class="hint-text">Tüm stok verileri, hareket geçmişi ve özel malzeme listesi JSON olarak indirilir.</p>
-            <div style="background:var(--bg);border-radius:8px;padding:14px;font-size:12px;color:var(--ink2)">
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Toplam malzeme</span><strong id="export-toplam">—</strong></div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Hareket kaydı</span><strong id="export-hareket">—</strong></div>
-              <div style="display:flex;justify-content:space-between"><span>Özel eklemeler</span><strong id="export-ozel">—</strong></div>
+            <div class="u-60">
+              <div class="u-61"><span>Toplam malzeme</span><strong id="export-toplam">—</strong></div>
+              <div class="u-61"><span>Hareket kaydı</span><strong id="export-hareket">—</strong></div>
+              <div class="u-62"><span>Özel eklemeler</span><strong id="export-ozel">—</strong></div>
             </div>
             <button class="btn btn-primary" data-action="veriDisaAktar"><i data-lucide="download" class="icon-inline"></i> JSON İndir</button>
             <button class="btn btn-outline" data-action="veriExcelAktar"><i data-lucide="table-2" class="icon-inline"></i> Excel Raporu</button>
@@ -728,13 +728,13 @@
         </div>
         <div class="card">
           <div class="card-header"><i data-lucide="download" class="icon-inline"></i> İçe Aktar (JSON)</div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-            <p class="hint-text">Daha önce dışa aktarılan dosyayı yükleyin. <strong style="color:var(--red)">Mevcut veriler silinir.</strong></p>
-            <div style="border:2px dashed var(--line);border-radius:8px;padding:28px;text-align:center;cursor:pointer" data-action="clickFileInput" data-arg="json-file-input">
-              <div style="font-size:28px;margin-bottom:8px"><i data-lucide="folder-open"></i></div>
-              <div style="font-size:13px;color:var(--muted)">Dosya seçmek için tıklayın (.json)</div>
+          <div class="card-body u-45">
+            <p class="hint-text">Daha önce dışa aktarılan dosyayı yükleyin. <strong class="u-32">Mevcut veriler silinir.</strong></p>
+            <div class="u-63" data-action="clickFileInput" data-arg="json-file-input">
+              <div class="u-64"><i data-lucide="folder-open"></i></div>
+              <div class="u-59">Dosya seçmek için tıklayın (.json)</div>
             </div>
-            <input type="file" id="json-file-input" accept=".json" style="display:none" data-change="veriIceAktar">
+            <input class="u-10" type="file" id="json-file-input" accept=".json" data-change="veriIceAktar">
             <button class="btn btn-danger" data-action="veriSifirla"><i data-lucide="trash-2" class="icon-inline"></i> Tüm Verileri Sıfırla</button>
           </div>
         </div>
@@ -763,8 +763,8 @@
       <button class="modal-close" data-action="closeModal" data-arg="modal-stok" aria-label="Kapat"><i data-lucide="x"></i></button>
     </div>
     <div id="modal-stok-icerik"></div>
-    <div style="display:flex;gap:10px;margin-top:20px">
-      <button class="btn btn-primary" style="flex:1" data-action="saveStok">Kaydet</button>
+    <div class="u-65">
+      <button class="btn btn-primary u-19" data-action="saveStok">Kaydet</button>
       <button class="btn btn-outline" data-action="closeModal" data-arg="modal-stok">İptal</button>
     </div>
   </div>

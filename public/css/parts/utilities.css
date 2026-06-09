@@ -1,0 +1,68 @@
+/* parts/utilities.css — S9: index.html inline style purge
+   Otomatik üretildi (codemod). EN SONDA import edilir ki specificity
+   eşitliğinde (inline kaldırıldıktan sonra) bu kurallar kazansın. */
+.u-1{z-index:9999;}
+.u-2{padding:6px 0 14px;color:var(--muted);font-size:13px;}
+.u-3{display:flex;flex-direction:column;gap:10px;}
+.u-4{font-family:var(--mono);padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);font-size:13px;}
+.u-5{display:none;color:var(--red);font-size:12px;}
+.u-6{display:flex;justify-content:flex-end;gap:8px;margin-top:4px;}
+.u-7{width:100%;}
+.u-8{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 0 14px;}
+.u-9{max-height:340px;overflow-y:auto;}
+.u-10{display:none;}
+.u-11{flex-wrap:wrap;gap:8px;}
+.u-12{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;align-self:center;}
+.u-13{display:flex;flex-wrap:wrap;gap:6px;flex:1;}
+.u-14{width:1px;background:var(--line);align-self:stretch;margin:0 4px;}
+.u-15{position:relative;display:inline-block;}
+.u-16{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;border-top:1px solid var(--line);}
+.u-17{display:none;align-items:center;gap:10px;background:var(--bg);border-radius:8px;padding:10px 14px;flex-wrap:wrap;margin-bottom:8px;}
+.u-18{display:flex;gap:8px;flex-wrap:wrap;}
+.u-19{flex:1;}
+.u-20{font-size:11px;}
+.u-21{margin-bottom:14px;}
+.u-22{max-width:220px;}
+.u-23{width:120px;}
+.u-24{margin-left:auto;}
+.u-25{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 0;border-top:1px solid var(--line);margin-top:8px;}
+.u-26{margin-bottom:20px;}
+.u-27{height:260px;}
+.u-28{height:200px;}
+.u-29{grid-column:2/4;}
+.u-30{color:var(--muted);font-size:13px;}
+.u-31{margin-bottom:16px;}
+.u-32{color:var(--red);}
+.u-33{color:var(--amber);}
+.u-34{color:var(--green);}
+.u-35{max-height:180px;overflow-y:auto;}
+.u-36{padding-bottom:0;}
+.u-37{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0;}
+.u-38{width:32px;}
+.u-39{width:110px;}
+.u-40{width:65px;}
+.u-41{width:75px;text-align:center;}
+.u-42{width:100px;}
+.u-43{padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.u-44{padding:7px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--white);color:var(--ink2);}
+.u-45{display:flex;flex-direction:column;gap:14px;}
+.u-46{margin-top:5px;font-size:11px;color:var(--muted);border-color:var(--line);}
+.u-47{display:none;margin-top:5px;}
+.u-48{font-size:12px;}
+.u-49{font-family:'IBM Plex Mono',monospace;}
+.u-50{display:flex;gap:8px;align-items:center;}
+.u-51{max-width:200px;}
+.u-52{padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;}
+.u-53{max-height:500px;overflow-y:auto;}
+.u-54{margin-bottom:16px;display:none;}
+.u-55{display:flex;align-items:center;gap:16px;padding:14px 20px;}
+.u-56{font-size:24px;}
+.u-57{font-size:13px;font-weight:600;}
+.u-58{font-size:11px;color:var(--muted);}
+.u-59{font-size:13px;color:var(--muted);}
+.u-60{background:var(--bg);border-radius:8px;padding:14px;font-size:12px;color:var(--ink2);}
+.u-61{display:flex;justify-content:space-between;margin-bottom:6px;}
+.u-62{display:flex;justify-content:space-between;}
+.u-63{border:2px dashed var(--line);border-radius:8px;padding:28px;text-align:center;cursor:pointer;}
+.u-64{font-size:28px;margin-bottom:8px;}
+.u-65{display:flex;gap:10px;margin-top:20px;}
