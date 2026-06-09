@@ -49,8 +49,9 @@ function requireToken(req, res, next) {
 
 // ── Güvenlik middleware'leri ─────────────────────────────────────────────
 // CSP politikası: inline JS Aşama 1+2'de temizlendi → script-src 'self'.
-// Inline style hâlâ HTML'de var (~50 yer) → style-src 'self' 'unsafe-inline'.
-// S9 (inline style purge) sonrası 'unsafe-inline' style kaldırılır.
+// S9 (inline style purge) tamamlandı: tüm inline style="" attribute'leri
+// utility class'lara (parts/utilities.css) ve dinamikler data-style →
+// el.style.cssText'e taşındı → style-src 'self' ('unsafe-inline' kaldırıldı).
 // Chart.js canvas + lucide.min.js + IBM Plex fontları zaten /vendor/'dan
 // servis edildiği için 'self' yeterli. data: URI'lar (favicons, SVG
 // kritik bildirim ikonu) için img-src 'self' data:.
@@ -61,7 +62,7 @@ function requireToken(req, res, next) {
 const CSP_DIRECTIVES = {
   defaultSrc: ["'self'"],
   scriptSrc:  ["'self'"],
-  styleSrc:   ["'self'", "'unsafe-inline'"], // S9'da kaldırılacak
+  styleSrc:   ["'self'"], // S9 tamam: inline style kalmadı → 'unsafe-inline' kaldırıldı
   fontSrc:    ["'self'"],
   imgSrc:     ["'self'", 'data:'],
   connectSrc: ["'self'"],

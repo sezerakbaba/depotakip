@@ -89,7 +89,7 @@ export function renderMalzemeEkleList() {
       <td>${depoBadge(item.depo)}</td>
       <td class="td-mono u-20">${esc(birimTxt)}</td>
       <td>${katHtml}</td>
-      <td class="td-mono" style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
+      <td class="td-mono" data-style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
       <td>${durumBadge(d)}</td>
       <td class="u-111">
         <button class="btn btn-sm btn-outline u-112" ${dClick('openStokModal',key,item.depo,item.ad)} title="Düzenle"><i data-lucide="pencil"></i></button>

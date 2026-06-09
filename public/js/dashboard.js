@@ -42,11 +42,11 @@ export async function renderDashboard() {
     const pctNormal = items.length > 0 ? Math.round((items.length - dk) / items.length * 100) : 100;
     const dotColor  = meta.color || '#aaa';
     dc.innerHTML += `
-      <div class="c-depo-card${dk>0?' has-critical':''}" ${dClick('goDetay',dep)} style="--depo-color:${dotColor}">
+      <div class="c-depo-card${dk>0?' has-critical':''}" ${dClick('goDetay',dep)} data-style="--depo-color:${dotColor}">
         <div class="c-depo-info">
           <div class="c-depo-name">${esc(dep)}</div>
           <div class="c-depo-cnt">${cntHtml}</div>
-          <div class="c-depo-bar"><div class="c-depo-bar-fill" style="width:${pctNormal}%"></div></div>
+          <div class="c-depo-bar"><div class="c-depo-bar-fill" data-style="width:${pctNormal}%"></div></div>
         </div>
         <div class="c-depo-arrow"><i data-lucide="chevron-right"></i></div>
       </div>`;
@@ -145,7 +145,7 @@ export async function renderDashboard() {
       const pts = days.map((v, i) => `${pad + i * (W - pad*2) / 6},${H - pad - (v / maxV) * (H - pad*2)}`).join(' ');
       const cx  = pad + 6 * (W - pad*2) / 6;
       const cy  = H - pad - (days[6] / maxV) * (H - pad*2);
-      sparkEl.innerHTML = `<svg style="width:100%;max-width:${W}px;display:block" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      sparkEl.innerHTML = `<svg data-style="width:100%;max-width:${W}px;display:block" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
         <polyline class="u-77" points="${pts}"/>
         <circle class="u-78" cx="${cx}" cy="${cy}" r="2.5"/>
       </svg>`;

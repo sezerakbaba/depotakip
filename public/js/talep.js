@@ -117,7 +117,7 @@ export function _talepMalApply(n, val, ad, dep, birim, mevcut, min) {
     if (depEl)  depEl.innerHTML = depoBadge(dep);
     if (birInp) birInp.value   = birim || 'adet';
     const kritik = mevcut <= min;
-    if (mevEl) mevEl.innerHTML = `<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:${kritik?'var(--red)':'var(--ink2)'}">${mevcut}${kritik?' ⚠':''}</span>`;
+    if (mevEl) mevEl.innerHTML = `<span data-style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:${kritik?'var(--red)':'var(--ink2)'}">${mevcut}${kritik?' ⚠':''}</span>`;
     if (mikInp && kritik && !mikInp.value)
       mikInp.value = Math.max(1, min - mevcut + 1);
   }
@@ -396,7 +396,7 @@ export function renderTalepListesi(skipSync = false) {
           <td class="u-48">${esc(_isoToGun(t.tarih)||'—')}</td>
           <td>${esc(t.birim||'—')}</td>
           <td>${esc(t.personel||'—')}</td>
-          <td style="color:${acilRenk[t.aciliyet]||'var(--ink2)'}"><strong>${esc(t.aciliyet||'Normal')}</strong></td>
+          <td data-style="color:${acilRenk[t.aciliyet]||'var(--ink2)'}"><strong>${esc(t.aciliyet||'Normal')}</strong></td>
           <td class="u-108">${kalem}</td>
           <td><span class="talep-durum-badge ${durumCls(d)}">${esc(d)}</span></td>
           <td class="u-127">

@@ -19,7 +19,7 @@ export function updateHareketStokBilgi() {
   infoEl.style.display = 'flex';
   infoEl.innerHTML = `
     <span class="u-58">Mevcut:</span>
-    <strong style="font-size:14px;color:${color};font-family:'IBM Plex Mono',monospace">${s.mevcut}${mm.birim?' '+mm.birim:''}</strong>
+    <strong data-style="font-size:14px;color:${color};font-family:'IBM Plex Mono',monospace">${s.mevcut}${mm.birim?' '+mm.birim:''}</strong>
     <span class="u-58">Min: ${s.min} / Max: ${s.max}</span>
     <span class="u-24">${durumBadge(d)}</span>`;
 }
@@ -169,7 +169,7 @@ export function _harMalAra(q) {
     const dc = d==='Kritik' ? 'var(--red)' : d==='Fazla' ? 'var(--amber)' : 'var(--green)';
     return `<div class="h-mal-item" ${dClick('_harMalSec',i.depo,i.ad)}>
       <div class="h-mal-item-ad">${esc(i.ad)}</div>
-      <div class="h-mal-item-meta">${depoBadge(i.depo)}<span class="h-mal-mevcut" style="color:${dc}">${s.mevcut} mevcut</span></div>
+      <div class="h-mal-item-meta">${depoBadge(i.depo)}<span class="h-mal-mevcut" data-style="color:${dc}">${s.mevcut} mevcut</span></div>
     </div>`;
   }).join('');
   dd.classList.add('open');
@@ -351,7 +351,7 @@ export async function openMalHareket(dep, mal) {
             <div class="u-90">${esc(fmt(new Date(h.tarih)))}${h.personel?' · '+esc(h.personel):''}</div>
             ${h.not?`<div class="u-58">${esc(h.not)}</div>`:''}
           </div>
-          <div style="font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${h.tur==='Giriş'?'var(--green)':'var(--red)'};flex-shrink:0">
+          <div data-style="font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${h.tur==='Giriş'?'var(--green)':'var(--red)'};flex-shrink:0">
             ${h.tur==='Giriş'?'+':'−'}${h.miktar}
           </div>
         </div>`).join('');

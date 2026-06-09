@@ -230,9 +230,9 @@ export function renderStok(){
           break;
         case 'doluluk': {
           const tickHtml = (s.max>0 && s.min>0)
-            ? `<div class="stok-bar-tick" style="left:${minPct}%" title="Min: ${s.min}"></div>`
+            ? `<div class="stok-bar-tick" data-style="left:${minPct}%" title="Min: ${s.min}"></div>`
             : '';
-          dynamicCells += `<td data-col="doluluk" data-label="Doluluk"><div class="stok-bar-wrap"><div class="stok-bar"><div class="stok-bar-fill ${fc}" style="width:${pct}%"></div>${tickHtml}</div><span class="stok-num">${pct}%</span></div></td>`;
+          dynamicCells += `<td data-col="doluluk" data-label="Doluluk"><div class="stok-bar-wrap"><div class="stok-bar"><div class="stok-bar-fill ${fc}" data-style="width:${pct}%"></div>${tickHtml}</div><span class="stok-num">${pct}%</span></div></td>`;
           break;
         }
       }

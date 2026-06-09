@@ -172,7 +172,7 @@ export function renderAyarlar() {
   const depoHtml = `<div class="card"><div class="card-header"><i data-lucide="warehouse" class="icon-inline"></i> Depolar</div><div class="card-body">
     ${Object.entries(DEPO_META).map(([ad,m])=>`
       <div class="ayar-row" id="depo-row-${CSS.escape(ad)}">
-        <div class="ayar-label"><span class="badge" style="background:${m.color}22;color:${m.color};margin-right:6px">${esc(m.kod)}</span>${esc(ad)}</div>
+        <div class="ayar-label"><span class="badge" data-style="background:${m.color}22;color:${m.color};margin-right:6px">${esc(m.kod)}</span>${esc(ad)}</div>
         <button class="btn btn-sm btn-outline" ${dClick('depoYeniAdDlg',ad)}><i data-lucide="pencil" class="icon-inline"></i> Düzenle</button>
       </div>`).join('')}
     <div id="depo-yeniad-form"></div>

@@ -68,7 +68,7 @@ export async function renderIstatistik() {
     : enAktif.map(({ad,cnt},_,arr)=>`
       <div class="u-95">
         <div class="u-96">${ad}</div>
-        <div class="stok-bar u-97"><div class="stok-bar-fill fill-normal" style="width:${Math.round(cnt/arr[0].cnt*100)}%"></div></div>
+        <div class="stok-bar u-97"><div class="stok-bar-fill fill-normal" data-style="width:${Math.round(cnt/arr[0].cnt*100)}%"></div></div>
         <div class="td-mono u-98">${cnt}</div>
       </div>`).join('');
   if (window.lucide) lucide.createIcons({ nodes: [el] });

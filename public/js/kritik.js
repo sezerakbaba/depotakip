@@ -94,11 +94,11 @@ export function goDetay(dep) {
     rows+=`<tr class="${rowCls2}">
       <td class="td-mono u-99">${idx+1}</td>
       <td class="td-name">${esc(item.ad)}${S.malzemeMeta[getKey(dep,item.ad)]?.skt?'<br>'+window.sktBadge(S.malzemeMeta[getKey(dep,item.ad)].skt):''}</td>
-      <td class="td-mono" style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
+      <td class="td-mono" data-style="font-weight:700;color:${d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)'}">${s.mevcut}</td>
       <td class="td-mono u-99">${esc((S.malzemeMeta[getKey(dep,item.ad)]||{}).birim||'—')}</td>
       <td class="td-mono">${s.min}</td>
       <td class="td-mono">${s.max}</td>
-      <td><div class="stok-bar-wrap"><div class="stok-bar"><div class="stok-bar-fill ${fillCls}" style="width:${pct}%"></div></div><span class="stok-num">${pct}%</span></div></td>
+      <td><div class="stok-bar-wrap"><div class="stok-bar"><div class="stok-bar-fill ${fillCls}" data-style="width:${pct}%"></div></div><span class="stok-num">${pct}%</span></div></td>
       <td>${durumBadge(d)}</td>
       <td><button class="btn btn-sm btn-outline" ${dClick('openStokModal',key,dep,item.ad)} title="Düzenle"><i data-lucide="pencil"></i></button></td>
     </tr>`;
@@ -106,7 +106,7 @@ export function goDetay(dep) {
 
   document.getElementById('detay-content').innerHTML=`
     <div class="card u-26">
-      <div style="background:${meta.color};padding:20px 24px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between">
+      <div data-style="background:${meta.color};padding:20px 24px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between">
         <div>
           <div class="u-106">${esc(dep)}</div>
         </div>
@@ -116,7 +116,7 @@ export function goDetay(dep) {
             <div class="u-110">Toplam Kalem</div>
           </div>
           <div class="u-108">
-            <div style="font-size:28px;font-weight:700;color:${kritikC>0?'#ffcdd2':'rgba(255,255,255,.9)'};font-family:'IBM Plex Mono',monospace">${kritikC}</div>
+            <div data-style="font-size:28px;font-weight:700;color:${kritikC>0?'#ffcdd2':'rgba(255,255,255,.9)'};font-family:'IBM Plex Mono',monospace">${kritikC}</div>
             <div class="u-110">Kritik Stok</div>
           </div>
         </div>

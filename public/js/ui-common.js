@@ -93,7 +93,7 @@ export function depoBadge(dep) {
   const m = DEPO_META[dep];
   if (!m) return `<span class="badge">${esc(dep)}</span>`;
   if (DEPO_BADGE[dep]) return `<span class="badge ${DEPO_BADGE[dep]}">${esc(m.kod)}</span>`;
-  return `<span class="badge" style="background:${m.color}22;color:${m.color}">${esc(m.kod)}</span>`;
+  return `<span class="badge" data-style="background:${m.color}22;color:${m.color}">${esc(m.kod)}</span>`;
 }
 
 export function fmtGun(d) {

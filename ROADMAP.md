@@ -359,7 +359,7 @@ XLSX'i `cdn.jsdelivr.net`'ten lazy-load ediyordu → S3 CSP enforce
 XLSX `public/vendor/xlsx.full.min.js`'e indirildi, lazy-load `/vendor`'a
 çevrildi (same-origin, CSP-OK, offline çalışır).
 
-### [ ] S9. Inline style purge (son tur)
+### [x] S9. Inline style purge (son tur)
 HTML'de hâlâ ~50 `style="..."` attribute'ü var. Hepsini class'a çek.
 Kazanç: CSP'den `style-src 'unsafe-inline'` kaldırılabilir.
 
@@ -388,16 +388,22 @@ Bu kapsam tek oturumda güvenli değil → 3 faza bölündü:
 - **Faz 2 ✅** (commit `c1dd827`): 11 JS modülünde 108 statik style → class.
   utilities.css 132 class (HTML+JS dedup). Codemod + .mjs syntax-check +
   10 sayfa/modal tarayıcı regresyon testi, console temiz.
-- **Faz 3 ⏳ kalan:** 19 dinamik `style="...${...}"` → render-sonrası
-  `el.style.x=` (CSS-var-via-attribute CSP'yi geçmez; `style="--w:42%"` de
-  inline ihlali). Sonra `style-src 'unsafe-inline'` kaldırılıp enforce
-  doğrulanacak. **En riskli faz** — her dinamik genelde map().join()
-  template'i içinde, post-render hook gerektiriyor.
+- **Faz 3 ✅** : 20 dinamik `style="...${...}"` → `data-style="...${...}"`
+  (data-* attribute CSP-safe). Tek noktada (`_applyDataStyles`, `_a11yEnhance`
+  içinden — hem init hem MutationObserver'da eklenen her düğüm) render-sonrası
+  `el.style.cssText`'e uygulanır. CSSOM `.style` ataması CSP-governed DEĞİL;
+  observer callback'i microtask (paint öncesi) → flash yok. Per-fonksiyon
+  hook gerekmedi. Dağılım: ayarlar(1) dashboard(3) hareket(3) istatistik(1)
+  kritik(4) main(2) malzeme(1) stok(2) talep(2) ui-common(1).
+- **CSP ✅** : `server.js` `styleSrc` → `['self']` (`'unsafe-inline'`
+  kaldırıldı). CSP zaten enforce varsayılan.
 
-Kalan dinamikler (19): ayarlar.js(1) dashboard.js(3) hareket.js(3)
-istatistik.js(1) kritik.js(4) main.js(1) malzeme.js(1) stok.js(2)
-talep.js(2) ui-common.js(1). Çoğu: doluluk barı `width:${pct}%` ve
-durum-renkli metin `color:${...}`.
+**Tamamlanma (2026-06-09):** Tüm sayfalar + depo-detay + modallar CSP
+**enforce** (`style-src 'self'`) altında test edildi; **0 CSP ihlali**,
+console temiz. Dinamik stiller doğru uygulanıyor (depo renkleri, doluluk
+barları, durum-renkli sayılar, kategori chip'leri). HTTP header doğrulandı:
+`Content-Security-Policy: ... style-src 'self' ...` (Report-Only değil).
+214→0 inline style attribute.
 
 ## 3.4 Gelecek özellikler
 
