@@ -109,6 +109,7 @@ export const S = {
   talepSatirCount: 0,
   _talepListesi: [],
   _viewTalep: null,
+  aktifTalepId: null,   // S12: formdaki talebin server id'si (yeni ise null) — duplicate önleme
   _pendingKritikler: null,
   stokSortKey: null,
   stokSortDir: 1,

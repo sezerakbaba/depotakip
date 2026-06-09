@@ -429,11 +429,27 @@ helper. EN için temel çeviri. Ayarlar'a dil seçimi.
 
 **Bağımlılık:** Yok (ama büyük scope — 2-3 oturum).
 
-### [ ] S12. Talep duplicate prevention
+### [x] S12. Talep duplicate prevention
 LocalStorage + server iki tarafı senkronize ediyor, id çakışabilir.
 Server canonical olsun, local sadece cache.
 
 **Bağımlılık:** Yok.
+
+**Sonuç (2026-06-09):** Forma server `id`'si bağlandı (`S.aktifTalepId`).
+Kaydet artık akıllı: aktifTalepId varsa `talep_guncelle` (yerinde update),
+yoksa `talep_kaydet` (insert) → dönen `id`/`no` yakalanır. Görüntüle
+aktifTalepId'yi set eder (düzenleme = update); "Yeni Talep"/boş form
+null'lar (insert). `renderTalepListesi` server-canonical: `talep_list`
+yanıtında local cache server listesiyle değiştirilir (senkronlanmamış
+`local-…` sentinel'leri korunur), eski/duplicate local kayıtlar temizlenir.
+`Date.now()` stub kaldırıldı.
+- **Doğrulandı:** taslak→onaya gönder = tek satır (yerinde update, no
+  duplicate); görüntüle→düzenle→kaydet = tek satır; yeni talep = yeni
+  satır; liste onayla/reddet server id ile çalışıyor; console temiz.
+- **Yan bug düzeltildi:** client tarihi TR ("DD.MM.YYYY") gönderiyordu,
+  sunucu `validateTalep` ISO ("YYYY-MM-DD") bekliyor → **varsayılan
+  ayarda talepler sunucuya HİÇ kaydolmuyordu** (yalnız localStorage).
+  `_gunToIso`/`_isoToGun` eklendi: kanonik veri ISO, ekran TR.
 
 ---
 
