@@ -42,11 +42,11 @@ export async function renderDashboard() {
     const pctNormal = items.length > 0 ? Math.round((items.length - dk) / items.length * 100) : 100;
     const dotColor  = meta.color || '#aaa';
     dc.innerHTML += `
-      <div class="c-depo-card${dk>0?' has-critical':''}" ${dClick('goDetay',dep)} style="--depo-color:${dotColor}">
+      <div class="c-depo-card${dk>0?' has-critical':''}" ${dClick('goDetay',dep)} data-style="--depo-color:${dotColor}">
         <div class="c-depo-info">
           <div class="c-depo-name">${esc(dep)}</div>
           <div class="c-depo-cnt">${cntHtml}</div>
-          <div class="c-depo-bar"><div class="c-depo-bar-fill" style="width:${pctNormal}%"></div></div>
+          <div class="c-depo-bar"><div class="c-depo-bar-fill" data-style="width:${pctNormal}%"></div></div>
         </div>
         <div class="c-depo-arrow"><i data-lucide="chevron-right"></i></div>
       </div>`;
@@ -83,17 +83,17 @@ export async function renderDashboard() {
         const _icon = _sktD ? _sktD.icon : 'alert-triangle';
         return `<div class="dash-kritik-item">
           <div class="dash-warn"><i data-lucide="${_icon}"></i></div>
-          <div style="flex:1;min-width:0">
-            <div class="dash-kritik-ad">${esc(i.ad)}${_sktD?'<span class="skt-badge '+_sktD.cls+'" style="margin-left:6px"><i data-lucide="'+_sktD.icon+'" class="icon-inline"></i> '+esc(_sktD.label)+'</span>':''}</div>
+          <div class="u-73">
+            <div class="dash-kritik-ad">${esc(i.ad)}${_sktD?'<span class="skt-badge '+_sktD.cls+' u-74"><i data-lucide="'+_sktD.icon+'" class="icon-inline"></i> '+esc(_sktD.label)+'</span>':''}</div>
             <div class="dash-kritik-depo">${esc(i.depo)} · Mevcut: ${s.mevcut} / Min: ${s.min}</div>
           </div>
           <div class="dash-kritik-stok">${s.mevcut}/${s.min}</div>
-          <button ${dClick('dashHizliGiris',i.depo,i.ad)}
-            style="margin-left:8px;font-size:12px;padding:4px 9px;background:rgba(102,187,106,.12);border:1px solid rgba(102,187,106,.35);border-radius:6px;cursor:pointer;color:var(--green);font-weight:700;flex-shrink:0"
+          <button class="u-75" ${dClick('dashHizliGiris',i.depo,i.ad)}
+           
             title="Hızlı Giriş Kaydı">+ Giriş</button>
         </div>`;
       }).join('') + (getAllItems().filter(i=>{const s=getStok(i.depo,i.ad);return durum(s.mevcut,s.min,s.max)==='Kritik';}).length > 8
-        ? `<div style="text-align:center;padding:10px 0;font-size:11px;color:var(--muted)">+ daha fazla kritik stok var →</div>` : '');
+        ? `<div class="u-76">+ daha fazla kritik stok var →</div>` : '');
     }
   }
 
@@ -106,7 +106,7 @@ export async function renderDashboard() {
     const ht = document.getElementById('s-hareket-trend');
     if (ht) ht.innerHTML = '';
     const sh = document.getElementById('son-hareketler');
-    if (sh) sh.innerHTML = '<p style="color:var(--muted);font-size:13px;">Sunucu bağlantısı yok.</p>';
+    if (sh) sh.innerHTML = '<p class="u-30">Sunucu bağlantısı yok.</p>';
     const sparkEl = document.getElementById('dash-sparkline');
     if (sparkEl) sparkEl.innerHTML = '';
     return;
@@ -145,9 +145,9 @@ export async function renderDashboard() {
       const pts = days.map((v, i) => `${pad + i * (W - pad*2) / 6},${H - pad - (v / maxV) * (H - pad*2)}`).join(' ');
       const cx  = pad + 6 * (W - pad*2) / 6;
       const cy  = H - pad - (days[6] / maxV) * (H - pad*2);
-      sparkEl.innerHTML = `<svg style="width:100%;max-width:${W}px;display:block" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-        <polyline points="${pts}" style="fill:none;stroke:var(--red);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;opacity:.45"/>
-        <circle cx="${cx}" cy="${cy}" r="2.5" style="fill:var(--red)"/>
+      sparkEl.innerHTML = `<svg data-style="width:100%;max-width:${W}px;display:block" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <polyline class="u-77" points="${pts}"/>
+        <circle class="u-78" cx="${cx}" cy="${cy}" r="2.5"/>
       </svg>`;
     }
 

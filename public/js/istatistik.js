@@ -66,10 +66,10 @@ export async function renderIstatistik() {
   el.innerHTML = enAktif.length===0
     ? '<div class="empty-state"><div class="empty-icon"><i data-lucide="bar-chart-2"></i></div><div class="empty-title">Veri yok</div><div class="empty-desc">Henüz hareket kaydı bulunmuyor.</div></div>'
     : enAktif.map(({ad,cnt},_,arr)=>`
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-        <div style="flex:1;font-size:13px;font-weight:500">${ad}</div>
-        <div class="stok-bar" style="width:140px;height:8px"><div class="stok-bar-fill fill-normal" style="width:${Math.round(cnt/arr[0].cnt*100)}%"></div></div>
-        <div class="td-mono" style="min-width:30px;text-align:right">${cnt}</div>
+      <div class="u-95">
+        <div class="u-96">${ad}</div>
+        <div class="stok-bar u-97"><div class="stok-bar-fill fill-normal" data-style="width:${Math.round(cnt/arr[0].cnt*100)}%"></div></div>
+        <div class="td-mono u-98">${cnt}</div>
       </div>`).join('');
   if (window.lucide) lucide.createIcons({ nodes: [el] });
 }

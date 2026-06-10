@@ -15,3 +15,4 @@
 @import 'parts/page-stok.css';
 @import 'parts/global-search.css'; /* S10 — Ctrl+K global arama */
 @import 'parts/skeleton.css';      /* öneri #11 — yükleme iskeleti */
+@import 'parts/utilities.css';     /* S9 — inline style purge utility class'ları (EN SONDA: specificity eşitliğinde kazanır) */

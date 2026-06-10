@@ -6,6 +6,22 @@ import { apiFetch } from './api.js';
 // TALEPNAME
 // ═══════════════════════════════════════════════════════════════════
 
+// ── Tarih dönüşümü (S12): kanonik veri ISO (YYYY-MM-DD), ekran TR ──────
+// Sunucu validateTalep YYYY-MM-DD ister. fmtGun varsayılan TR "DD.MM.YYYY"
+// ürettiğinden, kayıt öncesi ISO'ya çevir; gösterirken ISO'yu fmtGun'a ver.
+function _gunToIso(s) {
+  if (!s) return s;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;          // zaten ISO
+  const m = s.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);     // TR "DD.MM.YYYY"
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  return s;                                             // bilinmeyen → dokunma
+}
+function _isoToGun(s) {
+  if (!s) return s;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return fmtGun(new Date(s + 'T00:00:00'));
+  return s;                                             // zaten ekran formatı
+}
+
 export function talepListesiYukle() {
   try { S._talepListesi = JSON.parse(localStorage.getItem('talepListesi') || '[]'); }
   catch(e) { S._talepListesi = []; }
@@ -101,7 +117,7 @@ export function _talepMalApply(n, val, ad, dep, birim, mevcut, min) {
     if (depEl)  depEl.innerHTML = depoBadge(dep);
     if (birInp) birInp.value   = birim || 'adet';
     const kritik = mevcut <= min;
-    if (mevEl) mevEl.innerHTML = `<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:${kritik?'var(--red)':'var(--ink2)'}">${mevcut}${kritik?' ⚠':''}</span>`;
+    if (mevEl) mevEl.innerHTML = `<span data-style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:${kritik?'var(--red)':'var(--ink2)'}">${mevcut}${kritik?' ⚠':''}</span>`;
     if (mikInp && kritik && !mikInp.value)
       mikInp.value = Math.max(1, min - mevcut + 1);
   }
@@ -146,7 +162,7 @@ export async function initTalep() {
     S.talepSatirCount = 0;
     document.getElementById('talep-tbody').innerHTML = '';
     document.getElementById('talep-no-display').textContent    = t.no;
-    document.getElementById('talep-tarih-display').textContent = t.tarih;
+    document.getElementById('talep-tarih-display').textContent = _isoToGun(t.tarih);
     document.getElementById('t-birim').value    = t.birim    || '';
     document.getElementById('t-personel').value = t.personel || '';
     const acEl = document.getElementById('t-aciliyet');
@@ -173,6 +189,7 @@ export async function initTalep() {
     return;
   }
   if (S.talepSatirCount === 0) {
+    S.aktifTalepId = null;   // S12: yeni/boş talep → kayıtta INSERT (güncelleme değil)
     await yeniTalepno();
     if (S._pendingKritikler) {
       const list = S._pendingKritikler;
@@ -252,7 +269,8 @@ export function talepKaydet(durum = 'Taslak') {
     return;
   }
   const payload = {
-    no, tarih, durum,
+    no, durum,
+    tarih: _gunToIso(tarih),   // S12: sunucu ISO (YYYY-MM-DD) bekler; ekran TR olabilir
     birim   : document.getElementById('t-birim')?.value||'',
     personel: document.getElementById('t-personel')?.value||'',
     aciliyet: document.getElementById('t-aciliyet')?.value||'Normal',
@@ -262,18 +280,43 @@ export function talepKaydet(durum = 'Taslak') {
     imza2: document.getElementById('imza2')?.value||'',
     imza3: document.getElementById('imza3')?.value||'',
   };
+  // ── Local cache (server canonical; local sadece anlık ayna/offline) ──
+  // Aynı talep tekrar kaydedilince yeni satır AÇMA: formdaki server id'sine
+  // (aktifTalepId) göre güncelle; yoksa server insert sonrası id+no gelince ekle.
   talepListesiYukle();
-  const idx = S._talepListesi.findIndex(t => t.no === no);
-  if (idx >= 0) { S._talepListesi[idx] = { ...S._talepListesi[idx], ...payload }; }
-  else          { payload.id = Date.now(); S._talepListesi.push(payload); }
+  if (S.aktifTalepId != null) {
+    const idx = S._talepListesi.findIndex(t => t.id === S.aktifTalepId);
+    if (idx >= 0) S._talepListesi[idx] = { ...S._talepListesi[idx], ...payload, id: S.aktifTalepId };
+  }
   talepListesiKaydet();
+
   if (S.API_MOD) {
-    apiFetch(API_URL+'?action=talep_kaydet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    // aktifTalepId varsa GÜNCELLE (yeni satır açma), yoksa INSERT et.
+    const guncelle = S.aktifTalepId != null;
+    const url = guncelle ? 'talep_guncelle' : 'talep_kaydet';
+    const body = guncelle ? { ...payload, id: S.aktifTalepId } : payload;
+    apiFetch(API_URL+'?action='+url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
       .then(r=>r.json()).then(j=>{
-        if (j.ok && j.no) document.getElementById('talep-no-display').textContent = j.no;
-        else if (!j.ok) window.toast('Talep sunucuya kaydedilemedi: ' + (j.error||''), 'error');
+        if (j.ok) {
+          // INSERT: server canonical id+no'yu yakala, formu ve cache'i senkronla
+          if (!guncelle && j.id != null) {
+            S.aktifTalepId = j.id;
+            if (j.no) document.getElementById('talep-no-display').textContent = j.no;
+            const ex = S._talepListesi.find(t => t.id === j.id);
+            if (ex) Object.assign(ex, payload, { id: j.id, no: j.no || payload.no });
+            else    S._talepListesi.push({ ...payload, id: j.id, no: j.no || payload.no });
+            talepListesiKaydet();
+          }
+        } else {
+          window.toast('Talep sunucuya kaydedilemedi: ' + (j.error||''), 'error');
+        }
       })
-      .catch(e => { console.warn('talep_kaydet:', e); window.toast('Sunucuya kaydedilemedi, yerelde tutuldu', 'error'); });
+      .catch(e => { console.warn(url+':', e); window.toast('Sunucuya kaydedilemedi, yerelde tutuldu', 'error'); });
+  } else if (S.aktifTalepId == null) {
+    // Offline: server id yok → sentinel id (server integer id'leriyle çakışmaz)
+    S.aktifTalepId = 'local-' + Date.now();
+    S._talepListesi.push({ ...payload, id: S.aktifTalepId });
+    talepListesiKaydet();
   }
   const msg = durum==='Taslak' ? 'taslak olarak kaydedildi' : 'onaya gönderildi';
   window.toast(`Talep ${no} ${msg} ✓`);
@@ -298,6 +341,7 @@ export function talepOnayaGonder() {
 }
 
 export function talepSifirla() {
+  S.aktifTalepId = null;   // S12: "Yeni Talep" → temiz form, sonraki kayıt INSERT eder
   S.talepSatirCount = 0;
   document.getElementById('talep-tbody').innerHTML = '';
   ['t-birim','t-personel','t-gerekce','imza1','imza2','imza3'].forEach(id => {
@@ -322,7 +366,7 @@ function _talepDurumGoster(dur) {
   el.innerHTML = dur ? `<span class="talep-durum-badge ${cls[dur]||'taslak'}">${dur}</span>` : '';
 }
 
-export function renderTalepListesi() {
+export function renderTalepListesi(skipSync = false) {
   const el = document.getElementById('talep-listesi-icerik');
   if (!el) return;
   talepListesiYukle();
@@ -335,11 +379,11 @@ export function renderTalepListesi() {
   }
   const acilRenk = { 'Normal':'var(--ink2)', 'Acil':'var(--amber)', 'Çok Acil':'var(--red)' };
   const durumCls = d => ({ 'Taslak':'taslak','Onay Bekliyor':'onay-bekliyor','Onaylı':'onayli','Reddedildi':'reddedildi' }[d]||'taslak');
-  el.innerHTML = `<div class="card" style="overflow:hidden"><div style="overflow-x:auto">
+  el.innerHTML = `<div class="card u-124"><div class="u-125">
     <table id="talep-list-table">
       <thead><tr>
         <th>Talep No</th><th>Tarih</th><th>Birim</th><th>Personel</th>
-        <th>Aciliyet</th><th style="text-align:center">Kalem</th>
+        <th>Aciliyet</th><th class="u-108">Kalem</th>
         <th>Durum</th><th></th>
       </tr></thead>
       <tbody>
@@ -348,14 +392,14 @@ export function renderTalepListesi() {
         const d = t.durum || 'Taslak';
         const bekliyor = d === 'Onay Bekliyor';
         return `<tr>
-          <td><strong style="font-family:'IBM Plex Mono',monospace;font-size:12px">${esc(t.no)}</strong></td>
-          <td style="font-size:12px">${esc(t.tarih||'—')}</td>
+          <td><strong class="u-126">${esc(t.no)}</strong></td>
+          <td class="u-48">${esc(_isoToGun(t.tarih)||'—')}</td>
           <td>${esc(t.birim||'—')}</td>
           <td>${esc(t.personel||'—')}</td>
-          <td style="color:${acilRenk[t.aciliyet]||'var(--ink2)'}"><strong>${esc(t.aciliyet||'Normal')}</strong></td>
-          <td style="text-align:center">${kalem}</td>
+          <td data-style="color:${acilRenk[t.aciliyet]||'var(--ink2)'}"><strong>${esc(t.aciliyet||'Normal')}</strong></td>
+          <td class="u-108">${kalem}</td>
           <td><span class="talep-durum-badge ${durumCls(d)}">${esc(d)}</span></td>
-          <td style="text-align:right;white-space:nowrap;display:flex;gap:4px;justify-content:flex-end">
+          <td class="u-127">
             ${bekliyor ? `<button class="btn btn-sm btn-success" ${dClick('talepDurumGuncelle',t.id,'Onaylı')}><i data-lucide="check" class="icon-inline"></i> Onayla</button>
               <button class="btn btn-sm btn-danger-soft" ${dClick('talepDurumGuncelle',t.id,'Reddedildi')}><i data-lucide="x" class="icon-inline"></i> Reddet</button>` : ''}
             <button class="btn btn-sm btn-outline" ${dClick('talepGoruntule',t.id)}><i data-lucide="eye" class="icon-inline"></i> Görüntüle</button>
@@ -365,11 +409,17 @@ export function renderTalepListesi() {
       </tbody>
     </table>
   </div></div>`;
-  if (S.API_MOD) {
+  if (S.API_MOD && !skipSync) {
+    // S12: server canonical — local cache'i server listesiyle DEĞİŞTİR
+    // (eski/duplicate local kayıtları temizler). Henüz sunucuya yazılmamış
+    // 'local-' sentinel id'li talepleri koru. skipSync=true ile tek seferlik
+    // tazele → sonsuz fetch döngüsü olmaz.
     apiFetch(API_URL+'?action=talep_list').then(r=>r.json()).then(j=>{
-      if (j.ok && j.talepler?.length) {
-        j.talepler.forEach(at => { if (!S._talepListesi.find(x=>x.no===at.no)) S._talepListesi.push({...at}); });
+      if (j.ok && Array.isArray(j.talepler)) {
+        const offline = S._talepListesi.filter(t => typeof t.id === 'string' && t.id.startsWith('local-'));
+        S._talepListesi = [...j.talepler.map(at => ({...at})), ...offline];
         talepListesiKaydet();
+        renderTalepListesi(true);   // canonical veriyle tazele (duplicate'ler gider)
       }
     }).catch(e => { console.warn('talep_list:', e); });
   }
@@ -390,6 +440,7 @@ export function talepGoruntule(id) {
   const t = S._talepListesi.find(x => x.id === id);
   if (!t) { window.toast('Talep bulunamadı', 'error'); return; }
   S._viewTalep = t;
+  S.aktifTalepId = t.id;   // S12: düzenleme bu talebi GÜNCELLER, yeni satır açmaz
   S.talepSatirCount = 0;
   window.navigate('talep');
 }
@@ -401,18 +452,18 @@ export function talepSatirEkle(malzemeVal) {
   tr.id = 'talep-satir-' + S.talepSatirCount;
   const n = S.talepSatirCount;
   tr.innerHTML = `
-    <td style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">${n}</td>
-    <td style="min-width:180px">
+    <td class="u-128">${n}</td>
+    <td class="u-129">
       <input type="hidden" id="talep-hid-${n}" value="">
       <div class="talep-mal-cell" id="talep-combo-${n}">
         <button class="talep-mal-btn" type="button" ${dClick('talepMalModalAc',n)}><i data-lucide="package" class="icon-inline"></i> Malzeme Seç</button>
       </div>
     </td>
     <td class="t-depo-cell"></td>
-    <td><input type="text" class="talep-birim" placeholder="adet" style="width:100%"></td>
-    <td class="t-mevcut-cell" style="text-align:center"></td>
+    <td><input type="text" class="talep-birim u-7" placeholder="adet"></td>
+    <td class="t-mevcut-cell u-108"></td>
     <td><input type="number" class="talep-miktar" min="0" placeholder="0" ${dInput('updateTalepToplam')}></td>
-    <td class="no-print" style="text-align:center">
+    <td class="no-print u-108">
       <button ${dClick('talepSatirSil',n)} class="btn btn-sm btn-ghost btn-icon" title="Satırı sil"><i data-lucide="x"></i></button>
     </td>`;
   tbody.appendChild(tr);

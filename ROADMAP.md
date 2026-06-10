@@ -359,7 +359,7 @@ XLSX'i `cdn.jsdelivr.net`'ten lazy-load ediyordu → S3 CSP enforce
 XLSX `public/vendor/xlsx.full.min.js`'e indirildi, lazy-load `/vendor`'a
 çevrildi (same-origin, CSP-OK, offline çalışır).
 
-### [ ] S9. Inline style purge (son tur)
+### [x] S9. Inline style purge (son tur)
 HTML'de hâlâ ~50 `style="..."` attribute'ü var. Hepsini class'a çek.
 Kazanç: CSP'den `style-src 'unsafe-inline'` kaldırılabilir.
 
@@ -378,11 +378,32 @@ ele alınmalı (`.style` ataması CSP-governed değil). Ayrıca `inline > class`
 specificity'si nedeniyle üretilen utility class'lar CSS'in **en sonunda**
 olmalı ki eşitlikte kazansın.
 
-Bu kapsam tek oturumda güvenli değil → **ertelendi** (kullanıcı kararı).
-style-src 'unsafe-inline' şimdilik kalıyor. Önerilen aşamalı plan:
-(1) 116 statik JS + 87 statik HTML → utility class'lar (scriptle, en sona
-ekle, sayfa/modal regresyon testi), (2) 19 dinamik → `.style`/CSS var,
-(3) CSP'den `style-src 'unsafe-inline'` kaldır + enforce doğrula.
+Bu kapsam tek oturumda güvenli değil → 3 faza bölündü:
+(1) 87 statik HTML + ~108 statik JS → utility class'lar, (2) 19 dinamik →
+`.style`/CSS var, (3) CSP'den `style-src 'unsafe-inline'` kaldır + enforce.
+
+**İlerleme (2026-06-09):**
+- **Faz 1 ✅** (commit `fddff4f`): index.html 87 statik style → 65 utility
+  class. Yeni `parts/utilities.css` cascade'in en sonunda @import.
+- **Faz 2 ✅** (commit `c1dd827`): 11 JS modülünde 108 statik style → class.
+  utilities.css 132 class (HTML+JS dedup). Codemod + .mjs syntax-check +
+  10 sayfa/modal tarayıcı regresyon testi, console temiz.
+- **Faz 3 ✅** : 20 dinamik `style="...${...}"` → `data-style="...${...}"`
+  (data-* attribute CSP-safe). Tek noktada (`_applyDataStyles`, `_a11yEnhance`
+  içinden — hem init hem MutationObserver'da eklenen her düğüm) render-sonrası
+  `el.style.cssText`'e uygulanır. CSSOM `.style` ataması CSP-governed DEĞİL;
+  observer callback'i microtask (paint öncesi) → flash yok. Per-fonksiyon
+  hook gerekmedi. Dağılım: ayarlar(1) dashboard(3) hareket(3) istatistik(1)
+  kritik(4) main(2) malzeme(1) stok(2) talep(2) ui-common(1).
+- **CSP ✅** : `server.js` `styleSrc` → `['self']` (`'unsafe-inline'`
+  kaldırıldı). CSP zaten enforce varsayılan.
+
+**Tamamlanma (2026-06-09):** Tüm sayfalar + depo-detay + modallar CSP
+**enforce** (`style-src 'self'`) altında test edildi; **0 CSP ihlali**,
+console temiz. Dinamik stiller doğru uygulanıyor (depo renkleri, doluluk
+barları, durum-renkli sayılar, kategori chip'leri). HTTP header doğrulandı:
+`Content-Security-Policy: ... style-src 'self' ...` (Report-Only değil).
+214→0 inline style attribute.
 
 ## 3.4 Gelecek özellikler
 
@@ -408,17 +429,54 @@ tuşlarıyla seçim + Enter ile gitme.
 - Tarayıcıda uçtan uca doğrulandı (Ctrl+K aç, filtrele, ok tuşları,
   Enter→depo-detay ve Enter→stok+filtre, console temiz, responsive).
 
-### [ ] S11. i18n şeması
+### [ ] S11. i18n şeması  *(Faz 1 ✅ — altyapı + nav kabuğu; string migrasyonu sürüyor)*
 Tüm Türkçe string'ler hard-coded. `i18n/tr.json` + key-based lookup
 helper. EN için temel çeviri. Ayarlar'a dil seçimi.
 
 **Bağımlılık:** Yok (ama büyük scope — 2-3 oturum).
 
-### [ ] S12. Talep duplicate prevention
+**Faz 1 (2026-06-09):** i18n altyapısı kuruldu + ilk dilim (navigasyon
+kabuğu) çevrildi.
+- `public/i18n/tr.json` + `en.json` (key→string sözlükler, fetch ile yüklenir).
+- `public/js/i18n.js`: `t(key,{vars})` (çözüm zinciri **aktif dil → TR →
+  key** ⇒ kapsanmayan string TR'ye düşer, varsayılanda **sıfır regresyon**),
+  `applyI18n(root)` (`data-i18n` / `data-i18n-ph` / `data-i18n-title`),
+  `setLang`, `initI18n`. `_a11yEnhance`'e bağlandı → dinamik eklenen
+  `[data-i18n]` de çevrilir.
+- `AYARLAR_DEFAULT.dil` ('tr'); Ayarlar → Görünüm'e **Türkçe/English** seçici
+  (`setDil`). `navigate` topbar başlığını `t('page.'+page)` ile üretir.
+- index.html sidebar (nav-label + nav-text) `data-i18n` ile işaretlendi.
+- **Doğrulandı (tarayıcı):** varsayılan TR birebir (regresyon yok); EN'e
+  geçince sidebar + bölüm başlıkları + topbar başlığı İngilizce, kalan
+  içerik TR fallback; reload sonrası dil kalıcı; i18n fetch CSP-OK
+  (connect-src 'self'); console temiz; `<html lang>` güncelleniyor.
+
+**Kalan fazlar:** (2) JS render'larındaki ve index.html'deki kalan TR
+string'leri `t()`/`data-i18n`'e taşı (stok/hareket/talep/ayarlar/kritik/
+malzeme/veri sayfaları, modallar, toast'lar) + tr.json/en.json'u genişlet.
+(3) Tarih/sayı yerelleştirme (`toLocale*` zaten kısmen TR). Büyük scope.
+
+### [x] S12. Talep duplicate prevention
 LocalStorage + server iki tarafı senkronize ediyor, id çakışabilir.
 Server canonical olsun, local sadece cache.
 
 **Bağımlılık:** Yok.
+
+**Sonuç (2026-06-09):** Forma server `id`'si bağlandı (`S.aktifTalepId`).
+Kaydet artık akıllı: aktifTalepId varsa `talep_guncelle` (yerinde update),
+yoksa `talep_kaydet` (insert) → dönen `id`/`no` yakalanır. Görüntüle
+aktifTalepId'yi set eder (düzenleme = update); "Yeni Talep"/boş form
+null'lar (insert). `renderTalepListesi` server-canonical: `talep_list`
+yanıtında local cache server listesiyle değiştirilir (senkronlanmamış
+`local-…` sentinel'leri korunur), eski/duplicate local kayıtlar temizlenir.
+`Date.now()` stub kaldırıldı.
+- **Doğrulandı:** taslak→onaya gönder = tek satır (yerinde update, no
+  duplicate); görüntüle→düzenle→kaydet = tek satır; yeni talep = yeni
+  satır; liste onayla/reddet server id ile çalışıyor; console temiz.
+- **Yan bug düzeltildi:** client tarihi TR ("DD.MM.YYYY") gönderiyordu,
+  sunucu `validateTalep` ISO ("YYYY-MM-DD") bekliyor → **varsayılan
+  ayarda talepler sunucuya HİÇ kaydolmuyordu** (yalnız localStorage).
+  `_gunToIso`/`_isoToGun` eklendi: kanonik veri ISO, ekran TR.
 
 ---
 

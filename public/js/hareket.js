@@ -18,10 +18,10 @@ export function updateHareketStokBilgi() {
   const mm = S.malzemeMeta[getKey(dep,mal)]||{};
   infoEl.style.display = 'flex';
   infoEl.innerHTML = `
-    <span style="font-size:11px;color:var(--muted)">Mevcut:</span>
-    <strong style="font-size:14px;color:${color};font-family:'IBM Plex Mono',monospace">${s.mevcut}${mm.birim?' '+mm.birim:''}</strong>
-    <span style="font-size:11px;color:var(--muted)">Min: ${s.min} / Max: ${s.max}</span>
-    <span style="margin-left:auto">${durumBadge(d)}</span>`;
+    <span class="u-58">Mevcut:</span>
+    <strong data-style="font-size:14px;color:${color};font-family:'IBM Plex Mono',monospace">${s.mevcut}${mm.birim?' '+mm.birim:''}</strong>
+    <span class="u-58">Min: ${s.min} / Max: ${s.max}</span>
+    <span class="u-24">${durumBadge(d)}</span>`;
 }
 
 export function setHarTarihShortcut(mod) {
@@ -169,7 +169,7 @@ export function _harMalAra(q) {
     const dc = d==='Kritik' ? 'var(--red)' : d==='Fazla' ? 'var(--amber)' : 'var(--green)';
     return `<div class="h-mal-item" ${dClick('_harMalSec',i.depo,i.ad)}>
       <div class="h-mal-item-ad">${esc(i.ad)}</div>
-      <div class="h-mal-item-meta">${depoBadge(i.depo)}<span class="h-mal-mevcut" style="color:${dc}">${s.mevcut} mevcut</span></div>
+      <div class="h-mal-item-meta">${depoBadge(i.depo)}<span class="h-mal-mevcut" data-style="color:${dc}">${s.mevcut} mevcut</span></div>
     </div>`;
   }).join('');
   dd.classList.add('open');
@@ -265,10 +265,10 @@ export async function renderHareketList() {
         <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
         <div class="hareket-info">
           <div class="hareket-mal">${esc(h.malzeme)}</div>
-          <div class="hareket-meta">${depoBadge(h.depo)} · <span title="${esc(fmt(new Date(h.tarih)))}">${timeAgo(new Date(h.tarih))}</span> · <span style="color:var(--muted);font-size:10px">${esc(fmt(new Date(h.tarih)))}</span>${h.personel?' · '+esc(h.personel):''}${h.belge?' · <span class="td-mono">'+esc(h.belge)+'</span>':''}</div>
-          ${h.not?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(h.not)}</div>`:''}
+          <div class="hareket-meta">${depoBadge(h.depo)} · <span title="${esc(fmt(new Date(h.tarih)))}">${timeAgo(new Date(h.tarih))}</span> · <span class="u-79">${esc(fmt(new Date(h.tarih)))}</span>${h.personel?' · '+esc(h.personel):''}${h.belge?' · <span class="td-mono">'+esc(h.belge)+'</span>':''}</div>
+          ${h.not?`<div class="u-80">${esc(h.not)}</div>`:''}
         </div>
-        <div style="display:flex;align-items:center;gap:10px">
+        <div class="u-81">
           <div class="hareket-miktar ${h.tur==='Giriş'?'giris-clr':'cikis-clr'}">${h.tur==='Giriş'?'+':'−'}${h.miktar}</div>
           <button class="har-sil-btn" ${dClick('hareketSil',h.id,h.malzeme,h.depo,h.tur,h.miktar)} title="Sil / Geri Al"><i data-lucide="trash-2"></i></button>
         </div>
@@ -328,36 +328,36 @@ export async function openMalHareket(dep, mal) {
     const s = getStok(dep, mal);
 
     ozet.innerHTML = `
-      <div style="padding:10px;border-radius:8px;border:1px solid var(--line);text-align:center">
-        <div style="font-size:20px;font-weight:700;color:var(--green);font-family:'IBM Plex Mono',monospace">+${topGiris}</div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Toplam Giriş</div>
+      <div class="u-82">
+        <div class="u-83">+${topGiris}</div>
+        <div class="u-84">Toplam Giriş</div>
       </div>
-      <div style="padding:10px;border-radius:8px;border:1px solid var(--line);text-align:center">
-        <div style="font-size:20px;font-weight:700;color:var(--red);font-family:'IBM Plex Mono',monospace">−${topCikis}</div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Toplam Çıkış</div>
+      <div class="u-82">
+        <div class="u-85">−${topCikis}</div>
+        <div class="u-84">Toplam Çıkış</div>
       </div>
-      <div style="padding:10px;border-radius:8px;border:1px solid var(--line);text-align:center">
-        <div style="font-size:20px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace">${s.mevcut}</div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Mevcut Stok</div>
+      <div class="u-82">
+        <div class="u-86">${s.mevcut}</div>
+        <div class="u-84">Mevcut Stok</div>
       </div>`;
 
     if (!malHar.length) {
-      liste.innerHTML = '<p style="text-align:center;color:var(--muted);font-size:13px;padding:20px">Bu malzeme için hareket kaydı yok.</p>';
+      liste.innerHTML = '<p class="u-87">Bu malzeme için hareket kaydı yok.</p>';
     } else {
       liste.innerHTML = malHar.map(h => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
-          <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'}" style="width:28px;height:28px"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;color:var(--ink2)">${esc(fmt(new Date(h.tarih)))}${h.personel?' · '+esc(h.personel):''}</div>
-            ${h.not?`<div style="font-size:11px;color:var(--muted)">${esc(h.not)}</div>`:''}
+        <div class="u-88">
+          <div class="hareket-dot ${h.tur==='Giriş'?'dot-giris':'dot-cikis'} u-89"><i data-lucide="${h.tur==='Giriş'?'arrow-up':'arrow-down'}"></i></div>
+          <div class="u-73">
+            <div class="u-90">${esc(fmt(new Date(h.tarih)))}${h.personel?' · '+esc(h.personel):''}</div>
+            ${h.not?`<div class="u-58">${esc(h.not)}</div>`:''}
           </div>
-          <div style="font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${h.tur==='Giriş'?'var(--green)':'var(--red)'};flex-shrink:0">
+          <div data-style="font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${h.tur==='Giriş'?'var(--green)':'var(--red)'};flex-shrink:0">
             ${h.tur==='Giriş'?'+':'−'}${h.miktar}
           </div>
         </div>`).join('');
     }
   } catch(e) {
-    ozet.innerHTML = `<p style="color:var(--red);font-size:13px">Yükleme hatası: ${esc(e.message)}</p>`;
+    ozet.innerHTML = `<p class="u-91">Yükleme hatası: ${esc(e.message)}</p>`;
   }
 }
 
@@ -400,15 +400,15 @@ export function topluHarSatirEkle() {
   const depOpts = Object.keys(KAYNAK).map(d=>`<option>${d}</option>`).join('');
   const malOpts = '<option value="">— Malzeme —</option>';
   div.innerHTML = `
-    <select class="thr-dep" ${dChange('topluHarDepChange',id)} style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2)">
+    <select class="thr-dep u-92" ${dChange('topluHarDepChange',id)}>
       <option value="">— Depo —</option>${depOpts}
     </select>
-    <select class="thr-tur" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2)">
+    <select class="thr-tur u-92">
       <option>Giriş</option><option>Çıkış</option>
     </select>
-    <input type="number" class="thr-mik" min="1" value="1" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink);text-align:center">
+    <input type="number" class="thr-mik u-93" min="1" value="1">
     <button class="btn-x" ${dClick('removeById',id)} title="Satırı kaldır" aria-label="Satırı kaldır">×</button>
-    <select class="thr-mal" style="padding:7px;border:1.5px solid var(--line);border-radius:7px;font-size:12px;background:var(--white);color:var(--ink2);grid-column:1/-2">
+    <select class="thr-mal u-94">
       ${malOpts}
     </select>`;
   document.getElementById('toplu-har-rows').appendChild(div);

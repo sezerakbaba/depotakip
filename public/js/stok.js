@@ -8,7 +8,7 @@ import { apiFetch } from './api.js';
 
 export function katBadgeHTML(kat){
   const cc=KAT_COLORS[kat]||{c:'#546e7a',bg:'#eceff1'};
-  return '<span style="display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;background:'+cc.bg+';color:'+cc.c+'">'+esc(kat)+'</span>';
+  return '<span class="u-113">'+esc(kat)+'</span>';
 }
 export function setKatFilterSel(val){
   S.stokKatFilter=val;S.stokSayfa=0;
@@ -191,8 +191,8 @@ export function renderStok(){
     const minPct=s.max>0?Math.min(100,Math.round((s.min/s.max)*100)):0;
     const fc=d==='Kritik'?'fill-kritik':d==='Fazla'?'fill-fazla':'fill-normal';
     const key=getKey(item.depo,item.ad);
-    const katCell=item.kategori?katBadgeHTML(item.kategori):'<span style="font-size:11px;color:var(--muted)">—</span>';
-    const birCell=item.birim?esc(item.birim):'<span style="color:var(--muted)">—</span>';
+    const katCell=item.kategori?katBadgeHTML(item.kategori):'<span class="u-58">—</span>';
+    const birCell=item.birim?esc(item.birim):'<span class="u-99">—</span>';
     const rowCls = d==='Kritik' ? 'row-kritik' : d==='Fazla' ? 'row-fazla' : '';
 
     let dynamicCells = '';
@@ -214,10 +214,10 @@ export function renderStok(){
           dynamicCells += '<td data-col="kategori" data-label="Kategori">'+katCell+'</td>';
           break;
         case 'mevcut':
-          dynamicCells += '<td class="td-mono" data-col="mevcut" data-label="Mevcut" style="font-weight:700;color:'+(d==='Kritik'?'var(--red)':d==='Fazla'?'var(--amber)':'var(--blue)')+'">'+s.mevcut+'</td>';
+          dynamicCells += '<td class="td-mono u-114" data-col="mevcut" data-label="Mevcut">'+s.mevcut+'</td>';
           break;
         case 'birim':
-          dynamicCells += '<td class="td-mono" data-col="birim" data-label="Birim" style="color:var(--muted)">'+birCell+'</td>';
+          dynamicCells += '<td class="td-mono u-99" data-col="birim" data-label="Birim">'+birCell+'</td>';
           break;
         case 'min':
           dynamicCells += '<td class="td-mono" data-col="min" data-label="Min">'+s.min+'</td>';
@@ -230,9 +230,9 @@ export function renderStok(){
           break;
         case 'doluluk': {
           const tickHtml = (s.max>0 && s.min>0)
-            ? `<div class="stok-bar-tick" style="left:${minPct}%" title="Min: ${s.min}"></div>`
+            ? `<div class="stok-bar-tick" data-style="left:${minPct}%" title="Min: ${s.min}"></div>`
             : '';
-          dynamicCells += `<td data-col="doluluk" data-label="Doluluk"><div class="stok-bar-wrap"><div class="stok-bar"><div class="stok-bar-fill ${fc}" style="width:${pct}%"></div>${tickHtml}</div><span class="stok-num">${pct}%</span></div></td>`;
+          dynamicCells += `<td data-col="doluluk" data-label="Doluluk"><div class="stok-bar-wrap"><div class="stok-bar"><div class="stok-bar-fill ${fc}" data-style="width:${pct}%"></div>${tickHtml}</div><span class="stok-num">${pct}%</span></div></td>`;
           break;
         }
       }
@@ -251,12 +251,12 @@ export function renderStok(){
       +'</tr>';
   });
 
-  const emptyState = `<tr><td colspan="${colCount}" style="padding:0">
+  const emptyState = `<tr><td class="u-105" colspan="${colCount}">
     <div class="empty-state">
       <div class="empty-icon"><i data-lucide="search-x"></i></div>
       <div class="empty-title">Sonuç bulunamadı</div>
       <div class="empty-desc">Arama veya filtre kriterlerinizi değiştirin.</div>
-      <button class="btn btn-outline btn-sm" style="margin-top:12px" ${dClick('stokTumFiltreleriTemizle')}><i data-lucide='x' class='icon-inline'></i> Filtreleri Temizle</button>
+      <button class="btn btn-outline btn-sm u-115" ${dClick('stokTumFiltreleriTemizle')}><i data-lucide='x' class='icon-inline'></i> Filtreleri Temizle</button>
     </div>
   </td></tr>`;
   tbl.innerHTML = rows || emptyState;
@@ -265,17 +265,17 @@ export function renderStok(){
   // Sayfalama kontrolleri
   const spEl = document.getElementById('stok-sayfalama');
   if (spEl) {
-    if (toplamSayfa <= 1) { spEl.innerHTML = `<span style="font-size:11px;color:var(--muted)">${toplamKalem} kalem</span>`; }
+    if (toplamSayfa <= 1) { spEl.innerHTML = `<span class="u-58">${toplamKalem} kalem</span>`; }
     else {
       const goster = 2; // aktif sayfanın her iki yanında gösterilecek sayfa sayısı
-      let btns = `<span style="font-size:11px;color:var(--muted)">${toplamKalem} kalem</span>`;
-      btns += `<div style="display:flex;gap:4px;align-items:center">`;
+      let btns = `<span class="u-58">${toplamKalem} kalem</span>`;
+      btns += `<div class="u-116">`;
       btns += `<button class="sayfa-btn" ${dClick('stokSayfaPrev')} ${S.stokSayfa===0?'disabled':''}>‹</button>`;
       for (let p = 0; p < toplamSayfa; p++) {
         if (p === 0 || p === toplamSayfa-1 || Math.abs(p - S.stokSayfa) <= goster) {
           btns += `<button class="sayfa-btn ${p===S.stokSayfa?'aktif':''}" ${dClick('stokSayfaGit',p)}>${p+1}</button>`;
         } else if (Math.abs(p - S.stokSayfa) === goster+1) {
-          btns += `<span style="color:var(--muted);font-size:12px;padding:0 2px">…</span>`;
+          btns += `<span class="u-117">…</span>`;
         }
       }
       btns += `<button class="sayfa-btn" ${dClick('stokSayfaNext')} ${S.stokSayfa===toplamSayfa-1?'disabled':''}>›</button>`;
@@ -386,25 +386,25 @@ export function openStokModal(_key, dep, mal) {
   const _ko=_katList.map(k=>'<option value="'+k+'"'+(mm.kategori===k||(!_katList.includes(mm.kategori)&&mm.kategori&&k==='Diğer')?' selected':'')+'>'+k+'</option>').join('');
   const _katDiğerVal = (_katList.includes(mm.kategori)||!mm.kategori) ? '' : mm.kategori;
   document.getElementById('modal-stok-icerik').innerHTML=
-    '<p style="font-size:13px;color:var(--muted);margin-bottom:12px">'+dep+'</p>'
+    '<p class="u-118">'+dep+'</p>'
     +'<div class="form-grid">'
-    +'<div class="form-group" style="grid-column:1/-1">'
+    +'<div class="form-group u-119">'
     +'<label>Malzeme Adı</label>'
-    +'<input type="text" id="m-ad" value="'+mal.replace(/"/g,'&quot;')+'" style="font-weight:600">'
-    +'<input type="text" id="m-marka" value="'+(mm.marka||'').replace(/"/g,'&quot;')+'" placeholder="Marka (opsiyonel)" style="margin-top:5px;font-size:11px;color:var(--muted);border-color:var(--line)">'
+    +'<input class="u-120" type="text" id="m-ad" value="'+mal.replace(/"/g,'&quot;')+'">'
+    +'<input class="u-46" type="text" id="m-marka" value="'+(mm.marka||'').replace(/"/g,'&quot;')+'" placeholder="Marka (opsiyonel)">'
     +'</div>'
     +'<div class="form-group"><label>Mevcut Stok</label><input type="number" id="m-mevcut" value="'+s.mevcut+'" min="0"></div>'
     +'<div class="form-group"><label>Min Stok</label><input type="number" id="m-min" value="'+s.min+'" min="0"></div>'
     +'<div class="form-group"><label>Max Stok</label><input type="number" id="m-max" value="'+s.max+'" min="0"></div>'
     +'<div class="form-group"><label>Birim</label>'
     +'<select id="m-birim" '+dChange('handleDiger','m-birim-diger')+'><option value="">— Seçin —</option>'+_bo+'</select>'
-    +'<div id="m-birim-diger-wrap" style="display:'+(_birDiğerVal?'block':'none')+';margin-top:5px">'
-    +'<input type="text" id="m-birim-diger" value="'+_birDiğerVal+'" placeholder="Birim girin..." style="font-size:12px"></div></div>'
+    +'<div class="u-121" id="m-birim-diger-wrap">'
+    +'<input class="u-48" type="text" id="m-birim-diger" value="'+_birDiğerVal+'" placeholder="Birim girin..."></div></div>'
     +'<div class="form-group"><label>Kategori</label>'
     +'<select id="m-kategori" '+dChange('handleDiger','m-kategori-diger')+'><option value="">— Seçin —</option>'+_ko+'</select>'
-    +'<div id="m-kategori-diger-wrap" style="display:'+(_katDiğerVal?'block':'none')+';margin-top:5px">'
-    +'<input type="text" id="m-kategori-diger" value="'+_katDiğerVal+'" placeholder="Kategori girin..." style="font-size:12px"></div></div>'
-    +(dep==='Kimyasal Deposu'?'<div class="form-group" style="grid-column:1/-1"><label><i data-lucide="shield-alert" class="icon-inline"></i> Son Kullanma Tarihi</label><input type="date" id="m-skt" value="'+(mm.skt||'')+'" style="font-family:IBM Plex Mono,monospace"></div>':'')
+    +'<div class="u-122" id="m-kategori-diger-wrap">'
+    +'<input class="u-48" type="text" id="m-kategori-diger" value="'+_katDiğerVal+'" placeholder="Kategori girin..."></div></div>'
+    +(dep==='Kimyasal Deposu'?'<div class="form-group u-119"><label><i data-lucide="shield-alert" class="icon-inline"></i> Son Kullanma Tarihi</label><input class="u-123" type="date" id="m-skt" value="'+(mm.skt||'')+'"></div>':'')
     +'</div>';
   document.getElementById('modal-stok').classList.add('open');
 }

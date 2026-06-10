@@ -1,6 +1,7 @@
 import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
 import { esc, dClick, dChange, dInput, dKeydown, setFieldError, clearFieldErrors } from './ui-common.js';
 import { apiFetch } from './api.js';
+import { t } from './i18n.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // AYARLAR
@@ -112,10 +113,15 @@ export function renderAyarlar() {
         <button class="btn btn-sm ${S.ayarlar.tema==='dark'?'btn-primary':'btn-outline'}" ${dClick('setTema','dark')}><i data-lucide="moon" class="icon-inline"></i> Koyu</button>
         <button class="btn btn-sm ${S.ayarlar.tema==='auto'?'btn-primary':'btn-outline'}" ${dClick('setTema','auto')}><i data-lucide="monitor" class="icon-inline"></i> Otomatik</button>
       </div></div>
+    <div class="ayar-row"><div class="ayar-label">${t('ayarlar.gorunum.dil')}<small>${t('ayarlar.gorunum.dilAciklama')}</small></div>
+      <div class="btn-group">
+        <button class="btn btn-sm ${(S.ayarlar.dil||'tr')==='tr'?'btn-primary':'btn-outline'}" ${dClick('setDil','tr')}>Türkçe</button>
+        <button class="btn btn-sm ${S.ayarlar.dil==='en'?'btn-primary':'btn-outline'}" ${dClick('setDil','en')}>English</button>
+      </div></div>
     <div class="ayar-row"><div class="ayar-label">Yazı Tipi Boyutu<small id="yazitipiBoy-lbl">Şu an: ${S.ayarlar.yazitipiBoy||100}%</small></div>
-      <input type="range" min="80" max="130" step="5" value="${S.ayarlar.yazitipiBoy||100}"
+      <input class="u-66" type="range" min="80" max="130" step="5" value="${S.ayarlar.yazitipiBoy||100}"
         ${dInput('yazitipiBoy')}
-        style="width:160px"></div>
+       ></div>
     <div class="ayar-row"><div class="ayar-label">Tarih Formatı<small>Listelerde görünen tarih biçimi</small></div>
       <div class="btn-group">
         <button class="btn btn-sm ${S.ayarlar.tarihFormat==='tr'?'btn-primary':'btn-outline'}" ${dClick('setTarihFormat','tr')}>TR (31.12.2025)</button>
@@ -172,7 +178,7 @@ export function renderAyarlar() {
   const depoHtml = `<div class="card"><div class="card-header"><i data-lucide="warehouse" class="icon-inline"></i> Depolar</div><div class="card-body">
     ${Object.entries(DEPO_META).map(([ad,m])=>`
       <div class="ayar-row" id="depo-row-${CSS.escape(ad)}">
-        <div class="ayar-label"><span class="badge" style="background:${m.color}22;color:${m.color};margin-right:6px">${esc(m.kod)}</span>${esc(ad)}</div>
+        <div class="ayar-label"><span class="badge" data-style="background:${m.color}22;color:${m.color};margin-right:6px">${esc(m.kod)}</span>${esc(ad)}</div>
         <button class="btn btn-sm btn-outline" ${dClick('depoYeniAdDlg',ad)}><i data-lucide="pencil" class="icon-inline"></i> Düzenle</button>
       </div>`).join('')}
     <div id="depo-yeniad-form"></div>
@@ -207,7 +213,7 @@ export function renderAyarlar() {
 
   const talepAyarHtml = `<div class="card"><div class="card-header"><i data-lucide="file-text" class="icon-inline"></i> Talepname Ayarları</div><div class="card-body">
     <div class="ayar-row"><div class="ayar-label">Talep no ön eki<small>Örn. TLN → TLN-0001</small></div>
-      <input type="text" class="ayar-input-sm" maxlength="8" value="${S.ayarlar.talepOnPek||'TLN'}" ${dChange('setAyarTalepOnPek')} style="text-transform:uppercase"></div>
+      <input type="text" class="ayar-input-sm u-67" maxlength="8" value="${S.ayarlar.talepOnPek||'TLN'}" ${dChange('setAyarTalepOnPek')}></div>
     <div class="ayar-row"><div class="ayar-label">Talep eden (varsayılan)<small>Talepname açılınca otomatik dolar</small></div>
       <input type="text" class="ayar-input-md" maxlength="60" placeholder="Ad Soyad..." value="${esc(S.ayarlar.talepSahibi||'')}" ${dChange('setAyarTrim','talepSahibi')}></div>
     <div class="ayar-row"><div class="ayar-label">Onaylayan 1</div>
@@ -311,11 +317,11 @@ export function ekDepoEkle() {
 export function depoYeniAdDlg(eskiAd) {
   const m = DEPO_META[eskiAd]; if(!m) return;
   const form = document.getElementById('depo-yeniad-form'); if(!form) return;
-  form.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding:10px;background:var(--bg);border-radius:8px">
-    <strong style="width:100%;font-size:12px;margin-bottom:4px">${esc(eskiAd)} düzenle</strong>
-    <input type="text" id="dyn-ad" value="${esc(eskiAd)}" placeholder="Depo adı" class="ayar-input" style="max-width:160px">
-    <input type="text" id="dyn-kod" value="${esc(m.kod)}" maxlength="4" placeholder="Kod" class="ayar-input" style="max-width:80px">
-    <input type="color" id="dyn-renk" value="${m.color}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer">
+  form.innerHTML = `<div class="u-68">
+    <strong class="u-69">${esc(eskiAd)} düzenle</strong>
+    <input type="text" id="dyn-ad" value="${esc(eskiAd)}" placeholder="Depo adı" class="ayar-input u-70">
+    <input type="text" id="dyn-kod" value="${esc(m.kod)}" maxlength="4" placeholder="Kod" class="ayar-input u-71">
+    <input class="u-72" type="color" id="dyn-renk" value="${m.color}">
     <button class="btn btn-sm btn-primary" ${dClick('depoYeniAdKaydet',eskiAd)}><i data-lucide="check" class="icon-inline"></i> Kaydet</button>
     <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')} title="İptal"><i data-lucide="x"></i></button>
   </div>`;
@@ -363,11 +369,11 @@ export function ekKatEkle() {
 export function katYeniAdDlg(eskiAd) {
   const cc = KAT_COLORS[eskiAd]; if(!cc) return;
   const form = document.getElementById('kat-yeniad-form'); if(!form) return;
-  form.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding:10px;background:var(--bg);border-radius:8px">
-    <strong style="width:100%;font-size:12px;margin-bottom:4px">${esc(eskiAd)} düzenle</strong>
-    <input type="text" id="kyn-ad" value="${esc(eskiAd)}" placeholder="Kategori adı" class="ayar-input" style="max-width:160px">
-    <input type="color" id="kyn-c" value="${cc.c}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer" title="Yazı rengi">
-    <input type="color" id="kyn-bg" value="${cc.bg}" style="width:38px;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;cursor:pointer" title="Arkaplan">
+  form.innerHTML = `<div class="u-68">
+    <strong class="u-69">${esc(eskiAd)} düzenle</strong>
+    <input type="text" id="kyn-ad" value="${esc(eskiAd)}" placeholder="Kategori adı" class="ayar-input u-70">
+    <input class="u-72" type="color" id="kyn-c" value="${cc.c}" title="Yazı rengi">
+    <input class="u-72" type="color" id="kyn-bg" value="${cc.bg}" title="Arkaplan">
     <button class="btn btn-sm btn-primary" ${dClick('katYeniAdKaydet',eskiAd)}><i data-lucide="check" class="icon-inline"></i> Kaydet</button>
     <button class="btn btn-sm btn-outline" ${dClick('renderAyarlar')} title="İptal"><i data-lucide="x"></i></button>
   </div>`;

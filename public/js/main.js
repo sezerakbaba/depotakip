@@ -11,6 +11,7 @@ import { renderBackupList, refreshVeriYonet } from './veri.js';
 import { initTalep, renderTalepListesi, talepListesiYukle } from './talep.js';
 import { ayarlariYukle, ayarlariKaydet, applyTheme, renderAyarlar } from './ayarlar.js';
 import { openGlobalSearch } from './global-search.js';
+import { initI18n, applyI18n, t, setLang } from './i18n.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL HELPERS
@@ -85,7 +86,7 @@ export function navigate(page) {
   const ni = document.querySelector(`.nav-item[data-action="navigate"][data-arg="${page}"]`);
   if (ni) ni.classList.add('active');
   const tt = document.getElementById('topbar-title');
-  if (tt) tt.textContent = PAGE_TITLES[page] || page;
+  if (tt) tt.textContent = t('page.' + page);   // i18n; tr.json page.* TR başlıkları içerir
 
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -158,7 +159,7 @@ export function initDepoSelects() {
         const color = DEPO_META[d]?.color || 'var(--teal)';
         const aktif = aktifDepo === d;
         const style = aktif ? `--chip-color:${color};border-color:${color};background:${color};color:#fff` : '';
-        return `<div class="filter-chip${aktif?' active':''}" data-depo="${esc(d)}" data-color="${color}" ${dClick('setDepoFilter',d,color)} style="${style}">${esc(d)}</div>`;
+        return `<div class="filter-chip${aktif?' active':''}" data-depo="${esc(d)}" data-color="${color}" ${dClick('setDepoFilter',d,color)} data-style="${style}">${esc(d)}</div>`;
       }).join('');
   }
 }
@@ -451,6 +452,7 @@ const ACTIONS = {
   // Ayarlar
   setTema:              _setTemaThen,
   cycleTema:            _cycleTema,
+  setDil:               (_el, lang) => setLang(lang),
   setTarihFormat:       _setTarihFormatThen,
   birimSil:             (_el, b) => window.birimSil?.(b),
   birimEkle:            () => window.birimEkle?.(),
@@ -605,6 +607,25 @@ function _a11yEnhance(root = document) {
     if (_A11Y_SKIP.has(el.tagName)) return;
     if (!el.hasAttribute('role'))     el.setAttribute('role', 'button');
     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+  });
+  _applyDataStyles(root);
+  applyI18n(root);   // S11: dinamik eklenen [data-i18n] da çevrilsin
+}
+
+// S9 faz 3: dinamik inline style'lar (`data-style="...${...}"`) `data-style`'a
+// çevrildi (inline style attribute CSP `style-src 'unsafe-inline'` ihlali;
+// data-* attribute değil). Burada render-sonrası `el.style.cssText`'e
+// uygulanır — CSSOM `.style` ataması CSP-governed DEĞİLDİR. _a11yEnhance
+// hem init'te (root=document) hem observer'da eklenen her düğüm için
+// çağrıldığından tek entegrasyon noktası yeterli. MutationObserver
+// callback'i microtask (paint öncesi) olduğundan görünür flash olmaz.
+function _applyDataStyles(root) {
+  if (!root || !root.querySelectorAll) return;
+  const els = [...root.querySelectorAll('[data-style]')];
+  if (root.nodeType === 1 && root.hasAttribute('data-style')) els.unshift(root);
+  els.forEach(el => {
+    el.style.cssText = el.getAttribute('data-style');
+    el.removeAttribute('data-style');
   });
 }
 
@@ -783,6 +804,7 @@ window._AYARLAR_DEFAULT = AYARLAR_DEFAULT;
     window.toast('⚠ Sunucu bağlantısı yok — veriler kaydedilmeyecek', 'error');
   }
   ayarlariYukle();
+  await initI18n();   // S11: sözlükleri yükle + statik DOM'u çevir (dil S.ayarlar.dil)
   document.title = (S.ayarlar.kurumAdi || 'Depo Yönetim Sistemi') + ' — Depo Takip';
   _syncThemeToggleIcon();
   _a11yEnhance();
