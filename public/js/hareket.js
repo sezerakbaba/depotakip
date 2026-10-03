@@ -1,6 +1,6 @@
 import { S, KAYNAK } from './state.js';
 import { apiFetch, apiSave, apiHareketEkle, apiHareketSil, apiHareketList } from './api.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, fmt, getKey, timeAgo, dClick, dChange, setFieldError, clearFieldErrors, skeletonList, skeletonStats } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, fmt, getKey, timeAgo, dClick, dChange, localISODate, parseMiktar, round3, setFieldError, clearFieldErrors, skeletonList, skeletonStats } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // GİRİŞ / ÇIKIŞ — hareketler artık sunucu tablosunda
@@ -26,14 +26,14 @@ export function updateHareketStokBilgi() {
 
 export function setHarTarihShortcut(mod) {
   const today = new Date(); today.setHours(0,0,0,0);
-  let bas, bit = today.toISOString().slice(0,10);
+  let bas, bit = localISODate(today);
   if (mod === 'bugun') {
     bas = bit;
   } else if (mod === 'hafta') {
     const d = new Date(today); d.setDate(today.getDate() - ((today.getDay()||7) - 1));
-    bas = d.toISOString().slice(0,10);
+    bas = localISODate(d);
   } else if (mod === 'ay') {
-    bas = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0,10);
+    bas = localISODate(new Date(today.getFullYear(), today.getMonth(), 1));
   }
   S.harTarihBas = bas; S.harTarihBit = bit;
   document.getElementById('har-tarih-bas').value = bas;
@@ -54,7 +54,7 @@ export function _harEkle() {
   const dep = document.getElementById('h-depo').value;
   const mal = document.getElementById('h-malzeme').value;
   const tur = document.getElementById('h-tur').value;
-  const mik = parseInt(document.getElementById('h-miktar').value);
+  const mik = parseMiktar(document.getElementById('h-miktar').value);
   if (!dep || !mal) { window.toast('Önce malzeme seçin', 'error'); document.getElementById('h-mal-search')?.focus(); return; }
   if (!mik || mik <= 0) {
     clearFieldErrors(document.getElementById('h-ekle-satir'));
@@ -96,6 +96,15 @@ export function _renderHarEklenenler() {
     </div>`).join('');
 }
 
+// Yerel stoğa hareketi uygular (ters=true → hareketi geri alır). Yalnızca sunucu
+// kaydı BAŞARILI olduktan sonra çağrılır: hata olursa stok hareketle çelişmez.
+function _stokUygula(dep, mal, tur, mik, ters = false) {
+  const s = getStok(dep, mal);
+  const artar = (tur === 'Giriş') !== ters;
+  s.mevcut = round3(s.mevcut + (artar ? mik : -mik));
+  if (s.mevcut < 0) s.mevcut = 0;
+}
+
 export async function kaydetHareket() {
   if (!S._harEklenenler.length) { window.toast('En az 1 malzeme ekleyin', 'error'); return; }
   const belge = document.getElementById('h-belge').value;
@@ -115,16 +124,16 @@ export async function kaydetHareket() {
     }
   }
   const now = new Date().toISOString();
+  let kaydedilen = 0;
   try {
     for (const h of S._harEklenenler) {
-      // Stok yerel olarak güncelle
-      const s = getStok(h.dep, h.mal);
-      s.mevcut = h.tur === 'Giriş' ? s.mevcut + h.mik : s.mevcut - h.mik;
-      // Sunucuya kaydet
+      // Önce sunucuya kaydet, başarılıysa yerel stoğu güncelle
       await apiHareketEkle({
         tarih: now, depo: h.dep, malzeme: h.mal, tur: h.tur, miktar: h.mik,
         belge, personel: pers, not,
       });
+      _stokUygula(h.dep, h.mal, h.tur, h.mik);
+      kaydedilen++;
     }
     const n = S._harEklenenler.length;
     clearHareketForm();
@@ -132,7 +141,11 @@ export async function kaydetHareket() {
     window.refreshAll();
     window.toast(`${n} hareket kaydedildi ✓`);
   } catch(e) {
-    window.toast('Hareket kaydedilemedi: ' + e.message, 'error');
+    // Kaydedilenler listeden düşer → yeniden denemede çift kayıt oluşmaz
+    S._harEklenenler.splice(0, kaydedilen);
+    _renderHarEklenenler();
+    window.refreshAll();
+    window.toast(`Hareket kaydedilemedi (${kaydedilen} kayıt işlendi): ` + e.message, 'error');
   }
 }
 
@@ -202,17 +215,14 @@ export function _harMalTemizle() {
 // Hareket sil — stok yerel olarak geri al, sunucudan sil
 export async function hareketSil(id, malzeme, depo, tur, miktar) {
   if (!confirm(`"${malzeme}" hareketini silmek istediğinizden emin misiniz?\n${tur} · ${miktar} adet\nStok geri alınacak.`)) return;
-  const s = getStok(depo, malzeme);
-  s.mevcut = tur === 'Giriş' ? s.mevcut - miktar : s.mevcut + miktar;
-  if (s.mevcut < 0) s.mevcut = 0;
   try {
     await apiHareketSil(id);
+    // Sunucu başarılı olduktan sonra stoğu geri al (404 → zaten silinmiş → dokunma)
+    _stokUygula(depo, malzeme, tur, miktar, true);
     renderHareketList();
     window.refreshAll();
     window.toast('Hareket silindi, stok güncellendi.');
   } catch(e) {
-    // Başarısız olursa stok değişikliğini geri al
-    s.mevcut = tur === 'Giriş' ? s.mevcut + miktar : s.mevcut - miktar;
     window.toast('Hareket silinemedi: ' + e.message, 'error');
   }
 }
@@ -364,21 +374,19 @@ export async function openMalHareket(dep, mal) {
 export async function hizliHareket(dep, mal, tur) {
   const mikStr = prompt(`${mal}\n${tur} miktarı girin:`, '1');
   if (!mikStr) return;
-  const mik = parseInt(mikStr);
+  const mik = parseMiktar(mikStr);
   if (!mik || mik <= 0) { window.toast('Geçersiz miktar!', 'error'); return; }
   const s = getStok(dep, mal);
   if (tur === 'Çıkış' && s.mevcut < mik) { window.toast('Yetersiz stok! Mevcut: ' + s.mevcut, 'error'); return; }
-  s.mevcut = tur === 'Giriş' ? s.mevcut + mik : s.mevcut - mik;
   try {
     await apiHareketEkle({
       tarih: new Date().toISOString(), depo: dep, malzeme: mal, tur, miktar: mik,
       belge: '', personel: '', not: 'Hızlı hareket',
     });
+    _stokUygula(dep, mal, tur, mik);
     window.refreshAll();
     window.toast(`${tur} kaydedildi: ${mal} (${mik})`);
   } catch(e) {
-    // Stok geri al
-    s.mevcut = tur === 'Giriş' ? s.mevcut - mik : s.mevcut + mik;
     window.toast('Kaydedilemedi: ' + e.message, 'error');
   }
 }
@@ -406,7 +414,7 @@ export function topluHarSatirEkle() {
     <select class="thr-tur u-92">
       <option>Giriş</option><option>Çıkış</option>
     </select>
-    <input type="number" class="thr-mik u-93" min="1" value="1">
+    <input type="number" class="thr-mik u-93" min="0" step="any" value="1">
     <button class="btn-x" ${dClick('removeById',id)} title="Satırı kaldır" aria-label="Satırı kaldır">×</button>
     <select class="thr-mal u-94">
       ${malOpts}
@@ -436,33 +444,37 @@ export async function topluHarKaydet() {
     const dep = row.querySelector('.thr-dep')?.value;
     const mal = row.querySelector('.thr-mal')?.value;
     const tur = row.querySelector('.thr-tur')?.value;
-    const mik = parseInt(row.querySelector('.thr-mik')?.value||'0');
+    const mik = parseMiktar(row.querySelector('.thr-mik')?.value);
     if (!dep || !mal) return;
     if (!mik || mik<=0) { errors.push(mal + ': geçersiz miktar'); return; }
     const s = getStok(dep, mal);
     if (tur==='Çıkış' && s.mevcut < mik) { errors.push(mal + ': yetersiz stok (' + s.mevcut + ')'); return; }
-    entries.push({ dep, mal, tur, mik });
+    entries.push({ dep, mal, tur, mik, row });
   });
 
   if (errors.length) window.toast('Hatalar: ' + errors.join(', '), 'error');
   if (!entries.length) return;
 
   const now = new Date().toISOString();
+  let kaydedilen = 0;
   try {
     for (const h of entries) {
-      const s = getStok(h.dep, h.mal);
-      s.mevcut = h.tur==='Giriş' ? s.mevcut+h.mik : s.mevcut-h.mik;
       await apiHareketEkle({
         tarih: now, depo: h.dep, malzeme: h.mal, tur: h.tur, miktar: h.mik,
         belge: '', personel: '', not: 'Toplu kayıt',
       });
+      _stokUygula(h.dep, h.mal, h.tur, h.mik);
+      kaydedilen++;
     }
     window.refreshAll();
     document.getElementById('toplu-har-rows').innerHTML = '';
     topluHarSatirEkle();
     window.toast(entries.length + ' hareket kaydedildi ✓');
   } catch(e) {
-    window.toast('Toplu kayıt hatası: ' + e.message, 'error');
+    // Kaydedilen satırlar formdan kalksın → yeniden denemede çift kayıt olmasın
+    entries.slice(0, kaydedilen).forEach(h => h.row.remove());
+    window.refreshAll();
+    window.toast(`Toplu kayıt hatası (${kaydedilen}/${entries.length} kaydedildi): ` + e.message, 'error');
   }
 }
 

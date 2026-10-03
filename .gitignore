@@ -6,3 +6,6 @@ backups/
 *.log
 .app-token
 public/dist/
+
+# Claude Code yerel (kişisel) ayarları
+.claude/settings.local.json
