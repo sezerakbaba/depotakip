@@ -96,6 +96,20 @@ export function depoBadge(dep) {
   return `<span class="badge" data-style="background:${m.color}22;color:${m.color}">${esc(m.kod)}</span>`;
 }
 
+// Yerel takvim günü 'YYYY-MM-DD' — toISOString() UTC üretir, TR'de gece yarısı
+// civarında bir önceki güne kayar.
+export function localISODate(d = new Date()) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+// Miktarlar ondalık olabilir (litre, kg). Toplama hatalarını (0.1+0.2) önlemek için
+// 3 haneye yuvarlanır. Girdideki Türkçe ondalık virgül ("2,5") de kabul edilir.
+export function round3(n) { return Math.round(n * 1000) / 1000; }
+export function parseMiktar(v) {
+  const n = parseFloat(String(v ?? '').trim().replace(',', '.'));
+  return Number.isFinite(n) ? round3(n) : 0;
+}
+
 export function fmtGun(d) {
   if (!(d instanceof Date)) d = new Date(d);
   if (S.ayarlar.tarihFormat === 'iso') {

@@ -178,25 +178,35 @@ export async function veriIceAktar(input) {
     try {
       const data = JSON.parse(e.target.result);
       if (!data.stok) { window.toast('Geçersiz dosya formatı!','error'); return; }
+      const hareketler = data.hareketler || data._hareketler || [];
+      const harDegisir = hareketler.length > 0 && S.API_MOD;
+      if (!confirm('İçe aktarma mevcut stok verilerini' + (harDegisir ? ' ve TÜM hareket geçmişini' : '') +
+                   ' dosyadakilerle DEĞİŞTİRİR.\nDevam edilsin mi?')) return;
       S.stok        = data.stok        || {};
       S.ozelMalzeme = data.ozelMalzeme || {};
       S.silinmis    = data.silinmis    || {};
       S.malzemeMeta = data.malzemeMeta || {};
       window.refreshAll();
 
-      // Hareketleri sunucuya gönder
-      const hareketler = data.hareketler || data._hareketler || [];
+      // Hareketleri sunucuya gönder (degistir: tekrar içe aktarmada kayıtlar çoğalmaz)
       let harMesaj = '';
-      if (hareketler.length > 0 && S.API_MOD) {
+      if (harDegisir) {
         try {
           const r = await apiFetch(API_URL + '?action=hareket_toplu_ekle', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ hareketler }),
+            body: JSON.stringify({ hareketler, degistir: true }),
           });
           const json = await r.json();
-          harMesaj = json.ok ? `, ${hareketler.length} hareket` : '';
-        } catch(ex) { console.warn('Hareket import:', ex); }
+          if (json.ok) {
+            harMesaj = `, ${json.eklenen} hareket` + (json.atlanan ? ` (${json.atlanan} geçersiz kayıt atlandı)` : '');
+          } else {
+            window.toast('Hareketler içe aktarılamadı: ' + json.error, 'error');
+          }
+        } catch(ex) {
+          console.warn('Hareket import:', ex);
+          window.toast('Hareketler içe aktarılamadı: ' + ex.message, 'error');
+        }
       }
 
       await refreshVeriYonet();

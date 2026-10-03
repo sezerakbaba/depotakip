@@ -160,6 +160,18 @@ export function apiSaveFlush() {
   } catch (_) { /* unload sırasında sessiz kal */ }
 }
 
+// Genel POST yardımcısı: ok:false yanıtını da hata olarak fırlatır
+export async function apiPostJson(action, body) {
+  const r = await apiFetch(API_URL + '?action=' + action, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  const json = await r.json();
+  if (!json.ok) throw new Error(json.error || 'İşlem başarısız');
+  return json;
+}
+
 // ── Hareket API ─────────────────────────────────────────────────────────────
 
 // Yeni hareket ekle — sunucu integer id döner
@@ -241,12 +253,21 @@ export async function apiBackupLoad(dosya) {
   } catch(e) { window.toast('Yedek yüklenemedi', 'error'); }
 }
 
+// Sunucu verisini sıfırlar. Başarılıysa true döner; sunucu version'u 0'a
+// düştüğü için istemci sürümü de senkronlanır (yoksa sonraki save 409 alır).
 export async function apiReset() {
-  if (!S.API_MOD) return;
+  if (!S.API_MOD) return false;
   try {
-    await apiFetch(API_URL + '?action=reset', {method:'POST'});
+    const r = await apiFetch(API_URL + '?action=reset', {method:'POST'});
+    const json = await r.json();
+    if (!r.ok || !json.ok) throw new Error(json.error || 'HTTP ' + r.status);
+    clearTimeout(S._saveTimer);
+    S._savePending = false;
+    S._serverVersion = 0;
+    return true;
   } catch(e) {
     console.warn('apiReset:', e);
     window.toast('Sunucuda sıfırlama başarısız: ' + e.message, 'error');
+    return false;
   }
 }

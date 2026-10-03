@@ -1,6 +1,6 @@
-import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS, API_URL } from './state.js';
+import { S, AYARLAR_DEFAULT, DEPO_META, DEPO_BADGE, KAT_COLORS } from './state.js';
 import { esc, dClick, dChange, dInput, dKeydown, setFieldError, clearFieldErrors } from './ui-common.js';
-import { apiFetch } from './api.js';
+import { apiPostJson } from './api.js';
 import { t } from './i18n.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -340,10 +340,11 @@ export function depoYeniAdKaydet(eskiAd) {
     const prefix = eskiAd+'||'; const yeniPrefix = yeniAd+'||';
     const renameObj = obj => { Object.keys(obj).filter(k=>k.startsWith(prefix)).forEach(k=>{ obj[yeniPrefix+k.slice(prefix.length)]=obj[k]; delete obj[k]; }); };
     renameObj(S.stok); renameObj(S.ozelMalzeme); renameObj(S.silinmis); renameObj(S.malzemeMeta);
-    apiFetch(API_URL + '?action=hareket_depo_guncelle', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ eskiDepo: eskiAd, yeniDepo: yeniAd }),
-    }).catch(e => console.warn('Hareket depo güncelleme:', e));
+    apiPostJson('hareket_depo_guncelle', { eskiDepo: eskiAd, yeniDepo: yeniAd })
+      .catch(e => {
+        console.warn('Hareket depo güncelleme:', e);
+        window.toast('Hareket geçmişindeki depo adı güncellenemedi: ' + e.message, 'error');
+      });
     const ekD = (S.ayarlar.ekDepo||[]).find(d=>d.ad===eskiAd); if(ekD) ekD.ad=yeniAd;
     if(!S.ayarlar.depoYeniadlar) S.ayarlar.depoYeniadlar={};
     const origKey = Object.entries(S.ayarlar.depoYeniadlar||{}).find(([,v])=>v===eskiAd)?.[0] || eskiAd;
@@ -394,10 +395,11 @@ export function katYeniAdKaydet(eskiAd) {
   window.toast(yeniAd+' güncellendi ✓');
 }
 
-export function veriSifirla() {
+export async function veriSifirla() {
   if (!confirm('Tüm stok, hareket ve özel malzeme verileri silinecek.\nDevam etmek istediğinizden emin misiniz?')) return;
+  // Önce sunucu: başarısız olursa ekranı boşaltma (yerel/sunucu ayrışmasın)
+  if (S.API_MOD && !await window.apiReset()) return;
   S.stok={}; S.ozelMalzeme={}; S.silinmis={}; S.malzemeMeta={};
-  window.apiReset();
   window.refreshAll();
   window.refreshVeriYonet();
   window.toast('Tüm veriler sıfırlandı.');

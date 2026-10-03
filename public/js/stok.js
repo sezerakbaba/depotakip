@@ -1,6 +1,6 @@
-import { S, STOK_SUTUNLAR, KAT_COLORS, KAYNAK, API_URL } from './state.js';
-import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, getKey, dClick, dChange, setFieldError, clearFieldErrors } from './ui-common.js';
-import { apiFetch } from './api.js';
+import { S, STOK_SUTUNLAR, KAT_COLORS, KAYNAK } from './state.js';
+import { getAllItems, getStok, durum, durumBadge, depoBadge, esc, getKey, dClick, dChange, parseMiktar, setFieldError, clearFieldErrors } from './ui-common.js';
+import { apiPostJson } from './api.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // STOK LİSTESİ
@@ -393,9 +393,9 @@ export function openStokModal(_key, dep, mal) {
     +'<input class="u-120" type="text" id="m-ad" value="'+mal.replace(/"/g,'&quot;')+'">'
     +'<input class="u-46" type="text" id="m-marka" value="'+(mm.marka||'').replace(/"/g,'&quot;')+'" placeholder="Marka (opsiyonel)">'
     +'</div>'
-    +'<div class="form-group"><label>Mevcut Stok</label><input type="number" id="m-mevcut" value="'+s.mevcut+'" min="0"></div>'
-    +'<div class="form-group"><label>Min Stok</label><input type="number" id="m-min" value="'+s.min+'" min="0"></div>'
-    +'<div class="form-group"><label>Max Stok</label><input type="number" id="m-max" value="'+s.max+'" min="0"></div>'
+    +'<div class="form-group"><label>Mevcut Stok</label><input type="number" id="m-mevcut" value="'+s.mevcut+'" min="0" step="any"></div>'
+    +'<div class="form-group"><label>Min Stok</label><input type="number" id="m-min" value="'+s.min+'" min="0" step="any"></div>'
+    +'<div class="form-group"><label>Max Stok</label><input type="number" id="m-max" value="'+s.max+'" min="0" step="any"></div>'
     +'<div class="form-group"><label>Birim</label>'
     +'<select id="m-birim" '+dChange('handleDiger','m-birim-diger')+'><option value="">— Seçin —</option>'+_bo+'</select>'
     +'<div class="u-121" id="m-birim-diger-wrap">'
@@ -412,9 +412,9 @@ export function openStokModal(_key, dep, mal) {
 export function saveStok() {
   if (!S.editKey) return;
   const yeniAd = (document.getElementById('m-ad')?.value||'').trim();
-  const mevcut = parseInt(document.getElementById('m-mevcut').value)||0;
-  const min    = parseInt(document.getElementById('m-min').value)||0;
-  const max    = parseInt(document.getElementById('m-max').value)||0;
+  const mevcut = parseMiktar(document.getElementById('m-mevcut').value);
+  const min    = parseMiktar(document.getElementById('m-min').value);
+  const max    = parseMiktar(document.getElementById('m-max').value);
   const modal = document.getElementById('modal-stok');
   clearFieldErrors(modal);
   if (!yeniAd) {
@@ -450,10 +450,11 @@ export function saveStok() {
   }
   // Hareket geçmişinde adı güncelle (sunucuda)
   if (yeniKey!==eskiKey) {
-    apiFetch(API_URL + '?action=hareket_malzeme_guncelle', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ depo: dep, eskiMalzeme: eskiAd, yeniMalzeme: yeniAd }),
-    }).catch(e => console.warn('Hareket malzeme güncelleme:', e));
+    apiPostJson('hareket_malzeme_guncelle', { depo: dep, eskiMalzeme: eskiAd, yeniMalzeme: yeniAd })
+      .catch(e => {
+        console.warn('Hareket malzeme güncelleme:', e);
+        window.toast('Hareket geçmişindeki ad güncellenemedi: ' + e.message, 'error');
+      });
   }
   S.editKey.mal = yeniAd;
   window.closeModal('modal-stok');window.refreshAll();

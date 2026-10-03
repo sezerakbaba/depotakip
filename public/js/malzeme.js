@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, getKey, dClick, setFieldError, clearFieldErrors } from './ui-common.js';
+import { getAllItems, getStok, getDepoItems, durum, durumBadge, depoBadge, esc, getKey, dClick, parseMiktar, setFieldError, clearFieldErrors } from './ui-common.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // MALZEME EKLE / SİL
@@ -16,9 +16,9 @@ export function malzemeEkle() {
   const birim    = window.getDigerVal('yeni-birim','yeni-birim-diger');
   const kategori  = window.getDigerVal('yeni-kategori','yeni-kategori-diger');
   const marka     = (document.getElementById('yeni-marka')?.value||'').trim();
-  const mevcut = parseInt(document.getElementById('yeni-mevcut').value)||0;
-  const min    = parseInt(document.getElementById('yeni-min').value)||0;
-  const max    = parseInt(document.getElementById('yeni-max').value)||0;
+  const mevcut = parseMiktar(document.getElementById('yeni-mevcut').value);
+  const min    = parseMiktar(document.getElementById('yeni-min').value);
+  const max    = parseMiktar(document.getElementById('yeni-max').value);
 
   // Alan-bazlı validasyon: tüm hatalar tek seferde gösterilir, ilk
   // hatalı alana focus geçer.
